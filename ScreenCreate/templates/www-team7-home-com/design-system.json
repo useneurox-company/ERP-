@@ -1,0 +1,133 @@
+{
+  "site": "www.team7-home.com",
+  "crawledAt": "2025-11-29T07:21:08.618Z",
+  "colors": {
+    "primary": "#f4f3f0",
+    "secondary": "#212121",
+    "accent": "#cecece",
+    "background": "#f4f3f0",
+    "text": "#3b3b3a",
+    "palette": [
+      "#3b3b3a",
+      "#212121",
+      "#cecece",
+      "#d6d6d6",
+      "#ffffff",
+      "#f4f3f0",
+      "#71725c",
+      "#9c9d9d",
+      "#495057",
+      "#fbfbfa",
+      "#6c6c6c",
+      "#1d1d1d",
+      "#494949"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "ABC Whyte Inktrap",
+      "sans-serif",
+      "Times New Roman",
+      "t7",
+      "ABC Laica"
+    ],
+    "styles": {
+      "h1": {
+        "font": "ABC Whyte Inktrap",
+        "size": "30px",
+        "weight": 300,
+        "lineHeight": "36px"
+      },
+      "body": {
+        "font": "ABC Whyte Inktrap",
+        "size": "15px",
+        "weight": 200,
+        "lineHeight": "22.5px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mijypzbj.svg",
+      "originalSrc": "https://www.team7-home.com/_assets/116ec9b59666e629f6f6556e3e581234/Images/logo.svg",
+      "alt": "TEAM 7"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijypzli.svg",
+      "originalSrc": "https://www.team7-home.com/_assets/116ec9b59666e629f6f6556e3e581234/Images/logo-inverted.svg",
+      "alt": "TEAM 7"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijypzob.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/2/f/csm_661c6799d12523007-menu-produkte-highlight-echtzeit-evo-ei_f82a4a19e0.webp",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijypzzh.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/e/4/csm_34fc673b4c7377fce-menu-produkte-konfirgurierbare-produkte_308816cc5c.webp",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijyq03a.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/6/7/restaurantsitzplaetze-lui-barstuehle-massivholztische-eiche-naturoel-team7-be82dcfb47.webp",
+      "alt": "Elegante Restaurantsitzplätze mit lui Barstühlen und Massivholztischen in Eiche Naturöl im Restauran in der TEAM 7 Welt"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijyq06v.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/2/3/float-bett-lederkopfhaupt-nachtkaestchen-eiche-naturoel-team7-43f8d93c04.webp",
+      "alt": "Massivholzbett float mit Lederkopfhaupt und float Nachtkästchen in Eiche Naturöl"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijyq0ac.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/a/9/handskizze-entwurf-miro-tisch-team7-8dc5d4a7c2.webp",
+      "alt": "Handskizze von TEAM 7 Designer beim Entwurf vom miró Tische"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijyq0e0.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/3/a/csm_3f5f673b4c735368a-menu-ueberuns-bild-1-gehobenes-interior-design_2e30c80230.webp",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijyq0hh.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/2/b/csm_08b6673b4c7365443-menu-ueberuns-bild-2-oesterreichisches-handwerk_54be1f6d1c.webp",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijyq0l1.webp",
+      "originalSrc": "https://cdn.team7-home.com/fileadmin/_processed_/3/6/csm_39c7673b4c73a2734-menu-ueberuns-bild-3-echte-nachhaltigkeit_bf92b6a89e.webp",
+      "alt": ""
+    }
+  ],
+  "pages": [
+    {
+      "url": "/de/de/produkte/",
+      "title": "Alle Produkte",
+      "screenshot": "desktop/de-de-produkte.jpg"
+    },
+    {
+      "url": "/de/de/kueche/",
+      "title": "Massivholzküchen aus reinem Naturholz | TEAM 7",
+      "screenshot": "desktop/de-de-kueche.jpg"
+    },
+    {
+      "url": "/de/de/kueche/barhocker/",
+      "title": "Moderne Barhocker aus Massivholz | TEAM 7",
+      "screenshot": "desktop/de-de-kueche-barhocker.jpg"
+    },
+    {
+      "url": "/de/de/essen/",
+      "title": "Hochwertige Esszimmermöbel aus Massivholz | TEAM 7",
+      "screenshot": "desktop/de-de-essen.jpg"
+    }
+  ]
+}

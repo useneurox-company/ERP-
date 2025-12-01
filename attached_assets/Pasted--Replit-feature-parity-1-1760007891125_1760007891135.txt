@@ -1,0 +1,35 @@
+Сделай полную спецификацию интерфейса и бэкенда Replit уровня «feature-parity» для воспроизведения 1-в-1:
+
+Цель: я строю свой аналог Replit. Нужны точные детали UI/UX, рантайма, песочницы, превью, агентов ИИ, истории версий, Git, секретов, порт-форвардинга, лимитов и хоткеев.
+
+Формат ответа:
+
+SUMMARY — 10–12 строк ключевых тезисов.
+
+UI_SPECS — таблицы Markdown по зонам: Dashboard, Editor(left/files), Tabs, Code Area, Console/Logs/Shell, Right Tools (Packages/Secrets/AI), Preview, Command Palette, Modals (Create Repl). Для каждого элемента: id, видимый текст, props/состояния, события, хоткеи, поведение при ошибках.
+
+RUNTIME_SANDBOX — таблица: механизм изоляции (контейнер/VM/Nix), лимиты CPU/RAM/DISK/TIME (точные цифры), политика при превышении, сетевые ограничения/порт-форвардинг (разрешённые порты, TTL публичных ссылок), кэш зависимостей, поддержанные менеджеры (npm/yarn/pnpm/pip/poetry и т.д.).
+
+LSP_FORMAT_LINT — таблица: поддержанные языки и LSP, как запускаются (локально/удалённо), форматтеры/линтеры (Prettier/ESLint/Black…), где включаются правила, inline-диагностика/quick-fix, автодополнение.
+
+AI_AGENT — роли (Plan/Implement/Test/Review), где выбирать модель и лимиты, режимы Auto/Manual Approve (какие шаги подтверждаются), журнал действий (что логируется: prompts, tool calls, diffs), бюджет per-task/per-session (есть/нет), поведение при долгих задачах/чекпоинты/возобновление после фейла.
+
+FILESYSTEM — операции (create/rename/move/delete/duplicate), поиск по проекту (маски/regex, replace-all, учёт .gitignore), ограничения размеров, индикаторы несохранённого (•), контекстные меню.
+
+HISTORY_DIFF_GIT — снапшоты/версии (как создаются/сколько хранится), дифф-просмотр (inline/side-by-side, комментарии по строкам, статус resolved), Git-потоки (pull/push/branch/merge-conflicts UI).
+
+SECRETS_PACKAGES_ENV — где хранятся секреты (scoped, masking в логах), UI добавления/редактирования, Packages панель (add/remove/update), переключение версий Node/Python.
+
+DEPLOY_HOSTING — поддерживаемые деплои, логи деплоя, rollback, домены/HTTPS, ENV на проде.
+
+OBSERVABILITY — панели логов (runtime vs agent), метрики (время, токены, стоимость) — как отображаются (графики/сводки).
+
+KEYBOARD_SHORTCUTS — полный список хоткеев с областями применения.
+
+SECURITY_HEADERS — CSP/X-Frame-Options/sandbox заголовки для Preview/iframe, CORS матрица, auth для WebSocket (heartbeat, reconnect).
+
+DEFAULT_SIZES — дефолтные размеры: ширина левой панели, высота консоли, высота tab-бара, брейкпойнты перестроения, отступы в карточках Tools.
+
+ACCEPTANCE_TESTS — чек-лист проверок (пошагово) для паритета каждой зоны.
+
+Если чего-то не знаешь наверняка — укажи best-effort и пометь assumption:true с источником наблюдения внутри Replit. Ответ дай структурированно, без воды.

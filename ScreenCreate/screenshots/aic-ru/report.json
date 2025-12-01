@@ -1,0 +1,267 @@
+{
+  "site": "aic.ru",
+  "siteName": "aic-ru",
+  "startUrl": "https://aic.ru/",
+  "crawledAt": "2025-11-29T11:30:37.356Z",
+  "totalPages": 10,
+  "options": {
+    "desktop": true,
+    "mobile": true,
+    "tablet": true,
+    "html": true,
+    "meta": true,
+    "compressForAI": true
+  },
+  "pages": [
+    {
+      "url": "https://aic.ru/",
+      "pathname": "/",
+      "title": "aic — сервис дизайн и консалтинг",
+      "files": {
+        "desktop": "desktop/home.jpg",
+        "mobile": "mobile/home.jpg",
+        "tablet": "tablet/home.jpg",
+        "html": "html/home.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/home_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "aic — сервис дизайн и консалтинг",
+        "description": null,
+        "ogTitle": "aic — сервис дизайн и консалтинг",
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://aic.ru/cases/",
+      "pathname": "/cases/",
+      "title": "кейсы",
+      "files": {
+        "desktop": "desktop/cases.jpg",
+        "mobile": "mobile/cases.jpg",
+        "tablet": "tablet/cases.jpg",
+        "html": "html/cases.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/cases_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "кейсы",
+        "description": "кейсы aic",
+        "ogTitle": "кейсы",
+        "ogDescription": "кейсы aic",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://aic.ru/agency/",
+      "pathname": "/agency/",
+      "title": "агентство",
+      "files": {
+        "desktop": "desktop/agency.jpg",
+        "mobile": "mobile/agency.jpg",
+        "tablet": "tablet/agency.jpg",
+        "html": "html/agency.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/agency_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "агентство",
+        "description": null,
+        "ogTitle": "агентство",
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://aic.ru/contacts/",
+      "pathname": "/contacts/",
+      "title": "контакты",
+      "files": {
+        "desktop": "desktop/contacts.jpg",
+        "mobile": "mobile/contacts.jpg",
+        "tablet": "tablet/contacts.jpg",
+        "html": "html/contacts.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/contacts_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "контакты",
+        "description": null,
+        "ogTitle": "контакты",
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://aic.ru/vacancies/",
+      "pathname": "/vacancies/",
+      "title": "вакансии",
+      "files": {
+        "desktop": "desktop/vacancies.jpg",
+        "mobile": "mobile/vacancies.jpg",
+        "tablet": "tablet/vacancies.jpg",
+        "html": "html/vacancies.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/vacancies_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "вакансии",
+        "description": null,
+        "ogTitle": "вакансии",
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://aic.ru/launch-project/",
+      "pathname": "/launch-project/",
+      "title": "aic",
+      "files": {
+        "desktop": "desktop/launch-project.jpg",
+        "mobile": "mobile/launch-project.jpg",
+        "tablet": "tablet/launch-project.jpg",
+        "html": "html/launch-project.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/launch-project_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "aic",
+        "description": null,
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://aic.ru/cases/park-gorkogo",
+      "pathname": "/cases/park-gorkogo",
+      "title": "парк горького",
+      "files": {
+        "desktop": "desktop/cases-park-gorkogo.jpg",
+        "mobile": "mobile/cases-park-gorkogo.jpg",
+        "tablet": "tablet/cases-park-gorkogo.jpg",
+        "html": "html/cases-park-gorkogo.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/cases-park-gorkogo_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "парк горького",
+        "description": "обновление сайта главного парка страны",
+        "ogTitle": "парк горького",
+        "ogDescription": "обновление сайта главного парка страны",
+        "ogImage": "https://aic.ru/img/3653302e-a68e-4f1c-bbff-40f9de7a381e/casecover-parkgorkogo.jpg"
+      }
+    },
+    {
+      "url": "https://aic.ru/cases/lanit-hr",
+      "pathname": "/cases/lanit-hr",
+      "title": "ланит hr",
+      "files": {
+        "desktop": "desktop/cases-lanit-hr.jpg",
+        "mobile": "mobile/cases-lanit-hr.jpg",
+        "tablet": "tablet/cases-lanit-hr.jpg",
+        "html": "html/cases-lanit-hr.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/cases-lanit-hr_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "ланит hr",
+        "description": "фирменный стиль для hr-бренда группы компаний ланит",
+        "ogTitle": "ланит hr",
+        "ogDescription": "фирменный стиль для hr-бренда группы компаний ланит",
+        "ogImage": "https://aic.ru/img/29ce7ab3-b888-48fc-87e0-10d113f457ce/cover.jpg"
+      }
+    },
+    {
+      "url": "https://aic.ru/cases/yamal",
+      "pathname": "/cases/yamal",
+      "title": "ямал",
+      "files": {
+        "desktop": "desktop/cases-yamal.jpg",
+        "mobile": "mobile/cases-yamal.jpg",
+        "tablet": "tablet/cases-yamal.jpg",
+        "html": "html/cases-yamal.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/cases-yamal_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "ямал",
+        "description": "бренд региона",
+        "ogTitle": "ямал",
+        "ogDescription": "бренд региона",
+        "ogImage": "https://aic.ru/img/325aa5f2-9dbf-4bed-b6c1-f48aab03226a/brochure-v005-0000-1-1.png"
+      }
+    },
+    {
+      "url": "https://aic.ru/cases/ekosistema-mts",
+      "pathname": "/cases/ekosistema-mts",
+      "title": "экосистема мтс",
+      "files": {
+        "desktop": "desktop/cases-ekosistema-mts.jpg",
+        "mobile": "mobile/cases-ekosistema-mts.jpg",
+        "tablet": "tablet/cases-ekosistema-mts.jpg",
+        "html": "html/cases-ekosistema-mts.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "ru",
+            "file": "interactive/cases-ekosistema-mts_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "экосистема мтс",
+        "description": "исследование считываемости МТС как экосистемы",
+        "ogTitle": "экосистема мтс",
+        "ogDescription": "исследование считываемости МТС как экосистемы",
+        "ogImage": "https://aic.ru/img/c4bce2c3-2aa9-487e-9953-4ff6fe30e2d3/casecover-mts-4.jpg"
+      }
+    }
+  ]
+}

@@ -1,0 +1,167 @@
+{
+  "site": "qubstudio.com",
+  "crawledAt": "2025-11-29T11:30:56.950Z",
+  "colors": {
+    "primary": "#121212",
+    "secondary": "#ffffff",
+    "accent": "#222222",
+    "background": "#fadc41",
+    "text": "#757c82",
+    "palette": [
+      "#ffffff",
+      "#121212",
+      "#757c82",
+      "#222222",
+      "#979797",
+      "#fadc41",
+      "#d5d8d9",
+      "#f7f9fe",
+      "#545454",
+      "#f9dc42",
+      "#131313",
+      "#1cc691",
+      "#1a1a1a"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Product Sans",
+      "Times New Roman",
+      "qubicons"
+    ],
+    "styles": {
+      "h1": {
+        "font": "Product Sans",
+        "size": "42px",
+        "weight": 500,
+        "lineHeight": "58.8px"
+      },
+      "h2": {
+        "font": "Product Sans",
+        "size": "48px",
+        "weight": 500,
+        "lineHeight": "57.6px"
+      },
+      "h3": {
+        "font": "Product Sans",
+        "size": "42px",
+        "weight": 500,
+        "lineHeight": "58.8px"
+      },
+      "body": {
+        "font": "Product Sans",
+        "size": "20px",
+        "weight": 300,
+        "lineHeight": "32px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7n8e1.png",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2021/09/Qub-logo-1-1.png",
+      "alt": "Qubstudio"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7n8oz.jpg",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2024/08/ila-new-scaled-1.jpg",
+      "alt": "ila bank digital product design"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7n8vk.jpg",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2024/08/workforse-compress-scaled-1.jpg",
+      "alt": "workforce velocity hrtech platform redesign"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7n950.jpg",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2024/08/bluepallete-scaled-1.jpg",
+      "alt": "bluepallet e-commerce platform redesign made by qubstudio"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7n9g7.png",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2025/04/study-banner.png",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7n9m1.jpg",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2024/08/ozone-scaled-1.jpg",
+      "alt": "ozone api branding and website redesign made by qubstudio"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7n9ts.jpg",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2024/08/ila-2-scaled-1.jpg",
+      "alt": "ila bank design made by digital product design agency qubstudio"
+    },
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mik7na30.png",
+      "originalSrc": "https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-57x57.png",
+      "alt": "Favicon"
+    },
+    {
+      "type": "og-image",
+      "src": "assets/og-image_mik7na6f.png",
+      "originalSrc": "https://qubstudio.com/wp-content/uploads/2024/09/web.png",
+      "alt": "Open Graph Image"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/",
+      "title": "Qubstudio | Digital Product Design Agency",
+      "screenshot": "desktop/home.jpg"
+    },
+    {
+      "url": "/work/",
+      "title": "Check Our Case Studies & Projects | Qubstudio",
+      "screenshot": "desktop/work.jpg"
+    },
+    {
+      "url": "/services/",
+      "title": "Services | Qubstudio",
+      "screenshot": "desktop/services.jpg"
+    },
+    {
+      "url": "/digital-product-design/",
+      "title": "Digital Product Design Services | Qubstudio",
+      "screenshot": "desktop/digital-product-design.jpg"
+    },
+    {
+      "url": "/branding/",
+      "title": "Branding And Identity Design Services | Qubstudio",
+      "screenshot": "desktop/branding.jpg"
+    },
+    {
+      "url": "/education-ux-design/",
+      "title": "Education UX Design",
+      "screenshot": "desktop/education-ux-design.jpg"
+    },
+    {
+      "url": "/logistics-ux-design/",
+      "title": "Logistics UX Design",
+      "screenshot": "desktop/logistics-ux-design.jpg"
+    },
+    {
+      "url": "/hrtech/",
+      "title": "HRtech Design Solutions | Qubstudio",
+      "screenshot": "desktop/hrtech.jpg"
+    },
+    {
+      "url": "/designing-the-future-of-healthcare-products/",
+      "title": "Designing the future of healthcare products",
+      "screenshot": "desktop/designing-the-future-of-healthcare-products.jpg"
+    },
+    {
+      "url": "/saas-design-agency/",
+      "title": "SaaS Design Agency | Qubstudio",
+      "screenshot": "desktop/saas-design-agency.jpg"
+    }
+  ]
+}

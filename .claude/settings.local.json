@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(dir:*)",
+      "Bash(timeout /t 3 /nobreak)",
+      "Bash(jq:*)",
+      "Bash(node server.js:*)",
+      "Bash(npx tsc:*)",
+      "Bash(powershell -Command \"New-Item -ItemType Directory -Force -Path $env:USERPROFILE\\.ssh; ssh-keygen -t ed25519 -f $env:USERPROFILE\\.ssh\\deploy_key -N ''\"\"\"\"'' -C deploy@erp\")",
+      "Bash(ssh:*)",
+      "Bash(scp:*)",
+      "Bash(set:*)",
+      "Bash(\"C:\\Program Files\\PostgreSQL\\17\\bin\\psql.exe\" -U emerald_user -h localhost -d emerald_erp_local -c \"\\dt\")",
+      "Bash(PGPASSWORD=emerald123 \"/c/Program Files/PostgreSQL/17/bin/psql.exe\":*)",
+      "Bash(PGPASSWORD=emerald123 \"/c/Program Files/PostgreSQL/17/bin/psql.exe\" -U emerald_user -h localhost -d emerald_erp_local -c \"DROP SCHEMA public CASCADE; CREATE SCHEMA public;\")",
+      "Bash(tar:*)",
+      "Bash(curl:*)",
+      "Bash(npm run build:*)",
+      "Bash(powershell -Command:*)",
+      "Bash(node:*)",
+      "Bash(timeout /t 5 /nobreak)",
+      "Bash(npx tsx:*)",
+      "Bash(npx drizzle-kit push --force)",
+      "Bash(npx drizzle-kit:*)",
+      "Bash(taskkill:*)",
+      "Bash(cmd //c \"taskkill /F /PID 29964\")",
+      "Bash(cmd //c \"taskkill /F /PID 30424\")",
+      "Bash(nslookup:*)",
+      "Bash(git init:*)",
+      "Bash(git remote add:*)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

@@ -1,0 +1,47 @@
+node_modules
+dist
+.DS_Store
+server/public
+vite.config.ts.*
+*.tar.gz
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.backup
+*.env.backup
+
+# Local data and logs
+.local/
+*.log
+server_log.txt
+database.db
+
+# Test scripts
+test_*.mjs
+verify_stage_update.mjs
+check_messages_table.mjs
+
+# Temporary files
+nul
+*.tmp
+*.temp
+
+# Backup files
+*.backup
+*.bak
+*~
+*.old
+*.orig
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+*.tsbuildinfo

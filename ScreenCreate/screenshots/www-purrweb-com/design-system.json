@@ -1,0 +1,179 @@
+{
+  "site": "www.purrweb.com",
+  "crawledAt": "2025-11-29T11:25:10.867Z",
+  "colors": {
+    "primary": "#1e1e1e",
+    "secondary": "#ffffff",
+    "accent": "#a1a1a1",
+    "background": "#f9f9f9",
+    "text": "#1e1e1e",
+    "palette": [
+      "#1e1e1e",
+      "#ffffff",
+      "#a1a1a1",
+      "#3b3b3d",
+      "#0000ee",
+      "#e10918",
+      "#f9f9f9",
+      "#333333",
+      "#cccccc",
+      "#222222",
+      "#f4f4f4",
+      "#767676",
+      "#3f3f3f",
+      "#ececec",
+      "#ffdede",
+      "#9e3bf8",
+      "#fbe146",
+      "#f2673c",
+      "#2845df",
+      "#ffe500"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Manrope",
+      "sans-serif"
+    ],
+    "styles": {
+      "h1": {
+        "font": "Manrope",
+        "size": "56px",
+        "weight": 700,
+        "lineHeight": "63.84px"
+      },
+      "h2": {
+        "font": "Manrope",
+        "size": "56px",
+        "weight": 600,
+        "lineHeight": "63.84px"
+      },
+      "h3": {
+        "font": "Manrope",
+        "size": "18.08px",
+        "weight": 400,
+        "lineHeight": "24.0464px"
+      },
+      "body": {
+        "font": "Manrope",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "24px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7ftcn.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/6867b191d8481c5ea533c0d2_Logo_horizontal_version_black%201.svg",
+      "alt": "Workspace digital awards Logo"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fueb.webp",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/6867b192dc3abae0e238a24b_image%20663012.webp",
+      "alt": "TAGLINE Logo"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fuhn.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/6867b1910e103ed762933be5_Group%2048096254.svg",
+      "alt": "Золотое приложение Logo"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fuor.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/6867b192bca665e931e8ca76_Group.svg",
+      "alt": "Золотой сайт Logo"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7furp.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/6880a15f89b1a14b7005a465_logo%20(2).svg",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fuvb.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/6880a10318461616299faa91_logo%20(1).svg",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fuy7.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/67c6eb3a4e2a189520bf58af_Brand.svg",
+      "alt": "ELTECH"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fv1f.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/67c6eb39e772f4dc85f26e81_Brand-1.svg",
+      "alt": "LXP IThub"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fv4z.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/67c6eb39fb0cd7e14a0f61d3_Brand-2.svg",
+      "alt": "Trassir"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik7fv7o.svg",
+      "originalSrc": "https://cdn.prod.website-files.com/678ccce8ba65076a9fdb8a49/67c6eb39a087d1edd8b38c6c_Brand-3.svg",
+      "alt": "energo"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/ru",
+      "title": "Комплексная разработка цифровых продуктов - от идеи до релиза",
+      "screenshot": "desktop/ru.jpg"
+    },
+    {
+      "url": "/ru/privacy-policy/",
+      "title": "Политика конфиденциальности Purrweb",
+      "screenshot": "desktop/ru-privacy-policy.jpg"
+    },
+    {
+      "url": "/ru/personal-data",
+      "title": "Персональные данные",
+      "screenshot": "desktop/ru-personal-data.jpg"
+    },
+    {
+      "url": "/ru/portfolio/",
+      "title": "Purrweb в деле: кейсы по разработке и дизайну приложений",
+      "screenshot": "desktop/ru-portfolio.jpg"
+    },
+    {
+      "url": "/ru/tekhnologii/",
+      "title": "Команда JavaScript Экспертов",
+      "screenshot": "desktop/ru-tekhnologii.jpg"
+    },
+    {
+      "url": "/ru/uslugi/react-native-razrabotka/",
+      "title": "Разработка React Native приложений на заказ | Purrweb",
+      "screenshot": "desktop/ru-uslugi-react-native-razrabotka.jpg"
+    },
+    {
+      "url": "/ru/uslugi/razrabotka-na-flutter/",
+      "title": "Разработка мобильных приложений на Flutter | Purrweb",
+      "screenshot": "desktop/ru-uslugi-razrabotka-na-flutter.jpg"
+    },
+    {
+      "url": "/ru/uslugi/razrabotka-electron-js-prilozhenij/",
+      "title": "Разработка приложений Electron | Purrweb",
+      "screenshot": "desktop/ru-uslugi-razrabotka-electron-js-prilozhenij.jpg"
+    },
+    {
+      "url": "/ru/uslugi/progressivnaya-web-razrabotka/",
+      "title": "Заказать разработку PWA приложений, внедрение прогрессивных веб приложений",
+      "screenshot": "desktop/ru-uslugi-progressivnaya-web-razrabotka.jpg"
+    },
+    {
+      "url": "/ru/uslugi/webrtc/",
+      "title": "Разработка на WebRTC на заказ | Purrweb",
+      "screenshot": "desktop/ru-uslugi-webrtc.jpg"
+    }
+  ]
+}

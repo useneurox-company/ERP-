@@ -1,0 +1,1491 @@
+<!DOCTYPE html><html lang="en-US" class="loaded"><head><meta charset="UTF-8"><script>if(navigator.userAgent.match(/MSIE|Internet Explorer/i)||navigator.userAgent.match(/Trident\/7\..*?rv:11/i)){var href=document.location.href;if(!href.match(/[?&]nowprocket/)){if(href.indexOf("?")==-1){if(href.indexOf("#")==-1){document.location.href=href+"?nowprocket=1"}else{document.location.href=href.replace("#","?nowprocket=1#")}}else{if(href.indexOf("#")==-1){document.location.href=href+"&nowprocket=1"}else{document.location.href=href.replace("#","&nowprocket=1#")}}}}</script><script>(()=>{class RocketLazyLoadScripts{constructor(){this.v="2.0.3",this.userEvents=["keydown","keyup","mousedown","mouseup","mousemove","mouseover","mouseenter","mouseout","mouseleave","touchmove","touchstart","touchend","touchcancel","wheel","click","dblclick","input","visibilitychange"],this.attributeEvents=["onblur","onclick","oncontextmenu","ondblclick","onfocus","onmousedown","onmouseenter","onmouseleave","onmousemove","onmouseout","onmouseover","onmouseup","onmousewheel","onscroll","onsubmit"]}async t(){this.i(),this.o(),/iP(ad|hone)/.test(navigator.userAgent)&&this.h(),this.u(),this.l(this),this.m(),this.k(this),this.p(this),this._(),await Promise.all([this.R(),this.L()]),this.lastBreath=Date.now(),this.S(this),this.P(),this.D(),this.O(),this.M(),await this.C(this.delayedScripts.normal),await this.C(this.delayedScripts.defer),await this.C(this.delayedScripts.async),this.F("domReady"),await this.T(),await this.j(),await this.I(),this.F("windowLoad"),await this.A(),window.dispatchEvent(new Event("rocket-allScriptsLoaded")),this.everythingLoaded=!0,this.lastTouchEnd&&await new Promise((t=>setTimeout(t,500-Date.now()+this.lastTouchEnd))),this.H(),this.F("all"),this.U(),this.W()}i(){this.CSPIssue=sessionStorage.getItem("rocketCSPIssue"),document.addEventListener("securitypolicyviolation",(t=>{this.CSPIssue||"script-src-elem"!==t.violatedDirective||"data"!==t.blockedURI||(this.CSPIssue=!0,sessionStorage.setItem("rocketCSPIssue",!0))}),{isRocket:!0})}o(){window.addEventListener("pageshow",(t=>{this.persisted=t.persisted,this.realWindowLoadedFired=!0}),{isRocket:!0}),window.addEventListener("pagehide",(()=>{this.onFirstUserAction=null}),{isRocket:!0})}h(){let t;function e(e){t=e}window.addEventListener("touchstart",e,{isRocket:!0}),window.addEventListener("touchend",(function i(o){Math.abs(o.changedTouches[0].pageX-t.changedTouches[0].pageX)<10&&Math.abs(o.changedTouches[0].pageY-t.changedTouches[0].pageY)<10&&o.timeStamp-t.timeStamp<200&&(o.target.dispatchEvent(new PointerEvent("click",{target:o.target,bubbles:!0,cancelable:!0,detail:1})),event.preventDefault(),window.removeEventListener("touchstart",e,{isRocket:!0}),window.removeEventListener("touchend",i,{isRocket:!0}))}),{isRocket:!0})}q(t){this.userActionTriggered||("mousemove"!==t.type||this.firstMousemoveIgnored?"keyup"===t.type||"mouseover"===t.type||"mouseout"===t.type||(this.userActionTriggered=!0,this.onFirstUserAction&&this.onFirstUserAction()):this.firstMousemoveIgnored=!0),"click"===t.type&&t.preventDefault(),this.savedUserEvents.length>0&&(t.stopPropagation(),t.stopImmediatePropagation()),"touchstart"===this.lastEvent&&"touchend"===t.type&&(this.lastTouchEnd=Date.now()),"click"===t.type&&(this.lastTouchEnd=0),this.lastEvent=t.type,this.savedUserEvents.push(t)}u(){this.savedUserEvents=[],this.userEventHandler=this.q.bind(this),this.userEvents.forEach((t=>window.addEventListener(t,this.userEventHandler,{passive:!1,isRocket:!0})))}U(){this.userEvents.forEach((t=>window.removeEventListener(t,this.userEventHandler,{passive:!1,isRocket:!0}))),this.savedUserEvents.forEach((t=>{t.target.dispatchEvent(new window[t.constructor.name](t.type,t))}))}m(){this.eventsMutationObserver=new MutationObserver((t=>{const e="return false";for(const i of t){if("attributes"===i.type){const t=i.target.getAttribute(i.attributeName);t&&t!==e&&(i.target.setAttribute("data-rocket-"+i.attributeName,t),i.target["rocket"+i.attributeName]=new Function("event",t),i.target.setAttribute(i.attributeName,e))}"childList"===i.type&&i.addedNodes.forEach((t=>{if(t.nodeType===Node.ELEMENT_NODE)for(const i of t.attributes)this.attributeEvents.includes(i.name)&&i.value&&""!==i.value&&(t.setAttribute("data-rocket-"+i.name,i.value),t["rocket"+i.name]=new Function("event",i.value),t.setAttribute(i.name,e))}))}})),this.eventsMutationObserver.observe(document,{subtree:!0,childList:!0,attributeFilter:this.attributeEvents})}H(){this.eventsMutationObserver.disconnect(),this.attributeEvents.forEach((t=>{document.querySelectorAll("[data-rocket-"+t+"]").forEach((e=>{e.setAttribute(t,e.getAttribute("data-rocket-"+t)),e.removeAttribute("data-rocket-"+t)}))}))}k(t){Object.defineProperty(HTMLElement.prototype,"onclick",{get(){return this.rocketonclick||null},set(e){this.rocketonclick=e,this.setAttribute(t.everythingLoaded?"onclick":"data-rocket-onclick","this.rocketonclick(event)")}})}S(t){function e(e,i){let o=e[i];e[i]=null,Object.defineProperty(e,i,{get:()=>o,set(s){t.everythingLoaded?o=s:e["rocket"+i]=o=s}})}e(document,"onreadystatechange"),e(window,"onload"),e(window,"onpageshow");try{Object.defineProperty(document,"readyState",{get:()=>t.rocketReadyState,set(e){t.rocketReadyState=e},configurable:!0}),document.readyState="loading"}catch(t){console.log("WPRocket DJE readyState conflict, bypassing")}}l(t){this.originalAddEventListener=EventTarget.prototype.addEventListener,this.originalRemoveEventListener=EventTarget.prototype.removeEventListener,this.savedEventListeners=[],EventTarget.prototype.addEventListener=function(e,i,o){o&&o.isRocket||!t.B(e,this)&&!t.userEvents.includes(e)||t.B(e,this)&&!t.userActionTriggered||e.startsWith("rocket-")||t.everythingLoaded?t.originalAddEventListener.call(this,e,i,o):t.savedEventListeners.push({target:this,remove:!1,type:e,func:i,options:o})},EventTarget.prototype.removeEventListener=function(e,i,o){o&&o.isRocket||!t.B(e,this)&&!t.userEvents.includes(e)||t.B(e,this)&&!t.userActionTriggered||e.startsWith("rocket-")||t.everythingLoaded?t.originalRemoveEventListener.call(this,e,i,o):t.savedEventListeners.push({target:this,remove:!0,type:e,func:i,options:o})}}F(t){"all"===t&&(EventTarget.prototype.addEventListener=this.originalAddEventListener,EventTarget.prototype.removeEventListener=this.originalRemoveEventListener),this.savedEventListeners=this.savedEventListeners.filter((e=>{let i=e.type,o=e.target||window;return"domReady"===t&&"DOMContentLoaded"!==i&&"readystatechange"!==i||("windowLoad"===t&&"load"!==i&&"readystatechange"!==i&&"pageshow"!==i||(this.B(i,o)&&(i="rocket-"+i),e.remove?o.removeEventListener(i,e.func,e.options):o.addEventListener(i,e.func,e.options),!1))}))}p(t){let e;function i(e){return t.everythingLoaded?e:e.split(" ").map((t=>"load"===t||t.startsWith("load.")?"rocket-jquery-load":t)).join(" ")}function o(o){function s(e){const s=o.fn[e];o.fn[e]=o.fn.init.prototype[e]=function(){return this[0]===window&&t.userActionTriggered&&("string"==typeof arguments[0]||arguments[0]instanceof String?arguments[0]=i(arguments[0]):"object"==typeof arguments[0]&&Object.keys(arguments[0]).forEach((t=>{const e=arguments[0][t];delete arguments[0][t],arguments[0][i(t)]=e}))),s.apply(this,arguments),this}}if(o&&o.fn&&!t.allJQueries.includes(o)){const e={DOMContentLoaded:[],"rocket-DOMContentLoaded":[]};for(const t in e)document.addEventListener(t,(()=>{e[t].forEach((t=>t()))}),{isRocket:!0});o.fn.ready=o.fn.init.prototype.ready=function(i){function s(){parseInt(o.fn.jquery)>2?setTimeout((()=>i.bind(document)(o))):i.bind(document)(o)}return t.realDomReadyFired?!t.userActionTriggered||t.fauxDomReadyFired?s():e["rocket-DOMContentLoaded"].push(s):e.DOMContentLoaded.push(s),o([])},s("on"),s("one"),s("off"),t.allJQueries.push(o)}e=o}t.allJQueries=[],o(window.jQuery),Object.defineProperty(window,"jQuery",{get:()=>e,set(t){o(t)}})}P(){const t=new Map;document.write=document.writeln=function(e){const i=document.currentScript,o=document.createRange(),s=i.parentElement;let n=t.get(i);void 0===n&&(n=i.nextSibling,t.set(i,n));const c=document.createDocumentFragment();o.setStart(c,0),c.appendChild(o.createContextualFragment(e)),s.insertBefore(c,n)}}async R(){return new Promise((t=>{this.userActionTriggered?t():this.onFirstUserAction=t}))}async L(){return new Promise((t=>{document.addEventListener("DOMContentLoaded",(()=>{this.realDomReadyFired=!0,t()}),{isRocket:!0})}))}async I(){return this.realWindowLoadedFired?Promise.resolve():new Promise((t=>{window.addEventListener("load",t,{isRocket:!0})}))}M(){this.pendingScripts=[];this.scriptsMutationObserver=new MutationObserver((t=>{for(const e of t)e.addedNodes.forEach((t=>{"SCRIPT"!==t.tagName||t.noModule||t.isWPRocket||this.pendingScripts.push({script:t,promise:new Promise((e=>{const i=()=>{const i=this.pendingScripts.findIndex((e=>e.script===t));i>=0&&this.pendingScripts.splice(i,1),e()};t.addEventListener("load",i,{isRocket:!0}),t.addEventListener("error",i,{isRocket:!0}),setTimeout(i,1e3)}))})}))})),this.scriptsMutationObserver.observe(document,{childList:!0,subtree:!0})}async j(){await this.J(),this.pendingScripts.length?(await this.pendingScripts[0].promise,await this.j()):this.scriptsMutationObserver.disconnect()}D(){this.delayedScripts={normal:[],async:[],defer:[]},document.querySelectorAll("script[type$=rocketlazyloadscript]").forEach((t=>{t.hasAttribute("data-rocket-src")?t.hasAttribute("async")&&!1!==t.async?this.delayedScripts.async.push(t):t.hasAttribute("defer")&&!1!==t.defer||"module"===t.getAttribute("data-rocket-type")?this.delayedScripts.defer.push(t):this.delayedScripts.normal.push(t):this.delayedScripts.normal.push(t)}))}async _(){await this.L();let t=[];document.querySelectorAll("script[type$=rocketlazyloadscript][data-rocket-src]").forEach((e=>{let i=e.getAttribute("data-rocket-src");if(i&&!i.startsWith("data:")){i.startsWith("//")&&(i=location.protocol+i);try{const o=new URL(i).origin;o!==location.origin&&t.push({src:o,crossOrigin:e.crossOrigin||"module"===e.getAttribute("data-rocket-type")})}catch(t){}}})),t=[...new Map(t.map((t=>[JSON.stringify(t),t]))).values()],this.N(t,"preconnect")}async $(t){if(await this.G(),!0!==t.noModule||!("noModule"in HTMLScriptElement.prototype))return new Promise((e=>{let i;function o(){(i||t).setAttribute("data-rocket-status","executed"),e()}try{if(navigator.userAgent.includes("Firefox/")||""===navigator.vendor||this.CSPIssue)i=document.createElement("script"),[...t.attributes].forEach((t=>{let e=t.nodeName;"type"!==e&&("data-rocket-type"===e&&(e="type"),"data-rocket-src"===e&&(e="src"),i.setAttribute(e,t.nodeValue))})),t.text&&(i.text=t.text),t.nonce&&(i.nonce=t.nonce),i.hasAttribute("src")?(i.addEventListener("load",o,{isRocket:!0}),i.addEventListener("error",(()=>{i.setAttribute("data-rocket-status","failed-network"),e()}),{isRocket:!0}),setTimeout((()=>{i.isConnected||e()}),1)):(i.text=t.text,o()),i.isWPRocket=!0,t.parentNode.replaceChild(i,t);else{const i=t.getAttribute("data-rocket-type"),s=t.getAttribute("data-rocket-src");i?(t.type=i,t.removeAttribute("data-rocket-type")):t.removeAttribute("type"),t.addEventListener("load",o,{isRocket:!0}),t.addEventListener("error",(i=>{this.CSPIssue&&i.target.src.startsWith("data:")?(console.log("WPRocket: CSP fallback activated"),t.removeAttribute("src"),this.$(t).then(e)):(t.setAttribute("data-rocket-status","failed-network"),e())}),{isRocket:!0}),s?(t.fetchPriority="high",t.removeAttribute("data-rocket-src"),t.src=s):t.src="data:text/javascript;base64,"+window.btoa(unescape(encodeURIComponent(t.text)))}}catch(i){t.setAttribute("data-rocket-status","failed-transform"),e()}}));t.setAttribute("data-rocket-status","skipped")}async C(t){const e=t.shift();return e?(e.isConnected&&await this.$(e),this.C(t)):Promise.resolve()}O(){this.N([...this.delayedScripts.normal,...this.delayedScripts.defer,...this.delayedScripts.async],"preload")}N(t,e){this.trash=this.trash||[];let i=!0;var o=document.createDocumentFragment();t.forEach((t=>{const s=t.getAttribute&&t.getAttribute("data-rocket-src")||t.src;if(s&&!s.startsWith("data:")){const n=document.createElement("link");n.href=s,n.rel=e,"preconnect"!==e&&(n.as="script",n.fetchPriority=i?"high":"low"),t.getAttribute&&"module"===t.getAttribute("data-rocket-type")&&(n.crossOrigin=!0),t.crossOrigin&&(n.crossOrigin=t.crossOrigin),t.integrity&&(n.integrity=t.integrity),t.nonce&&(n.nonce=t.nonce),o.appendChild(n),this.trash.push(n),i=!1}})),document.head.appendChild(o)}W(){this.trash.forEach((t=>t.remove()))}async T(){try{document.readyState="interactive"}catch(t){}this.fauxDomReadyFired=!0;try{await this.G(),document.dispatchEvent(new Event("rocket-readystatechange")),await this.G(),document.rocketonreadystatechange&&document.rocketonreadystatechange(),await this.G(),document.dispatchEvent(new Event("rocket-DOMContentLoaded")),await this.G(),window.dispatchEvent(new Event("rocket-DOMContentLoaded"))}catch(t){console.error(t)}}async A(){try{document.readyState="complete"}catch(t){}try{await this.G(),document.dispatchEvent(new Event("rocket-readystatechange")),await this.G(),document.rocketonreadystatechange&&document.rocketonreadystatechange(),await this.G(),window.dispatchEvent(new Event("rocket-load")),await this.G(),window.rocketonload&&window.rocketonload(),await this.G(),this.allJQueries.forEach((t=>t(window).trigger("rocket-jquery-load"))),await this.G();const t=new Event("rocket-pageshow");t.persisted=this.persisted,window.dispatchEvent(t),await this.G(),window.rocketonpageshow&&window.rocketonpageshow({persisted:this.persisted})}catch(t){console.error(t)}}async G(){Date.now()-this.lastBreath>45&&(await this.J(),this.lastBreath=Date.now())}async J(){return document.hidden?new Promise((t=>setTimeout(t))):new Promise((t=>requestAnimationFrame(t)))}B(t,e){return e===document&&"readystatechange"===t||(e===document&&"DOMContentLoaded"===t||(e===window&&"DOMContentLoaded"===t||(e===window&&"load"===t||e===window&&"pageshow"===t)))}static run(){(new RocketLazyLoadScripts).t()}}RocketLazyLoadScripts.run()})();</script>
+    
+
+    <link rel="apple-touch-icon" sizes="57x57" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/apple-touch-icon-180x180.png">
+    <link rel="icon" type="image/png" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/favicon-32x32.png" sizes="32x32">
+    <link rel="icon" type="image/png" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/android-chrome-192x192.png" sizes="192x192">
+    <link rel="icon" type="image/png" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/favicon-96x96.png" sizes="96x96">
+    <link rel="icon" type="image/png" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/favicon-16x16.png" sizes="16x16">
+    <link rel="mask-icon" href="https://qubstudio.com/wp-content/themes/QubStudioNew/images/favicon/safari-pinned-tab.svg" color="#000">
+    <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+
+
+    <meta name="theme-color" content="#FADC41">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, minimal-ui">
+
+    
+    <script data-cfasync="false" data-no-defer="1" data-no-minify="1" data-no-optimize="1">var ewww_webp_supported=!1;function check_webp_feature(A,e){var w;e=void 0!==e?e:function(){},ewww_webp_supported?e(ewww_webp_supported):((w=new Image).onload=function(){ewww_webp_supported=0<w.width&&0<w.height,e&&e(ewww_webp_supported)},w.onerror=function(){e&&e(!1)},w.src="data:image/webp;base64,"+{alpha:"UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA=="}[A])}check_webp_feature("alpha");</script><script data-cfasync="false" data-no-defer="1" data-no-minify="1" data-no-optimize="1">var Arrive=function(c,w){"use strict";if(c.MutationObserver&&"undefined"!=typeof HTMLElement){var r,a=0,u=(r=HTMLElement.prototype.matches||HTMLElement.prototype.webkitMatchesSelector||HTMLElement.prototype.mozMatchesSelector||HTMLElement.prototype.msMatchesSelector,{matchesSelector:function(e,t){return e instanceof HTMLElement&&r.call(e,t)},addMethod:function(e,t,r){var a=e[t];e[t]=function(){return r.length==arguments.length?r.apply(this,arguments):"function"==typeof a?a.apply(this,arguments):void 0}},callCallbacks:function(e,t){t&&t.options.onceOnly&&1==t.firedElems.length&&(e=[e[0]]);for(var r,a=0;r=e[a];a++)r&&r.callback&&r.callback.call(r.elem,r.elem);t&&t.options.onceOnly&&1==t.firedElems.length&&t.me.unbindEventWithSelectorAndCallback.call(t.target,t.selector,t.callback)},checkChildNodesRecursively:function(e,t,r,a){for(var i,n=0;i=e[n];n++)r(i,t,a)&&a.push({callback:t.callback,elem:i}),0<i.childNodes.length&&u.checkChildNodesRecursively(i.childNodes,t,r,a)},mergeArrays:function(e,t){var r,a={};for(r in e)e.hasOwnProperty(r)&&(a[r]=e[r]);for(r in t)t.hasOwnProperty(r)&&(a[r]=t[r]);return a},toElementsArray:function(e){return e=void 0!==e&&("number"!=typeof e.length||e===c)?[e]:e}}),e=(l.prototype.addEvent=function(e,t,r,a){a={target:e,selector:t,options:r,callback:a,firedElems:[]};return this._beforeAdding&&this._beforeAdding(a),this._eventsBucket.push(a),a},l.prototype.removeEvent=function(e){for(var t,r=this._eventsBucket.length-1;t=this._eventsBucket[r];r--)e(t)&&(this._beforeRemoving&&this._beforeRemoving(t),(t=this._eventsBucket.splice(r,1))&&t.length&&(t[0].callback=null))},l.prototype.beforeAdding=function(e){this._beforeAdding=e},l.prototype.beforeRemoving=function(e){this._beforeRemoving=e},l),t=function(i,n){var o=new e,l=this,s={fireOnAttributesModification:!1};return o.beforeAdding(function(t){var e=t.target;e!==c.document&&e!==c||(e=document.getElementsByTagName("html")[0]);var r=new MutationObserver(function(e){n.call(this,e,t)}),a=i(t.options);r.observe(e,a),t.observer=r,t.me=l}),o.beforeRemoving(function(e){e.observer.disconnect()}),this.bindEvent=function(e,t,r){t=u.mergeArrays(s,t);for(var a=u.toElementsArray(this),i=0;i<a.length;i++)o.addEvent(a[i],e,t,r)},this.unbindEvent=function(){var r=u.toElementsArray(this);o.removeEvent(function(e){for(var t=0;t<r.length;t++)if(this===w||e.target===r[t])return!0;return!1})},this.unbindEventWithSelectorOrCallback=function(r){var a=u.toElementsArray(this),i=r,e="function"==typeof r?function(e){for(var t=0;t<a.length;t++)if((this===w||e.target===a[t])&&e.callback===i)return!0;return!1}:function(e){for(var t=0;t<a.length;t++)if((this===w||e.target===a[t])&&e.selector===r)return!0;return!1};o.removeEvent(e)},this.unbindEventWithSelectorAndCallback=function(r,a){var i=u.toElementsArray(this);o.removeEvent(function(e){for(var t=0;t<i.length;t++)if((this===w||e.target===i[t])&&e.selector===r&&e.callback===a)return!0;return!1})},this},i=new function(){var s={fireOnAttributesModification:!1,onceOnly:!1,existing:!1};function n(e,t,r){return!(!u.matchesSelector(e,t.selector)||(e._id===w&&(e._id=a++),-1!=t.firedElems.indexOf(e._id)))&&(t.firedElems.push(e._id),!0)}var c=(i=new t(function(e){var t={attributes:!1,childList:!0,subtree:!0};return e.fireOnAttributesModification&&(t.attributes=!0),t},function(e,i){e.forEach(function(e){var t=e.addedNodes,r=e.target,a=[];null!==t&&0<t.length?u.checkChildNodesRecursively(t,i,n,a):"attributes"===e.type&&n(r,i)&&a.push({callback:i.callback,elem:r}),u.callCallbacks(a,i)})})).bindEvent;return i.bindEvent=function(e,t,r){t=void 0===r?(r=t,s):u.mergeArrays(s,t);var a=u.toElementsArray(this);if(t.existing){for(var i=[],n=0;n<a.length;n++)for(var o=a[n].querySelectorAll(e),l=0;l<o.length;l++)i.push({callback:r,elem:o[l]});if(t.onceOnly&&i.length)return r.call(i[0].elem,i[0].elem);setTimeout(u.callCallbacks,1,i)}c.call(this,e,t,r)},i},o=new function(){var a={};function i(e,t){return u.matchesSelector(e,t.selector)}var n=(o=new t(function(){return{childList:!0,subtree:!0}},function(e,r){e.forEach(function(e){var t=e.removedNodes,e=[];null!==t&&0<t.length&&u.checkChildNodesRecursively(t,r,i,e),u.callCallbacks(e,r)})})).bindEvent;return o.bindEvent=function(e,t,r){t=void 0===r?(r=t,a):u.mergeArrays(a,t),n.call(this,e,t,r)},o};d(HTMLElement.prototype),d(NodeList.prototype),d(HTMLCollection.prototype),d(HTMLDocument.prototype),d(Window.prototype);var n={};return s(i,n,"unbindAllArrive"),s(o,n,"unbindAllLeave"),n}function l(){this._eventsBucket=[],this._beforeAdding=null,this._beforeRemoving=null}function s(e,t,r){u.addMethod(t,r,e.unbindEvent),u.addMethod(t,r,e.unbindEventWithSelectorOrCallback),u.addMethod(t,r,e.unbindEventWithSelectorAndCallback)}function d(e){e.arrive=i.bindEvent,s(i,e,"unbindArrive"),e.leave=o.bindEvent,s(o,e,"unbindLeave")}}(window,void 0),ewww_webp_supported=!1;function check_webp_feature(e,t){var r;ewww_webp_supported?t(ewww_webp_supported):((r=new Image).onload=function(){ewww_webp_supported=0<r.width&&0<r.height,t(ewww_webp_supported)},r.onerror=function(){t(!1)},r.src="data:image/webp;base64,"+{alpha:"UklGRkoAAABXRUJQVlA4WAoAAAAQAAAAAAAAAAAAQUxQSAwAAAARBxAR/Q9ERP8DAABWUDggGAAAABQBAJ0BKgEAAQAAAP4AAA3AAP7mtQAAAA==",animation:"UklGRlIAAABXRUJQVlA4WAoAAAASAAAAAAAAAAAAQU5JTQYAAAD/////AABBTk1GJgAAAAAAAAAAAAAAAAAAAGQAAABWUDhMDQAAAC8AAAAQBxAREYiI/gcA"}[e])}function ewwwLoadImages(e){if(e){for(var t=document.querySelectorAll(".batch-image img, .image-wrapper a, .ngg-pro-masonry-item a, .ngg-galleria-offscreen-seo-wrapper a"),r=0,a=t.length;r<a;r++)ewwwAttr(t[r],"data-src",t[r].getAttribute("data-webp")),ewwwAttr(t[r],"data-thumbnail",t[r].getAttribute("data-webp-thumbnail"));for(var i=document.querySelectorAll("div.woocommerce-product-gallery__image"),r=0,a=i.length;r<a;r++)ewwwAttr(i[r],"data-thumb",i[r].getAttribute("data-webp-thumb"))}for(var n=document.querySelectorAll("video"),r=0,a=n.length;r<a;r++)ewwwAttr(n[r],"poster",e?n[r].getAttribute("data-poster-webp"):n[r].getAttribute("data-poster-image"));for(var o,l=document.querySelectorAll("img.ewww_webp_lazy_load"),r=0,a=l.length;r<a;r++)e&&(ewwwAttr(l[r],"data-lazy-srcset",l[r].getAttribute("data-lazy-srcset-webp")),ewwwAttr(l[r],"data-srcset",l[r].getAttribute("data-srcset-webp")),ewwwAttr(l[r],"data-lazy-src",l[r].getAttribute("data-lazy-src-webp")),ewwwAttr(l[r],"data-src",l[r].getAttribute("data-src-webp")),ewwwAttr(l[r],"data-orig-file",l[r].getAttribute("data-webp-orig-file")),ewwwAttr(l[r],"data-medium-file",l[r].getAttribute("data-webp-medium-file")),ewwwAttr(l[r],"data-large-file",l[r].getAttribute("data-webp-large-file")),null!=(o=l[r].getAttribute("srcset"))&&!1!==o&&o.includes("R0lGOD")&&ewwwAttr(l[r],"src",l[r].getAttribute("data-lazy-src-webp"))),l[r].className=l[r].className.replace(/\bewww_webp_lazy_load\b/,"");for(var s=document.querySelectorAll(".ewww_webp"),r=0,a=s.length;r<a;r++)e?(ewwwAttr(s[r],"srcset",s[r].getAttribute("data-srcset-webp")),ewwwAttr(s[r],"src",s[r].getAttribute("data-src-webp")),ewwwAttr(s[r],"data-orig-file",s[r].getAttribute("data-webp-orig-file")),ewwwAttr(s[r],"data-medium-file",s[r].getAttribute("data-webp-medium-file")),ewwwAttr(s[r],"data-large-file",s[r].getAttribute("data-webp-large-file")),ewwwAttr(s[r],"data-large_image",s[r].getAttribute("data-webp-large_image")),ewwwAttr(s[r],"data-src",s[r].getAttribute("data-webp-src"))):(ewwwAttr(s[r],"srcset",s[r].getAttribute("data-srcset-img")),ewwwAttr(s[r],"src",s[r].getAttribute("data-src-img"))),s[r].className=s[r].className.replace(/\bewww_webp\b/,"ewww_webp_loaded");window.jQuery&&jQuery.fn.isotope&&jQuery.fn.imagesLoaded&&(jQuery(".fusion-posts-container-infinite").imagesLoaded(function(){jQuery(".fusion-posts-container-infinite").hasClass("isotope")&&jQuery(".fusion-posts-container-infinite").isotope()}),jQuery(".fusion-portfolio:not(.fusion-recent-works) .fusion-portfolio-wrapper").imagesLoaded(function(){jQuery(".fusion-portfolio:not(.fusion-recent-works) .fusion-portfolio-wrapper").isotope()}))}function ewwwWebPInit(e){ewwwLoadImages(e),ewwwNggLoadGalleries(e),document.arrive(".ewww_webp",function(){ewwwLoadImages(e)}),document.arrive(".ewww_webp_lazy_load",function(){ewwwLoadImages(e)}),document.arrive("videos",function(){ewwwLoadImages(e)}),"loading"==document.readyState?document.addEventListener("DOMContentLoaded",ewwwJSONParserInit):("undefined"!=typeof galleries&&ewwwNggParseGalleries(e),ewwwWooParseVariations(e))}function ewwwAttr(e,t,r){null!=r&&!1!==r&&e.setAttribute(t,r)}function ewwwJSONParserInit(){"undefined"!=typeof galleries&&check_webp_feature("alpha",ewwwNggParseGalleries),check_webp_feature("alpha",ewwwWooParseVariations)}function ewwwWooParseVariations(e){if(e)for(var t=document.querySelectorAll("form.variations_form"),r=0,a=t.length;r<a;r++){var i=t[r].getAttribute("data-product_variations"),n=!1;try{for(var o in i=JSON.parse(i))void 0!==i[o]&&void 0!==i[o].image&&(void 0!==i[o].image.src_webp&&(i[o].image.src=i[o].image.src_webp,n=!0),void 0!==i[o].image.srcset_webp&&(i[o].image.srcset=i[o].image.srcset_webp,n=!0),void 0!==i[o].image.full_src_webp&&(i[o].image.full_src=i[o].image.full_src_webp,n=!0),void 0!==i[o].image.gallery_thumbnail_src_webp&&(i[o].image.gallery_thumbnail_src=i[o].image.gallery_thumbnail_src_webp,n=!0),void 0!==i[o].image.thumb_src_webp&&(i[o].image.thumb_src=i[o].image.thumb_src_webp,n=!0));n&&ewwwAttr(t[r],"data-product_variations",JSON.stringify(i))}catch(e){}}}function ewwwNggParseGalleries(e){if(e)for(var t in galleries){var r=galleries[t];galleries[t].images_list=ewwwNggParseImageList(r.images_list)}}function ewwwNggLoadGalleries(e){e&&document.addEventListener("ngg.galleria.themeadded",function(e,t){window.ngg_galleria._create_backup=window.ngg_galleria.create,window.ngg_galleria.create=function(e,t){var r=$(e).data("id");return galleries["gallery_"+r].images_list=ewwwNggParseImageList(galleries["gallery_"+r].images_list),window.ngg_galleria._create_backup(e,t)}})}function ewwwNggParseImageList(e){for(var t in e){var r=e[t];if(void 0!==r["image-webp"]&&(e[t].image=r["image-webp"],delete e[t]["image-webp"]),void 0!==r["thumb-webp"]&&(e[t].thumb=r["thumb-webp"],delete e[t]["thumb-webp"]),void 0!==r.full_image_webp&&(e[t].full_image=r.full_image_webp,delete e[t].full_image_webp),void 0!==r.srcsets)for(var a in r.srcsets)nggSrcset=r.srcsets[a],void 0!==r.srcsets[a+"-webp"]&&(e[t].srcsets[a]=r.srcsets[a+"-webp"],delete e[t].srcsets[a+"-webp"]);if(void 0!==r.full_srcsets)for(var i in r.full_srcsets)nggFSrcset=r.full_srcsets[i],void 0!==r.full_srcsets[i+"-webp"]&&(e[t].full_srcsets[i]=r.full_srcsets[i+"-webp"],delete e[t].full_srcsets[i+"-webp"])}return e}check_webp_feature("alpha",ewwwWebPInit);</script><meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+	<style>img:is([sizes="auto" i], [sizes^="auto," i]) { contain-intrinsic-size: 3000px 1500px }</style>
+	<meta name="dlm-version" content="5.0.23">
+	<!-- This site is optimized with the Yoast SEO plugin v25.0 - https://yoast.com/wordpress/plugins/seo/ -->
+	<title>Qubstudio | Digital Product Design Agency</title>
+	<meta name="description" content="We are a full-cycle Digital Product Design Agency, working globally to deliver design services and exceptional user experiences.">
+	<link rel="canonical" href="https://qubstudio.com/">
+	<meta property="og:locale" content="en_US">
+	<meta property="og:type" content="website">
+	<meta property="og:title" content="Qubstudio | Digital Product Design Agency">
+	<meta property="og:description" content="We are a full-cycle Digital Product Design Agency, working globally to deliver design services and exceptional user experiences.">
+	<meta property="og:url" content="https://qubstudio.com/">
+	<meta property="og:site_name" content="Qubstudio">
+	<meta property="article:publisher" content="https://www.facebook.com/qubstudio/">
+	<meta property="article:modified_time" content="2025-07-31T18:26:51+00:00">
+	<meta property="og:image" content="https://qubstudio.com/wp-content/uploads/2024/09/web.png">
+	<meta property="og:image:width" content="2400">
+	<meta property="og:image:height" content="1256">
+	<meta property="og:image:type" content="image/png">
+	<meta name="twitter:card" content="summary_large_image">
+	<meta name="twitter:site" content="@qubstudio">
+	<script type="application/ld+json" class="yoast-schema-graph">{"@context":"https://schema.org","@graph":[{"@type":"WebPage","@id":"https://qubstudio.com/","url":"https://qubstudio.com/","name":"Qubstudio | Digital Product Design Agency","isPartOf":{"@id":"https://qubstudio.com/#website"},"about":{"@id":"https://qubstudio.com/#organization"},"datePublished":"2024-08-23T09:20:43+00:00","dateModified":"2025-07-31T18:26:51+00:00","description":"We are a full-cycle Digital Product Design Agency, working globally to deliver design services and exceptional user experiences.","breadcrumb":{"@id":"https://qubstudio.com/#breadcrumb"},"inLanguage":"en-US","potentialAction":[{"@type":"ReadAction","target":["https://qubstudio.com/"]}]},{"@type":"BreadcrumbList","@id":"https://qubstudio.com/#breadcrumb","itemListElement":[{"@type":"ListItem","position":1,"name":"Home"}]},{"@type":"WebSite","@id":"https://qubstudio.com/#website","url":"https://qubstudio.com/","name":"Qubstudio","description":"Qubstudio | Digital Product Design Agency","publisher":{"@id":"https://qubstudio.com/#organization"},"potentialAction":[{"@type":"SearchAction","target":{"@type":"EntryPoint","urlTemplate":"https://qubstudio.com/?s={search_term_string}"},"query-input":{"@type":"PropertyValueSpecification","valueRequired":true,"valueName":"search_term_string"}}],"inLanguage":"en-US"},{"@type":"Organization","@id":"https://qubstudio.com/#organization","name":"Qubstudio","url":"https://qubstudio.com/","logo":{"@type":"ImageObject","inLanguage":"en-US","@id":"https://qubstudio.com/#/schema/logo/image/","url":"https://qubstudio.com/wp-content/uploads/2023/02/qub-logo-150-1.png","contentUrl":"https://qubstudio.com/wp-content/uploads/2023/02/qub-logo-150-1.png","width":600,"height":195,"caption":"Qubstudio"},"image":{"@id":"https://qubstudio.com/#/schema/logo/image/"},"sameAs":["https://www.facebook.com/qubstudio/","https://x.com/qubstudio","https://www.instagram.com/qubstudiocom/","https://dribbble.com/qubstudio/","https://www.behance.net/qubstudio"],"contactPoint":{"@type":"ContactPoint","contactType":"customer support","email":"box@qubstudio.com"}}]}</script>
+	<!-- / Yoast SEO plugin. -->
+
+
+<link rel="dns-prefetch" href="//assets.calendly.com">
+<link rel="dns-prefetch" href="//cdnjs.cloudflare.com">
+<link rel="dns-prefetch" href="//www.googletagmanager.com">
+		<!-- This site uses the Google Analytics by MonsterInsights plugin v9.10.0 - Using Analytics tracking - https://www.monsterinsights.com/ -->
+		<!-- Note: MonsterInsights is not currently configured on this site. The site owner needs to authenticate with Google Analytics in the MonsterInsights settings panel. -->
+					<!-- No tracking code set -->
+				<!-- / Google Analytics by MonsterInsights -->
+		<script type="rocketlazyloadscript" data-rocket-type="text/javascript">
+/* <![CDATA[ */
+window._wpemojiSettings = {"baseUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/72x72\/","ext":".png","svgUrl":"https:\/\/s.w.org\/images\/core\/emoji\/15.0.3\/svg\/","svgExt":".svg","source":{"concatemoji":"https:\/\/qubstudio.com\/wp-includes\/js\/wp-emoji-release.min.js?ver=6.7.1"}};
+/*! This file is auto-generated */
+!function(i,n){var o,s,e;function c(e){try{var t={supportTests:e,timestamp:(new Date).valueOf()};sessionStorage.setItem(o,JSON.stringify(t))}catch(e){}}function p(e,t,n){e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(t,0,0);var t=new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data),r=(e.clearRect(0,0,e.canvas.width,e.canvas.height),e.fillText(n,0,0),new Uint32Array(e.getImageData(0,0,e.canvas.width,e.canvas.height).data));return t.every(function(e,t){return e===r[t]})}function u(e,t,n){switch(t){case"flag":return n(e,"\ud83c\udff3\ufe0f\u200d\u26a7\ufe0f","\ud83c\udff3\ufe0f\u200b\u26a7\ufe0f")?!1:!n(e,"\ud83c\uddfa\ud83c\uddf3","\ud83c\uddfa\u200b\ud83c\uddf3")&&!n(e,"\ud83c\udff4\udb40\udc67\udb40\udc62\udb40\udc65\udb40\udc6e\udb40\udc67\udb40\udc7f","\ud83c\udff4\u200b\udb40\udc67\u200b\udb40\udc62\u200b\udb40\udc65\u200b\udb40\udc6e\u200b\udb40\udc67\u200b\udb40\udc7f");case"emoji":return!n(e,"\ud83d\udc26\u200d\u2b1b","\ud83d\udc26\u200b\u2b1b")}return!1}function f(e,t,n){var r="undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?new OffscreenCanvas(300,150):i.createElement("canvas"),a=r.getContext("2d",{willReadFrequently:!0}),o=(a.textBaseline="top",a.font="600 32px Arial",{});return e.forEach(function(e){o[e]=t(a,e,n)}),o}function t(e){var t=i.createElement("script");t.src=e,t.defer=!0,i.head.appendChild(t)}"undefined"!=typeof Promise&&(o="wpEmojiSettingsSupports",s=["flag","emoji"],n.supports={everything:!0,everythingExceptFlag:!0},e=new Promise(function(e){i.addEventListener("DOMContentLoaded",e,{once:!0})}),new Promise(function(t){var n=function(){try{var e=JSON.parse(sessionStorage.getItem(o));if("object"==typeof e&&"number"==typeof e.timestamp&&(new Date).valueOf()<e.timestamp+604800&&"object"==typeof e.supportTests)return e.supportTests}catch(e){}return null}();if(!n){if("undefined"!=typeof Worker&&"undefined"!=typeof OffscreenCanvas&&"undefined"!=typeof URL&&URL.createObjectURL&&"undefined"!=typeof Blob)try{var e="postMessage("+f.toString()+"("+[JSON.stringify(s),u.toString(),p.toString()].join(",")+"));",r=new Blob([e],{type:"text/javascript"}),a=new Worker(URL.createObjectURL(r),{name:"wpTestEmojiSupports"});return void(a.onmessage=function(e){c(n=e.data),a.terminate(),t(n)})}catch(e){}c(n=f(s,u,p))}t(n)}).then(function(e){for(var t in e)n.supports[t]=e[t],n.supports.everything=n.supports.everything&&n.supports[t],"flag"!==t&&(n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&n.supports[t]);n.supports.everythingExceptFlag=n.supports.everythingExceptFlag&&!n.supports.flag,n.DOMReady=!1,n.readyCallback=function(){n.DOMReady=!0}}).then(function(){return e}).then(function(){var e;n.supports.everything||(n.readyCallback(),(e=n.source||{}).concatemoji?t(e.concatemoji):e.wpemoji&&e.twemoji&&(t(e.twemoji),t(e.wpemoji)))}))}((window,document),window._wpemojiSettings);
+/* ]]> */
+</script>
+<style id="wp-emoji-styles-inline-css" type="text/css">
+
+	img.wp-smiley, img.emoji {
+		display: inline !important;
+		border: none !important;
+		box-shadow: none !important;
+		height: 1em !important;
+		width: 1em !important;
+		margin: 0 0.07em !important;
+		vertical-align: -0.1em !important;
+		background: none !important;
+		padding: 0 !important;
+	}
+</style>
+<style id="safe-svg-svg-icon-style-inline-css" type="text/css">
+.safe-svg-cover{text-align:center}.safe-svg-cover .safe-svg-inside{display:inline-block;max-width:100%}.safe-svg-cover svg{height:100%;max-height:100%;max-width:100%;width:100%}
+
+</style>
+<style id="classic-theme-styles-inline-css" type="text/css">
+/*! This file is auto-generated */
+.wp-block-button__link{color:#fff;background-color:#32373c;border-radius:9999px;box-shadow:none;text-decoration:none;padding:calc(.667em + 2px) calc(1.333em + 2px);font-size:1.125em}.wp-block-file__button{background:#32373c;color:#fff;text-decoration:none}
+</style>
+<style id="global-styles-inline-css" type="text/css">
+:root{--wp--preset--aspect-ratio--square: 1;--wp--preset--aspect-ratio--4-3: 4/3;--wp--preset--aspect-ratio--3-4: 3/4;--wp--preset--aspect-ratio--3-2: 3/2;--wp--preset--aspect-ratio--2-3: 2/3;--wp--preset--aspect-ratio--16-9: 16/9;--wp--preset--aspect-ratio--9-16: 9/16;--wp--preset--color--black: #000000;--wp--preset--color--cyan-bluish-gray: #abb8c3;--wp--preset--color--white: #ffffff;--wp--preset--color--pale-pink: #f78da7;--wp--preset--color--vivid-red: #cf2e2e;--wp--preset--color--luminous-vivid-orange: #ff6900;--wp--preset--color--luminous-vivid-amber: #fcb900;--wp--preset--color--light-green-cyan: #7bdcb5;--wp--preset--color--vivid-green-cyan: #00d084;--wp--preset--color--pale-cyan-blue: #8ed1fc;--wp--preset--color--vivid-cyan-blue: #0693e3;--wp--preset--color--vivid-purple: #9b51e0;--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple: linear-gradient(135deg,rgba(6,147,227,1) 0%,rgb(155,81,224) 100%);--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan: linear-gradient(135deg,rgb(122,220,180) 0%,rgb(0,208,130) 100%);--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange: linear-gradient(135deg,rgba(252,185,0,1) 0%,rgba(255,105,0,1) 100%);--wp--preset--gradient--luminous-vivid-orange-to-vivid-red: linear-gradient(135deg,rgba(255,105,0,1) 0%,rgb(207,46,46) 100%);--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray: linear-gradient(135deg,rgb(238,238,238) 0%,rgb(169,184,195) 100%);--wp--preset--gradient--cool-to-warm-spectrum: linear-gradient(135deg,rgb(74,234,220) 0%,rgb(151,120,209) 20%,rgb(207,42,186) 40%,rgb(238,44,130) 60%,rgb(251,105,98) 80%,rgb(254,248,76) 100%);--wp--preset--gradient--blush-light-purple: linear-gradient(135deg,rgb(255,206,236) 0%,rgb(152,150,240) 100%);--wp--preset--gradient--blush-bordeaux: linear-gradient(135deg,rgb(254,205,165) 0%,rgb(254,45,45) 50%,rgb(107,0,62) 100%);--wp--preset--gradient--luminous-dusk: linear-gradient(135deg,rgb(255,203,112) 0%,rgb(199,81,192) 50%,rgb(65,88,208) 100%);--wp--preset--gradient--pale-ocean: linear-gradient(135deg,rgb(255,245,203) 0%,rgb(182,227,212) 50%,rgb(51,167,181) 100%);--wp--preset--gradient--electric-grass: linear-gradient(135deg,rgb(202,248,128) 0%,rgb(113,206,126) 100%);--wp--preset--gradient--midnight: linear-gradient(135deg,rgb(2,3,129) 0%,rgb(40,116,252) 100%);--wp--preset--font-size--small: 13px;--wp--preset--font-size--medium: 20px;--wp--preset--font-size--large: 36px;--wp--preset--font-size--x-large: 42px;--wp--preset--spacing--20: 0.44rem;--wp--preset--spacing--30: 0.67rem;--wp--preset--spacing--40: 1rem;--wp--preset--spacing--50: 1.5rem;--wp--preset--spacing--60: 2.25rem;--wp--preset--spacing--70: 3.38rem;--wp--preset--spacing--80: 5.06rem;--wp--preset--shadow--natural: 6px 6px 9px rgba(0, 0, 0, 0.2);--wp--preset--shadow--deep: 12px 12px 50px rgba(0, 0, 0, 0.4);--wp--preset--shadow--sharp: 6px 6px 0px rgba(0, 0, 0, 0.2);--wp--preset--shadow--outlined: 6px 6px 0px -3px rgba(255, 255, 255, 1), 6px 6px rgba(0, 0, 0, 1);--wp--preset--shadow--crisp: 6px 6px 0px rgba(0, 0, 0, 1);}:where(.is-layout-flex){gap: 0.5em;}:where(.is-layout-grid){gap: 0.5em;}body .is-layout-flex{display: flex;}.is-layout-flex{flex-wrap: wrap;align-items: center;}.is-layout-flex > :is(*, div){margin: 0;}body .is-layout-grid{display: grid;}.is-layout-grid > :is(*, div){margin: 0;}:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}.has-black-color{color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-color{color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-color{color: var(--wp--preset--color--white) !important;}.has-pale-pink-color{color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-color{color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-color{color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-color{color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-color{color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-color{color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-color{color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-color{color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-color{color: var(--wp--preset--color--vivid-purple) !important;}.has-black-background-color{background-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-background-color{background-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-background-color{background-color: var(--wp--preset--color--white) !important;}.has-pale-pink-background-color{background-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-background-color{background-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-background-color{background-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-background-color{background-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-background-color{background-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-background-color{background-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-background-color{background-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-background-color{background-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-background-color{background-color: var(--wp--preset--color--vivid-purple) !important;}.has-black-border-color{border-color: var(--wp--preset--color--black) !important;}.has-cyan-bluish-gray-border-color{border-color: var(--wp--preset--color--cyan-bluish-gray) !important;}.has-white-border-color{border-color: var(--wp--preset--color--white) !important;}.has-pale-pink-border-color{border-color: var(--wp--preset--color--pale-pink) !important;}.has-vivid-red-border-color{border-color: var(--wp--preset--color--vivid-red) !important;}.has-luminous-vivid-orange-border-color{border-color: var(--wp--preset--color--luminous-vivid-orange) !important;}.has-luminous-vivid-amber-border-color{border-color: var(--wp--preset--color--luminous-vivid-amber) !important;}.has-light-green-cyan-border-color{border-color: var(--wp--preset--color--light-green-cyan) !important;}.has-vivid-green-cyan-border-color{border-color: var(--wp--preset--color--vivid-green-cyan) !important;}.has-pale-cyan-blue-border-color{border-color: var(--wp--preset--color--pale-cyan-blue) !important;}.has-vivid-cyan-blue-border-color{border-color: var(--wp--preset--color--vivid-cyan-blue) !important;}.has-vivid-purple-border-color{border-color: var(--wp--preset--color--vivid-purple) !important;}.has-vivid-cyan-blue-to-vivid-purple-gradient-background{background: var(--wp--preset--gradient--vivid-cyan-blue-to-vivid-purple) !important;}.has-light-green-cyan-to-vivid-green-cyan-gradient-background{background: var(--wp--preset--gradient--light-green-cyan-to-vivid-green-cyan) !important;}.has-luminous-vivid-amber-to-luminous-vivid-orange-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-amber-to-luminous-vivid-orange) !important;}.has-luminous-vivid-orange-to-vivid-red-gradient-background{background: var(--wp--preset--gradient--luminous-vivid-orange-to-vivid-red) !important;}.has-very-light-gray-to-cyan-bluish-gray-gradient-background{background: var(--wp--preset--gradient--very-light-gray-to-cyan-bluish-gray) !important;}.has-cool-to-warm-spectrum-gradient-background{background: var(--wp--preset--gradient--cool-to-warm-spectrum) !important;}.has-blush-light-purple-gradient-background{background: var(--wp--preset--gradient--blush-light-purple) !important;}.has-blush-bordeaux-gradient-background{background: var(--wp--preset--gradient--blush-bordeaux) !important;}.has-luminous-dusk-gradient-background{background: var(--wp--preset--gradient--luminous-dusk) !important;}.has-pale-ocean-gradient-background{background: var(--wp--preset--gradient--pale-ocean) !important;}.has-electric-grass-gradient-background{background: var(--wp--preset--gradient--electric-grass) !important;}.has-midnight-gradient-background{background: var(--wp--preset--gradient--midnight) !important;}.has-small-font-size{font-size: var(--wp--preset--font-size--small) !important;}.has-medium-font-size{font-size: var(--wp--preset--font-size--medium) !important;}.has-large-font-size{font-size: var(--wp--preset--font-size--large) !important;}.has-x-large-font-size{font-size: var(--wp--preset--font-size--x-large) !important;}
+:where(.wp-block-post-template.is-layout-flex){gap: 1.25em;}:where(.wp-block-post-template.is-layout-grid){gap: 1.25em;}
+:where(.wp-block-columns.is-layout-flex){gap: 2em;}:where(.wp-block-columns.is-layout-grid){gap: 2em;}
+:root :where(.wp-block-pullquote){font-size: 1.5em;line-height: 1.6;}
+</style>
+<link rel="stylesheet" id="fonts-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/css/fonts.css?ver=21.02.2025" type="text/css" media="all">
+<link rel="stylesheet" id="slick-theme-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/vendor/slick/slick-theme.css?ver=1.8.1" type="text/css" media="all">
+<link rel="stylesheet" id="slick-styles-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/vendor/slick/slick.css?ver=1.8.1" type="text/css" media="all">
+<link rel="stylesheet" id="qub-old-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/css/app-old-styles.css?ver=21.02.2025" type="text/css" media="all">
+<link rel="stylesheet" id="qub-main-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/css/app-new-styles.css?ver=21.02.2025" type="text/css" media="all">
+
+<!-- Google tag (gtag.js) snippet added by Site Kit -->
+<!-- Google Analytics snippet added by Site Kit -->
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://www.googletagmanager.com/gtag/js?id=G-QXM8EBCPQ7" id="google_gtagjs-js" async=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="google_gtagjs-js-after">
+/* <![CDATA[ */
+window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}
+gtag("set","linker",{"domains":["qubstudio.com"]});
+gtag("js", new Date());
+gtag("set", "developer_id.dZTNiMT", true);
+gtag("config", "G-QXM8EBCPQ7");
+ window._googlesitekit = window._googlesitekit || {}; window._googlesitekit.throttledEvents = []; window._googlesitekit.gtagEvent = (name, data) => { var key = JSON.stringify( { name, data } ); if ( !! window._googlesitekit.throttledEvents[ key ] ) { return; } window._googlesitekit.throttledEvents[ key ] = true; setTimeout( () => { delete window._googlesitekit.throttledEvents[ key ]; }, 5 ); gtag( "event", name, { ...data, event_source: "site-kit" } ); }; 
+/* ]]> */
+</script>
+<link rel="https://api.w.org/" href="https://qubstudio.com/wp-json/"><link rel="alternate" title="JSON" type="application/json" href="https://qubstudio.com/wp-json/wp/v2/pages/8190"><link rel="shortlink" href="https://qubstudio.com/">
+<link rel="alternate" title="oEmbed (JSON)" type="application/json+oembed" href="https://qubstudio.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fqubstudio.com%2F">
+<link rel="alternate" title="oEmbed (XML)" type="text/xml+oembed" href="https://qubstudio.com/wp-json/oembed/1.0/embed?url=https%3A%2F%2Fqubstudio.com%2F&amp;format=xml">
+		<meta property="fb:pages" content="156939424336951">
+		<meta name="generator" content="Site Kit by Google 1.166.0">
+<!-- Google AdSense meta tags added by Site Kit -->
+<meta name="google-adsense-platform-account" content="ca-host-pub-2644536267352236">
+<meta name="google-adsense-platform-domain" content="sitekit.withgoogle.com">
+<!-- End Google AdSense meta tags added by Site Kit -->
+<noscript><style>.lazyload[data-src]{display:none !important;}</style></noscript><style>.lazyload{background-image:none !important;}.lazyload:before{background-image:none !important;}</style><style>.wp-block-gallery.is-cropped .blocks-gallery-item picture{height:100%;width:100%;}</style>		<style type="text/css" id="wp-custom-css">
+			
+.header.scroll-preparation {
+	background 0.3s ease, top 0.2s ease, transform 0.2s cubic-bezier(0.25, 0.1, 0.5, 1), opacity 0.3s ease-out, -webkit-transform 0.3s cubic-bezier(0.25, 0.1, 0.5, 1);
+}
+
+
+body:has(div.news-ticker-container) .wrapper .header { top: 43px; }
+body:has(div.news-ticker-container) .wrapper .header::before { top: 43px; }
+body:has(div.news-ticker-container) .wrapper .header.scroll-preparation { top: 0; }
+body:has(div.news-ticker-container) .wrapper .header.scroll-preparation::before { top: 0; }
+
+
+body:has(div.news-ticker-container) .wrapper .header { top: 43px; }
+body:has(div.news-ticker-container) .wrapper .header::before { top: 43px; }
+body:has(div.news-ticker-container) .wrapper .header.scroll-preparation { top: 0; }
+body:has(div.news-ticker-container) .wrapper .header.scroll-preparation::before { top: 0; }
+
+
+body:not(:has(div.news-ticker-container)) .wrapper .header { top: 0; }
+body:not(:has(div.news-ticker-container)) .wrapper .header::before { top: 0; }
+
+
+body:has(div.news-ticker-container.none) .wrapper .header { top: 0 !important; }
+body:has(div.news-ticker-container.none) .wrapper .header::before { top: 0 !important; }
+body:has(div.news-ticker-container.none) .wrapper .header.scroll-preparation { top: 0 !important; }
+body:has(div.news-ticker-container.none) .wrapper .header.scroll-preparation::before { top: 0 !important; }
+
+.news-ticker-container.none {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  height: 0 !important;
+  min-height: 0 !important;
+  border: 0 !important;
+}
+.news-ticker-container.none .news-ticker-overlay,
+.news-ticker-container.none .news-ticker,
+.news-ticker-container.none .news-ticker__inner,
+.news-ticker-container.none .news-ticker__item {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  body:has(div.news-ticker-container) .wrapper .header { top: 42px; }
+  body:has(div.news-ticker-container) .wrapper .header::before { top: 42px; }
+
+  body:has(div.news-ticker-container.none) .wrapper .header { top: 0 !important; }
+  body:has(div.news-ticker-container.none) .wrapper .header::before { top: 0 !important; }
+}
+
+}		</style>
+		
+                <!-- Google Tag Manager -->
+        <script type="rocketlazyloadscript" defer="">
+            (function(w, d, s, l, i) {
+                w[l] = w[l] || [];
+                w[l].push({
+                    'gtm.start': new Date().getTime(),
+                    event: 'gtm.js'
+                });
+                var f = d.getElementsByTagName(s)[0],
+                    j = d.createElement(s),
+                    dl = l != 'dataLayer' ? '&l=' + l : '';
+                j.defer = true;
+                j.src =
+                    'https://www.googletagmanager.com/gtm.js?id=' + i + dl;
+                f.parentNode.insertBefore(j, f);
+            })(window, document, 'script', 'dataLayer', 'GTM-TLDT59');
+        </script>
+        <!-- End Google Tag Manager -->
+        <script type="rocketlazyloadscript" data-rocket-type="text/javascript">
+        if (window.location.href.indexOf("/privacy-policy-2/") === -1) {
+            var _iub = _iub || [];
+
+            _iub.csConfiguration = {
+                "applyGdprForCH": false,
+                "askConsentAtCookiePolicyUpdate": true,
+                "countryDetection": true,
+                "enableFadp": true,
+                "enableLgpd": true,
+                "enableUspr": true,
+                "floatingPreferencesButtonCaptionColor": "#5E5E5E",
+                "floatingPreferencesButtonColor": "#FFFFFF",
+                "floatingPreferencesButtonDisplay": "bottom-right",
+                "floatingPreferencesButtonIcon": false,
+                "gdprAppliesGlobally": false,
+                "lang": "en",
+                "lgpdAppliesGlobally": false,
+                "perPurposeConsent": true,
+                "purposes": "1,3,4,5",
+                "siteId": 1117708,
+                "usPreferencesWidgetDisplay": "inline-right",
+                "whitelabel": false,
+                "cookiePolicyId": 29701622,
+                "cookiePolicyUrl": "https://qubstudio.com/privacy-policy-2/",
+                "floatingPreferencesButtonCaption": true,
+                "privacyPolicyUrl": "https://qubstudio.com/privacy-policy-2/",
+                "privacyPolicyNoticeAtCollectionUrl": "https://qubstudio.com/privacy-policy-2/",
+                "banner": {
+                    "acceptButtonCaptionColor": "#000000",
+                    "acceptButtonColor": "#F9DC42",
+                    "acceptButtonDisplay": true,
+                    "backgroundColor": "#FFFFFF",
+                    "backgroundOverlay": true,
+                    "closeButtonDisplay": false,
+                    "continueWithoutAcceptingButtonDisplay": true,
+                    "customizeButtonDisplay": true,
+                    "explicitWithdrawal": true,
+                    "fontSizeBody": "11px",
+                    "listPurposes": true,
+                    "linksColor": "#000000",
+                    "ownerName": "Qubstudio Ltd",
+                    "position": "bottom",
+                    "rejectButtonCaptionColor": "#000000",
+                    "rejectButtonColor": "#F9DC42",
+                    "rejectButtonDisplay": true,
+                    "showPurposesToggles": true,
+                    "showTitle": false,
+                    "textColor": "#000000"
+                }
+            };
+        }
+    </script>
+
+    <script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://cs.iubenda.com/autoblocking/1117708.js" data-rocket-defer="" defer=""></script>
+
+    <script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="//cdn.iubenda.com/cs/gpp/stub.js" data-rocket-defer="" defer=""></script>
+
+    <script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="//cdn.iubenda.com/cs/iubenda_cs.js" charset="UTF-8" async=""></script>
+
+<style id="rocket-lazyrender-inline-css">[data-wpr-lazyrender] {content-visibility: auto;}</style><meta name="generator" content="WP Rocket 3.18.3" data-wpr-features="wpr_delay_js wpr_defer_js wpr_automatic_lazy_rendering wpr_preload_links wpr_desktop"><link href="https://www.googletagmanager.com" rel="preconnect"><link href="https://cs.iubenda.com" rel="preconnect"><link href="https://cdn.iubenda.com" rel="preconnect"><link href="https://assets.calendly.com" rel="preconnect"><link href="https://cdnjs.cloudflare.com" rel="preconnect"></head>
+
+<body class="home page-template page-template-home-page page-template-home-page-php page page-id-8190">
+<script data-cfasync="false" data-no-defer="1" data-no-minify="1" data-no-optimize="1">if(typeof ewww_webp_supported==="undefined"){var ewww_webp_supported=!1}if(ewww_webp_supported){document.body.classList.add("webp-support")}</script>
+
+
+            <!-- Google Tag Manager (noscript) -->
+        <noscript>
+            <iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TLDT59"
+                height="0" width="0" style="display:none;visibility:hidden"></iframe>
+        </noscript>
+        <!-- End Google Tag Manager (noscript) -->
+    
+    <div id="page-preloader" class="holder">
+        <div id="prog-bar-container" class="progress-bar-container">
+            <div id="progress-bar" class="progress-bar" style="width: 20%;">
+            </div>
+        </div>
+    </div>
+        <style>
+        .news-ticker__item,
+        .news-ticker__item a {
+            color: #f9dc42;
+        }
+    </style>
+
+    <style>
+        .news-ticker__live-icon {
+            background-color: #000000;
+        }
+    </style>
+
+    <style>
+        .news-ticker__item__live-icon svg path {
+            fill: #000000;
+        }
+    </style>
+
+
+    <div class="news-ticker-container none single-elements">
+                    <div class="news-ticker-overlay" style="background-color: #000000;"></div>
+        
+        
+        
+        
+            </div>
+    <div class="wrapper ">
+<header class="header header--dark">
+      <div class="container-fluid container-fluid--lg header__row" itemscope="" itemtype="http://schema.org/Organization">
+            <span class="menu__bg js-menu-circle-bg"></span>
+                              <div class="logo">
+                        <!-- <svg viewBox="0 0 101 22" fill="none" xmlns="http://www.w3.org/2000/svg" itemprop="logo"
+                              title="QubStudio">
+                              <path d="M15.9646 8.93655C15.9646 4.60826 12.4978 1.10254 8.16912 1.10254C3.66417 1.10254 0.177734 4.52992 0.177734 8.95614C0.177734 13.3236 3.70335 16.7902 8.14954 16.7902C12.5663 16.7902 15.9646 13.3628 15.9646 8.93655ZM3.17451 8.95614C3.17451 6.1261 5.31925 3.98154 8.12995 3.98154C10.8427 3.98154 12.9679 6.16527 12.9679 8.97572C12.9679 11.7862 10.9113 13.9112 8.12995 13.9112C5.35843 13.9112 3.17451 11.7274 3.17451 8.95614Z"
+                                    fill="#231F20" />
+                              <path d="M10.2156 18.0144C8.9131 17.6913 7.57141 17.3681 5.79881 17.515L4.42773 20.6682C6.57248 20.1688 7.92397 20.4919 9.46153 20.8738C10.5878 21.1578 11.8021 21.4516 13.3593 21.4516C14.3582 21.4516 15.6607 21.3145 17.0122 20.9913V17.985C13.7706 18.8859 12.0372 18.4649 10.2156 18.0144Z"
+                                    fill="#231F20" />
+                              <path d="M27.6673 5.73438V16.5453H24.8762V15.331C24.2298 16.3005 23.1036 16.8489 21.6541 16.8489C19.3625 16.8489 17.5703 15.2527 17.5703 12.3737V5.73438H20.3614V12.031C20.3614 13.4998 21.2526 14.2637 22.5062 14.2637C23.8674 14.2637 24.886 13.4607 24.886 11.5805V5.73438H27.6673Z"
+                                    fill="#231F20" />
+                              <path d="M41.2906 11.14C41.2906 14.3618 38.9108 16.8491 36.012 16.8491C34.4352 16.8491 33.2894 16.2615 32.506 15.2725V16.5455H29.7148V1.40625H32.506V7.00757C33.2894 6.00873 34.4352 5.43097 36.012 5.43097C38.9108 5.43097 41.2906 7.91827 41.2906 11.14ZM38.4995 11.14C38.4995 9.3186 37.2264 8.09454 35.4929 8.09454C33.7889 8.09454 32.506 9.3284 32.506 11.14C32.506 12.9614 33.7791 14.1855 35.4929 14.1855C37.2166 14.1855 38.4995 12.9516 38.4995 11.14Z"
+                                    fill="#231F20" />
+                              <path d="M55.6382 8.41784V12.9126C55.6382 14.0779 56.4805 14.0975 58.0866 14.0192V16.5456C54.1692 16.9765 52.8471 15.8308 52.8471 12.9126V8.41784H50.9668V5.73469H52.8471V3.79577L55.6382 3.12988V5.7249H58.0866V8.40805H55.6382V8.41784Z"
+                                    fill="#231F20" />
+                              <path d="M69.4759 5.73438V16.5453H66.6848V15.331C66.0384 16.3005 64.9122 16.8489 63.4627 16.8489C61.1711 16.8489 59.3789 15.2527 59.3789 12.3737V5.73438H62.17V12.031C62.17 13.4998 63.0612 14.2637 64.3148 14.2637C65.676 14.2637 66.6945 13.4607 66.6945 11.5805V5.73438H69.4759Z"
+                                    fill="#231F20" />
+                              <path d="M82.5211 1.40625V16.5455H79.73V15.2725C78.9465 16.2713 77.8007 16.8491 76.2239 16.8491C73.3251 16.8491 70.9453 14.3618 70.9453 11.14C70.9453 7.91827 73.3251 5.43097 76.2239 5.43097C77.8007 5.43097 78.9465 6.01853 79.73 7.00757V1.40625H82.5211ZM79.73 11.14C79.73 9.3186 78.4568 8.09454 76.743 8.09454C75.0096 8.09454 73.7364 9.3284 73.7364 11.14C73.7364 12.9614 75.0096 14.1855 76.743 14.1855C78.4568 14.1855 79.73 12.9516 79.73 11.14Z"
+                                    fill="#231F20" />
+                              <path d="M84.2549 2.72839C84.2549 1.7981 85.0384 0.995117 85.9589 0.995117C86.9089 0.995117 87.6924 1.7981 87.6924 2.72839C87.6924 3.65868 86.9089 4.43229 85.9589 4.43229C85.0384 4.43229 84.2549 3.65868 84.2549 2.72839ZM84.5879 5.7347H87.379V16.5456H84.5879V5.7347Z"
+                                    fill="#231F20" />
+                              <path d="M88.7383 11.1397C88.7383 7.91796 91.265 5.43066 94.4478 5.43066C97.6306 5.43066 100.177 7.91796 100.177 11.1397C100.177 14.3614 97.6209 16.8487 94.4478 16.8487C91.2748 16.8487 88.7383 14.3614 88.7383 11.1397ZM97.3956 11.1397C97.3956 9.38684 96.1225 8.15298 94.4576 8.15298C92.8123 8.15298 91.5392 9.38684 91.5392 11.1397C91.5392 12.8926 92.8123 14.1264 94.4576 14.1264C96.1225 14.1264 97.3956 12.8926 97.3956 11.1397Z"
+                                    fill="#231F20" />
+                              <path d="M41.4473 15.4298C41.4473 17.5156 43.0338 20.0127 46.4419 20.0127C50.3005 20.0127 51.4267 17.3295 51.4267 15.6844C51.4267 10.8665 44.9435 11.0623 44.9435 9.03526C44.9435 8.3302 45.727 7.92871 46.4419 7.92871C47.1176 7.92871 47.813 8.25186 48.1753 9.03526C48.8608 8.66314 50.5551 7.73286 50.5551 7.73286C49.8402 6.64589 48.6944 5.44141 46.4419 5.44141C43.7095 5.44141 42.123 7.08655 42.123 9.01568C42.123 13.0208 48.6356 13.0012 48.6356 15.6844C48.6356 16.3699 48.1655 17.4862 46.4419 17.4862C44.826 17.4862 44.16 16.3796 44.16 14.7933L41.4473 15.4298Z"
+                                    fill="#231F20" />
+                        </svg> -->
+
+                        <svg width="120" height="24" viewBox="0 0 120 24" fill="none" xmlns="http://www.w3.org/2000/svg" itemprop="logo" title="QubStudio">
+                              <path d="M8.99649 18.1118C4.01729 18.1118 0.0487061 14.1583 0.0487061 9.11769C0.0487061 4.0523 4.01729 0.123535 8.99649 0.123535C13.9757 0.123535 17.969 4.0523 17.969 9.11769C17.969 14.1583 13.9757 18.1118 8.99649 18.1118ZM2.73551 22.1395L3.86938 18.9272C6.21109 18.5319 8.08446 18.8778 9.63737 19.2238C11.8065 19.7179 13.8524 20.1875 17.6978 19.1744V22.4854C16.0956 22.8312 14.5427 22.9796 13.3594 22.9796C11.5107 22.9796 10.0811 22.6583 8.70069 22.3371C6.90127 21.9418 5.2744 21.5711 2.73551 22.1395ZM3.4257 9.11769C3.4257 12.4287 5.86599 14.7761 8.99649 14.7761C12.127 14.7761 14.5672 12.4287 14.5672 9.11769C14.5672 5.78195 12.127 3.43457 8.99649 3.43457C5.86599 3.43457 3.4257 5.78195 3.4257 9.11769Z" fill="#121212"></path>
+                              <path d="M31.2789 5.41113V17.7657H28.0991V16.3821C27.3596 17.494 26.0779 18.1116 24.4264 18.1116C21.8135 18.1116 19.7676 16.2831 19.7676 12.9969V5.41113H22.9473V12.6015C22.9473 14.2817 23.958 15.1465 25.3877 15.1465C26.9406 15.1465 28.0991 14.2323 28.0991 12.0826V5.41113H31.2789Z" fill="#121212"></path>
+                              <path d="M41.167 5.06515C44.4701 5.06515 47.2308 7.90672 47.2308 11.5884C47.2308 15.27 44.5194 18.1116 41.2163 18.1116C39.417 18.1116 38.0612 17.4445 37.1738 16.3078V17.7657H33.994V0.469238H37.1738V6.86893C38.0612 5.7323 39.3677 5.06515 41.167 5.06515ZM37.1738 11.5884C37.1738 13.664 38.6281 15.0724 40.5755 15.0724C42.5474 15.0724 44.0018 13.664 44.0018 11.5884C44.0018 9.51281 42.5474 8.10439 40.5755 8.10439C38.6281 8.10439 37.1738 9.51281 37.1738 11.5884Z" fill="#121212"></path>
+                              <path d="M51.862 8.92008C51.862 10.7238 58.7639 9.24129 58.7146 14.109C58.6899 16.7776 56.2743 18.1118 53.5875 18.1118C50.5802 18.1118 48.5343 16.58 48.5343 14.2819L51.6895 13.4665C51.6895 14.6032 52.4043 15.2209 53.5875 15.2209C54.6475 15.2209 55.4609 14.9244 55.4609 14.109C55.4609 11.984 48.5837 13.4418 48.633 8.99419C48.6576 6.49857 50.9501 5.06543 53.5628 5.06543C56.0525 5.06543 58.5421 6.32561 58.5421 8.72239L55.3869 9.5378C55.3869 8.42588 54.6721 7.907 53.5628 7.907C52.4536 7.907 51.862 8.35175 51.862 8.92008Z" fill="#121212"></path>
+                              <path d="M70.7105 12.676C70.7105 16.1105 68.3688 18.1119 65.5342 18.1119C62.3297 18.1119 60.4316 16.1105 60.4316 12.676V3.13815L63.6115 2.44629V5.4114H68.7386V8.22825H63.6115V12.676C63.6115 13.9608 64.0058 14.9986 65.5342 14.9986C67.0871 14.9986 67.5308 13.9608 67.5308 12.676V11.0451H70.7105V12.676Z" fill="#121212"></path>
+                              <path d="M83.949 5.41113V17.7657H80.7692V16.3821C80.0298 17.494 78.748 18.1116 77.0964 18.1116C74.4835 18.1116 72.4376 16.2831 72.4376 12.9969V5.41113H75.6175V12.6015C75.6175 14.2817 76.628 15.1465 78.0577 15.1465C79.6106 15.1465 80.7692 14.2323 80.7692 12.0826V5.41113H83.949Z" fill="#121212"></path>
+                              <path d="M99.1122 0.469238V17.7657H95.9323V16.3078C95.0449 17.4445 93.7385 18.1116 91.9391 18.1116C88.6361 18.1116 85.8754 15.27 85.8754 11.5884C85.8754 7.90672 88.6361 5.06515 91.9391 5.06515C93.7385 5.06515 95.0449 5.7323 95.9323 6.86893V0.469238H99.1122ZM89.1044 11.5884C89.1044 13.664 90.5588 15.0724 92.5307 15.0724C94.4781 15.0724 95.9323 13.664 95.9323 11.5884C95.9323 9.51281 94.4781 8.10439 92.5307 8.10439C90.5588 8.10439 89.1044 9.51281 89.1044 11.5884Z" fill="#121212"></path>
+                              <path d="M103.376 3.92876C102.317 3.92876 101.429 3.03924 101.429 1.97674C101.429 0.914241 102.317 0 103.376 0C104.461 0 105.348 0.914241 105.348 1.97674C105.348 3.03924 104.461 3.92876 103.376 3.92876ZM101.799 17.7659V5.41132H104.979V17.7659H101.799Z" fill="#121212"></path>
+                              <path d="M113.435 18.1118C109.812 18.1118 106.928 15.2703 106.928 11.5887C106.928 7.907 109.812 5.06543 113.435 5.06543C117.059 5.06543 119.967 7.907 119.967 11.5887C119.967 15.2703 117.059 18.1118 113.435 18.1118ZM110.108 11.5887C110.108 13.5902 111.562 14.9985 113.435 14.9985C115.333 14.9985 116.788 13.5902 116.788 11.5887C116.788 9.58722 115.333 8.1788 113.435 8.1788C111.562 8.1788 110.108 9.58722 110.108 11.5887Z" fill="#121212"></path>
+                        </svg>
+                  </div>
+                                          <nav class="menu__wrapper">
+                        <div class="menu-main-menu-container"><ul id="menu-main-menu" class="menu"><li class="menu-item menu-item-depth-0"><a href="https://qubstudio.com/work/" class="menu-item-link menu-item-link-depth-0">Work</a></li>
+<li class="menu-item menu-item-depth-0 services-menu menu-item-has-children"><a href="https://qubstudio.com/services/" class="menu-item-link menu-item-link-depth-0 services-menu menu-item-type-custom menu-item-object-custom menu-item-has-children">Services</a>
+<ul class="sub-menu sub-menu-1">
+	<li class="menu-item menu-item-depth-1 menu-item-has-children"><a href="https://qubstudio.com/services/" class="menu-item-link menu-item-link-depth-1 menu-item-has-children">Capabilities</a>
+	<ul class="sub-menu sub-menu-2">
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/digital-product-design/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Digital Product Design</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/branding/#websites" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Websites</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/branding/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Branding</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-depth-1 menu-item-has-children"><a href="/services/#industries_block_extended_block_b50ca0d29715e666707d48ca001da6c6" class="menu-item-link menu-item-link-depth-1 menu-item-type-custom menu-item-object-custom menu-item-has-children">Industries</a>
+	<ul class="sub-menu sub-menu-2">
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/fintech-ux-ui-design-services/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Fintech</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/education-ux-design/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">EdTech</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/logistics-ux-design/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Logistics</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/hrtech/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">HRTech</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/designing-the-future-of-healthcare-products/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Healthcare</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/saas-design-agency/" class="menu-item-link menu-item-link-depth-2">SaaS</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class="menu-item menu-item-depth-0 solutions-menu menu-item-has-children"><a href="#" class="menu-item-link menu-item-link-depth-0 solutions-menu menu-item-type-custom menu-item-object-custom menu-item-has-children">Solutions</a>
+<ul class="sub-menu sub-menu-1">
+	<li class="menu-item menu-item-depth-1 ideate-shape sub-solutions menu-item-has-children"><a href="#" class="menu-item-link menu-item-link-depth-1 ideate-shape sub-solutions menu-item-type-custom menu-item-object-custom menu-item-has-children">Ideate &amp; Shape</a>
+	<ul class="sub-menu sub-menu-2">
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/idea-validation/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Idea Validation</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/innovation-unlocked-service/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Innovation Unlocked</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/product-discovery-service/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Product Discovery &amp; Vision</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/qub-design-sprint/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">Qub Design Sprint</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-depth-1 sub-solutions menu-item-has-children"><a href="#" class="menu-item-link menu-item-link-depth-1 sub-solutions menu-item-type-custom menu-item-object-custom menu-item-has-children">Create &amp; Launch</a>
+	<ul class="sub-menu sub-menu-2">
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/ux-design-services/" class="menu-item-link menu-item-link-depth-2">UI/UX Design</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/mvp-development-services/" class="menu-item-link menu-item-link-depth-2 menu-item-type-custom menu-item-object-custom">MVP Development</a></li>
+	</ul>
+</li>
+	<li class="menu-item menu-item-depth-1 sub-solutions menu-item-has-children"><a href="#" class="menu-item-link menu-item-link-depth-1 sub-solutions menu-item-type-custom menu-item-object-custom menu-item-has-children">Grow &amp; Scale</a>
+	<ul class="sub-menu sub-menu-2">
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/market-research-services/" class="menu-item-link menu-item-link-depth-2">Market Research</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/user-research-services/" class="menu-item-link menu-item-link-depth-2">User Research</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/ux-audit-services/" class="menu-item-link menu-item-link-depth-2">UX Audit</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/product-redesign-roadmapping/" class="menu-item-link menu-item-link-depth-2">Product Redesign Roadmapping</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/design-system-services/" class="menu-item-link menu-item-link-depth-2">Design System</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/product-analytics-services/" class="menu-item-link menu-item-link-depth-2">Product Analytics</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/continuous-product-design-services/" class="menu-item-link menu-item-link-depth-2">Continuous UI/UX Design</a></li>
+		<li class="menu-item menu-item-depth-2"><a href="https://qubstudio.com/designops/" class="menu-item-link menu-item-link-depth-2">DesignOps</a></li>
+	</ul>
+</li>
+</ul>
+</li>
+<li class="menu-item menu-item-depth-0"><a href="https://qubstudio.com/clients/" class="menu-item-link menu-item-link-depth-0">Clients</a></li>
+<li class="menu-item menu-item-depth-0"><a href="https://qubstudio.com/story/" class="menu-item-link menu-item-link-depth-0">About</a></li>
+<li class="menu-item menu-item-depth-0"><a href="https://qubstudio.com/career/" class="menu-item-link menu-item-link-depth-0">Career</a></li>
+<li class="menu-item menu-item-depth-0"><a href="https://qubstudio.com/blog/" class="menu-item-link menu-item-link-depth-0">Blog</a></li>
+<li class="menu-item menu-item-depth-0 get-in-touch"><a href="https://qubstudio.com/contacts/" class="menu-item-link menu-item-link-depth-0 get-in-touch">Get in Touch</a></li>
+</ul></div>                        <button class="menu__control js-menu-trigger">
+                              <span></span>
+                              <span></span>
+                        </button>
+                  </nav>
+                  </div>
+      <div class="header_case_block">
+            <div class="container-fluid container-fluid--lg">
+                  <div class="case_block">
+                                                      <a href="https://qubstudio.com/projects/gulf-bank/" target="_blank" class="img_block">
+                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/02/case-gulf-header-preview.jpg.webp"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcAAAAEYAQAAAADjMxucAAAAAnRSTlMAAHaTzTgAAAAmSURBVGje7cEBDQAAAMKg909tDwcUAAAAAAAAAAAAAAAAAAAAzwY+WAABub5IAwAAAABJRU5ErkJggg==" alt="Gulf Bank" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/02/case-gulf-header-preview.jpg" decoding="async" class="lazyload" data-eio-rwidth="448" data-eio-rheight="280"></picture><noscript><img src="https://qubstudio.com/wp-content/uploads/2024/02/case-gulf-header-preview.jpg" alt="Gulf Bank" data-eio="l"></noscript>
+                              </a>
+                              <a href="#" class="caption-text fw500 color-gray letter-spacing-0"> Gulf Bank</a>
+                                                <div class="caption-text-small  color-gray">Recent Case Study</div>
+                  </div>
+                  <div class="description_solutions">                        <div class="description_solutions__text caption-text fs-sm-18 fw500">Custom solutions crafted to support your product at each lifecycle stage, whether you’re ideating, building, or scaling.</div>
+                  </div>
+            </div>
+      </div>
+
+</header>
+<script type="rocketlazyloadscript">
+      document.addEventListener("DOMContentLoaded", () => {
+            const servicesMenu = document.querySelector("li.services-menu");
+            const solutionsMenu = document.querySelector("li.solutions-menu");
+            const headerBlock = document.querySelector(".header_case_block");
+            const caseBlock = document.querySelector(".case_block");
+            const textBlock = document.querySelector(".description_solutions");
+
+            const showBlock = (blockToShow) => {
+                  caseBlock.style.display =
+                        blockToShow === "case" && !solutionsMenu.matches(":hover") ?
+                        "block" :
+                        "none";
+
+                  textBlock.style.display = blockToShow === "description_solutions" ? "block" : "none";
+            };
+
+            servicesMenu.addEventListener("mouseenter", () => {
+                  showBlock("case");
+            });
+
+            solutionsMenu.addEventListener("mouseenter", () => {
+                  showBlock("description_solutions");
+            });
+
+            headerBlock.addEventListener("mouseleave", () => {
+                  showBlock(null);
+            });
+
+            if (servicesMenu.classList.contains("current-menu-item")) {
+                  showBlock("case");
+            }
+      });
+</script>
+
+<div class="main">
+
+
+<main>
+    
+        
+    <section class="js-anim preanimated a-fade-in-bottom mobile-animation hero-slider pt-80 pb-100 pt-m-75-important pb-m-80-important" id="hero-slider_block_d3949e2343160a2aca5ce2c0488e0c5b">
+                    <div class="slick-slider" id="specific-slider">
+                                                <div class="project-links">
+                                                                            <div class="slide-container">
+                                                                                            <div class="container-video">
+                                                                                                            <figure class="wp-block-video d-flex">
+                                                            <video data-position="1" class="project-video-block__video" loop="" muted="" playsinline="" preload="metadata" src="https://qubstudio.com/wp-content/uploads/2024/08/Gulf-short-1.mp4"></video>
+                                                        </figure>
+                                                        <div class="info-slide">
+                                                            <div class="container-fluid container-fluid--lg slide">
+                                                                <div class="description">
+                                                                                                                                            <div class="text h4-new mobile_description fw500">Enhancing a Customer-Centered Banking Experience for the Leading Kuwaiti Bank</div>
+                                                                                                                                    </div>
+                                                                <div class="quantity-slide text h4-new fw400"></div>
+                                                            </div>
+                                                        </div>
+                                                                                                    </div>
+                                                                                        <a href="https://qubstudio.com/projects/gulf-bank/" class="view-link">View</a>
+                                        </div>
+                                                                    </div>
+                                                                            <div class="project-links">
+                                                                            <div class="slide-container">
+                                                                                            <div class="container-img">
+                                                                                                            <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/ila-new-scaled-1.jpg.webp" srcset="https://qubstudio.com/wp-content/uploads/2024/08/ila-new-scaled-1.jpg.webp"><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/ila-new-scaled-1.jpg" alt="ila bank digital product design" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/ila-new-scaled-1.jpg" class=" lazyloaded" data-eio-rwidth="2560" data-eio-rheight="1298"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/ila-new-scaled-1.jpg" alt="ila bank digital product design" data-eio="l" /></noscript>
+                                                                                                        <div class="info-slide">
+                                                        <div class="container-fluid container-fluid--lg slide">
+                                                            <div class="description">
+                                                                                                                                    <div class="text h4-new fw500">Designing the Best Mobile Banking Experience in the MENA</div>
+
+                                                                                                                            </div>
+                                                            <div class="quantity-slide text h4-new fw400"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                                                        <a href="https://qubstudio.com/projects/ila-bank/" class="view-link">View</a>
+                                        </div>
+                                                                    </div>
+                                                                            <div class="project-links">
+                                                                            <div class="slide-container">
+                                                                                            <div class="container-video">
+                                                                                                            <figure class="wp-block-video d-flex">
+                                                            <video data-position="1" class="project-video-block__video" loop="" muted="" playsinline="" preload="metadata" src="https://qubstudio.com/wp-content/uploads/2024/08/EDS-short-1.mp4"></video>
+                                                        </figure>
+                                                        <div class="info-slide">
+                                                            <div class="container-fluid container-fluid--lg slide">
+                                                                <div class="description">
+                                                                                                                                            <div class="text h4-new mobile_description fw500">Accessible User Experience for the Fastest EV Charging Station in Ukraine</div>
+                                                                                                                                    </div>
+                                                                <div class="quantity-slide text h4-new fw400"></div>
+                                                            </div>
+                                                        </div>
+                                                                                                    </div>
+                                                                                        <a href="https://qubstudio.com/projects/ev-charging-hmi-eds/" class="view-link">View</a>
+                                        </div>
+                                                                    </div>
+                                                                            <div class="project-links">
+                                                                            <div class="slide-container">
+                                                                                            <div class="container-img">
+                                                                                                            <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/workforse-compress-scaled-1.jpg.webp" srcset="https://qubstudio.com/wp-content/uploads/2024/08/workforse-compress-scaled-1.jpg.webp"><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/workforse-compress-scaled-1.jpg" alt="workforce velocity hrtech platform redesign" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/workforse-compress-scaled-1.jpg" class=" lazyloaded" data-eio-rwidth="2560" data-eio-rheight="1298"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/workforse-compress-scaled-1.jpg" alt="workforce velocity hrtech platform redesign" data-eio="l" /></noscript>
+                                                                                                        <div class="info-slide">
+                                                        <div class="container-fluid container-fluid--lg slide">
+                                                            <div class="description">
+                                                                                                                                    <div class="text h4-new fw500">Enhancing Workforce Management Efficiency via HRTech Platform Redesign</div>
+
+                                                                                                                            </div>
+                                                            <div class="quantity-slide text h4-new fw400"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                                                        <a href="https://qubstudio.com/projects/workforce-velocity/" class="view-link">View</a>
+                                        </div>
+                                                                    </div>
+                                                                            <div class="project-links">
+                                                                            <div class="slide-container">
+                                                                                            <div class="container-video">
+                                                                                                            <figure class="wp-block-video d-flex">
+                                                            <video data-position="1" class="project-video-block__video" loop="" muted="" playsinline="" preload="metadata" src="https://qubstudio.com/wp-content/uploads/2025/03/LM.mp4"></video>
+                                                        </figure>
+                                                        <div class="info-slide">
+                                                            <div class="container-fluid container-fluid--lg slide">
+                                                                <div class="description">
+                                                                                                                                            <div class="text h4-new mobile_description fw500">Reimagining Brand Identity and Website for a Lending Platform</div>
+                                                                                                                                    </div>
+                                                                <div class="quantity-slide text h4-new fw400"></div>
+                                                            </div>
+                                                        </div>
+                                                                                                    </div>
+                                                                                        <a href="https://qubstudio.com/projects/loan-mantra-branding-website/" class="view-link">View</a>
+                                        </div>
+                                                                    </div>
+                                                        </div>
+            </section>
+
+
+
+
+
+    <section class="our-agency pt-20-important pb-100 pt-m-0 pb-m-100" id="our-agency_block_7a52f384e31b9eb5ebbec6d337b2441e">
+        <div class="container-fluid container-fluid--lg">
+            <div class="title js-anim preanimated a-fade-in-bottom mobile-animation">
+
+                                                            <h1 class="m-0 h3 h3-new h3-mob-28 max-w-760">We are a Digital Product Design Agency.</h1>
+                                        <h3 class="h3 h3-new h3-mob-28 mb-80 max-w-760">Blending Creativity, Strategy, Data, and Technology to Craft Exceptional Digital Experiences.</h3>
+                            </div>
+
+            <div class="product-agency js-anim preanimated a-fade-in-bottom">
+                <div class="animation">
+
+                </div>
+                <div class="accordion">
+                                            <div>
+                            <h6 class="h6-new light pb-48">
+                                <p>As a strategic design partner, we help companies make valuable decisions at every stage of the product life cycle.</p>
+                            </h6>
+                        </div>
+                    
+                    <div class="js-accordion js-default-close accordion accordion--about">
+                                                                                                                                                                <div class="accordion__item line">
+                                            <div class="accordion__item-header agency">
+                                                <button class="btn btn-link" type="button">
+                                                    <h4 class="fw500 h4-new">Ideate &amp; Shape</h4>
+                                                </button>
+
+                                                <div class="accordion__btn new-style">
+                                                    <div class="horizontal"></div>
+                                                    <div class="vertical"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="collapse" style="display: none;">
+                                                <div class="card-body">
+                                                                                                            <h6 class="max-w-520"><p>Seize Oportunities, Innovate &amp; De-risk Your Ideas</p>
+</h6>
+                                                                                                                                                                                                                            <div class="more-info mt-28">
+                                                                                                                                    <div class="text-editor">
+                                                                        <p>Discovery Workshops</p>
+<p>Design Sprints</p>
+<p>User &amp; Market Research</p>
+</div>
+                                                                                                                                    <div class="text-editor">
+                                                                        <p>Product Vision</p>
+<p>Experience Strategy</p>
+<p>Brand Strategy</p>
+</div>
+                                                                                                                            </div>
+                                                                                                                                                            </div>
+                                            </div>
+                                        </div>
+                                                                            <div class="accordion__item line">
+                                            <div class="accordion__item-header agency">
+                                                <button class="btn btn-link" type="button">
+                                                    <h4 class="fw500 h4-new">Create &amp; Launch</h4>
+                                                </button>
+
+                                                <div class="accordion__btn new-style">
+                                                    <div class="horizontal"></div>
+                                                    <div class="vertical"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="collapse" style="display: none;">
+                                                <div class="card-body">
+                                                                                                            <h6 class="max-w-520"><p>Build New Products and Succeed on the Market</p>
+</h6>
+                                                                                                                                                                                                                            <div class="more-info mt-28">
+                                                                                                                                    <div class="text-editor">
+                                                                        <p>Prototyping &amp; Testing</p>
+<p>UI/UX Design</p>
+<p>MVP/MLP Development</p>
+<p>Go-to-Market Strategy</p>
+<p>Product Launch</p>
+</div>
+                                                                                                                                    <div class="text-editor">
+                                                                        <p>Analytics Setup</p>
+<p>Brand Identity Design</p>
+<p>Website Design &amp; Development</p>
+<p>Marketing Collateral Design</p>
+</div>
+                                                                                                                            </div>
+                                                                                                                                                            </div>
+                                            </div>
+                                        </div>
+                                                                            <div class="accordion__item line">
+                                            <div class="accordion__item-header agency">
+                                                <button class="btn btn-link" type="button">
+                                                    <h4 class="fw500 h4-new">Grow &amp; Scale</h4>
+                                                </button>
+
+                                                <div class="accordion__btn new-style">
+                                                    <div class="horizontal"></div>
+                                                    <div class="vertical"></div>
+                                                </div>
+                                            </div>
+
+                                            <div class="collapse" style="display: none;">
+                                                <div class="card-body">
+                                                                                                            <h6 class="max-w-520"><p>Open Growth Frontiers and Scale Smart</p>
+</h6>
+                                                                                                                                                                                                                            <div class="more-info mt-28">
+                                                                                                                                    <div class="text-editor">
+                                                                        <p>CX Optimisation</p>
+<p>Digital Product Redesign</p>
+<p>User Testing</p>
+<p>Data Analytics &amp; Insights</p>
+</div>
+                                                                                                                                    <div class="text-editor">
+                                                                        <p>UX/UI Audit &amp; Improvements</p>
+<p>Continuous Improvements</p>
+<p>DesignOps</p>
+<p>Design Systems</p>
+</div>
+                                                                                                                            </div>
+                                                                                                                                                            </div>
+                                            </div>
+                                        </div>
+                                                                                                                                            </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="our-clients pt-100 pb-0 pt-m-0 pb-m-0 js-anim preanimated a-fade-in-bottom" id="our-clients_block_81bb2b53cf7c893bd9fc8d561009079c">
+        <div class="container-fluid container-fluid--lg">
+            <div class="content_block fdc">
+                                <div class="logo_client">
+                                                    <div class="img_block img_1 mobile-order-none">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2024/08/bank-abc-1.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/bank-abc-1.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_2 mobile-order-1">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2024/08/ila-1.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/ila-1.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_3 mobile-order-2">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2024/08/gulf-1.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/gulf-1.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_4 mobile-order-3">
+                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/Benefit-1.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcAAAADIAQAAAABXegwHAAAAAnRSTlMAAHaTzTgAAAAiSURBVGje7cExAQAAAMKg9U9tBn+gAAAAAAAAAAAAAAA+AyyIAAEHS8VrAAAAAElFTkSuQmCC" alt="" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/Benefit-1.png" class="lazyload" data-eio-rwidth="448" data-eio-rheight="200"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/Benefit-1.png" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_5 mobile-order-4">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2025/05/nizwa.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2025/05/nizwa.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_6 mobile-order-5">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2024/08/oracle-1.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/oracle-1.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_7 mobile-order-6">
+                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/daleel-1.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcAAAADIAQAAAABXegwHAAAAAnRSTlMAAHaTzTgAAAAiSURBVGje7cExAQAAAMKg9U9tBn+gAAAAAAAAAAAAAAA+AyyIAAEHS8VrAAAAAElFTkSuQmCC" alt="" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/daleel-1.png" class="lazyload" data-eio-rwidth="448" data-eio-rheight="200"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/daleel-1.png" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_8 mobile-order-7">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2024/08/bera-1.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/bera-1.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_9 mobile-order-8">
+                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/UKU-1.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAcAAAADIAQAAAABXegwHAAAAAnRSTlMAAHaTzTgAAAAiSURBVGje7cExAQAAAMKg9U9tBn+gAAAAAAAAAAAAAAA+AyyIAAEHS8VrAAAAAElFTkSuQmCC" alt="" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/UKU-1.png" class="lazyload" data-eio-rwidth="448" data-eio-rheight="200"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/UKU-1.png" alt="" data-eio="l"></noscript>
+                                </div>
+                                                    <div class="img_block img_10 mobile-order-9">
+                                    <img decoding="async" src="data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==" alt="" data-src="https://qubstudio.com/wp-content/uploads/2024/08/ozoneapi-1.svg" class="lazyload"><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/ozoneapi-1.svg" alt="" data-eio="l"></noscript>
+                                </div>
+                    
+
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <section class="project-highlights pt-200-new pb-0 pt-m-130-important pb-m-0" id="project-highlights_block_7f6f5c92d7f1f6645f07540b2b0f2b4e">
+        <div class="container-fluid container-fluid--lg">
+            <div class="title js-anim preanimated a-fade-in-bottom">
+                <h2 class="h2-new mb-20">Project Highlights</h2>
+            </div>
+            <div class="project_container">
+                                                <div class="case case-new js-anim preanimated a-fade-in-bottom pt-40-important pb-40-important" data-hook="1">
+                                    <div class="project-item">
+                                        <div class="info-wrap">
+                                            <div class="info-wrap__case">
+                                                <div class="case__name">
+                                                    <h5>BluePallet</h5>
+                                                    <div class="case__name__flag">
+                                                        🇺🇸                                                    </div>
+                                                </div>
+                                                <div class="case-description">
+                                                    <h6>Elevating Chemical E-Commerce Through Innovative Product Enhancements</h6>
+                                                </div>
+                                            </div>
+                                                                                            <div class="more-info">
+                                                    <h4 class="fs-36">151%</h4>
+                                                    <div class="description">
+                                                        <p>increase in daily<br>
+and  monthly active users</p>
+                                                    </div>
+                                                </div>
+                                                                                    </div>
+                                        <a href="https://qubstudio.com/projects/bluepallet/">
+                                            <div class="project-image project-image__cursor">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/bluepallete-scaled-1.jpg.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB4AAAAQ1AQAAAAB8Nu8wAAAAAnRSTlMAAHaTzTgAAAESSURBVHja7cExAQAAAMKg9U/tYwygAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBvYSAAGjKx+CAAAAAElFTkSuQmCC" alt="bluepallet e-commerce platform redesign made by qubstudio" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/bluepallete-scaled-1.jpg" class="lazyload" data-eio-rwidth="2560" data-eio-rheight="1436"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/bluepallete-scaled-1.jpg" alt="bluepallet e-commerce platform redesign made by qubstudio" data-eio="l" /></noscript>
+                                                                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                                <div class="case case-new js-anim preanimated a-fade-in-bottom pt-40-important pb-40-important" data-hook="1">
+                                    <div class="project-item">
+                                        <div class="info-wrap">
+                                            <div class="info-wrap__case">
+                                                <div class="case__name">
+                                                    <h5>Gulf Bank</h5>
+                                                    <div class="case__name__flag">
+                                                        🇰🇼                                                    </div>
+                                                </div>
+                                                <div class="case-description">
+                                                    <h6>Enhancing a Customer-Centered Banking Experience for the Leading Kuwaiti Bank</h6>
+                                                </div>
+                                            </div>
+                                                                                            <div class="more-info">
+                                                    <h4 class="fs-36">78%</h4>
+                                                    <div class="description">
+                                                        <p>increase in the<br>
+number of users</p>
+                                                    </div>
+                                                </div>
+                                                                                    </div>
+                                        <a href="https://qubstudio.com/projects/gulf-bank/">
+                                            <div class="project-image project-image__cursor">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2025/04/study-banner.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABvcAAAPoAQAAAADCKp9uAAAAAnRSTlMAAHaTzTgAAADwSURBVHja7cExAQAAAMKg9U9tB2+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD4Day0AAdLUk+kAAAAASUVORK5CYII=" alt="" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2025/04/study-banner.png" class="lazyload" data-eio-rwidth="1783" data-eio-rheight="1000"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2025/04/study-banner.png" alt="" data-eio="l" /></noscript>
+                                                                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                                <div class="case case-new js-anim preanimated a-fade-in-bottom pt-40-important pb-40-important" data-hook="1">
+                                    <div class="project-item">
+                                        <div class="info-wrap">
+                                            <div class="info-wrap__case">
+                                                <div class="case__name">
+                                                    <h5>Ozone API</h5>
+                                                    <div class="case__name__flag">
+                                                        🇬🇧                                                    </div>
+                                                </div>
+                                                <div class="case-description">
+                                                    <h6>Reimagining the UK Pioneer in Open Banking via Fresh Branding &amp; Website Design</h6>
+                                                </div>
+                                            </div>
+                                                                                            <div class="more-info">
+                                                    <h4 class="fs-36">+260%</h4>
+                                                    <div class="description">
+                                                        <p>website views after rebranding</p>
+                                                    </div>
+                                                </div>
+                                                                                    </div>
+                                        <a href="https://qubstudio.com/projects/ozone-api/">
+                                            <div class="project-image project-image__cursor">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/ozone-scaled-1.jpg.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB4AAAAQ1AQAAAAB8Nu8wAAAAAnRSTlMAAHaTzTgAAAESSURBVHja7cExAQAAAMKg9U/tYwygAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBvYSAAGjKx+CAAAAAElFTkSuQmCC" alt="ozone api branding and website redesign made by qubstudio" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/ozone-scaled-1.jpg" class="lazyload" data-eio-rwidth="2560" data-eio-rheight="1436"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/ozone-scaled-1.jpg" alt="ozone api branding and website redesign made by qubstudio" data-eio="l" /></noscript>
+                                                                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                                                <div class="case case-new js-anim preanimated a-fade-in-bottom pt-40-important pb-40-important" data-hook="1">
+                                    <div class="project-item">
+                                        <div class="info-wrap">
+                                            <div class="info-wrap__case">
+                                                <div class="case__name">
+                                                    <h5>ila Bank</h5>
+                                                    <div class="case__name__flag">
+                                                        🇧🇭                                                    </div>
+                                                </div>
+                                                <div class="case-description">
+                                                    <h6>Designing the Best Mobile Banking Experience in the MENA</h6>
+                                                </div>
+                                            </div>
+                                                                                            <div class="more-info">
+                                                    <h4 class="fs-36">#1</h4>
+                                                    <div class="description">
+                                                        <p>Bank App<br>
+in Bahrain</p>
+                                                    </div>
+                                                </div>
+                                                                                    </div>
+                                        <a href="https://qubstudio.com/projects/ila-bank/">
+                                            <div class="project-image project-image__cursor">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/08/ila-2-scaled-1.jpg.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB4AAAAQ1AQAAAAB8Nu8wAAAAAnRSTlMAAHaTzTgAAAESSURBVHja7cExAQAAAMKg9U/tYwygAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADgBvYSAAGjKx+CAAAAAElFTkSuQmCC" alt="ila bank design made by digital product design agency qubstudio" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/08/ila-2-scaled-1.jpg" class="lazyload" data-eio-rwidth="2560" data-eio-rheight="1436"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/08/ila-2-scaled-1.jpg" alt="ila bank design made by digital product design agency qubstudio" data-eio="l" /></noscript>
+                                                                                            </div>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+            <div class="highlights-btn form__submit mobile-text-left mobile-buttons df aic mt-40-to-20">
+                                    <a href="https://qubstudio.com/work/" class="button button-new button--empty">View all works</a>
+                
+    <a class="text-button " href="/download-presentation/">Download our presentation
+                    <span class="text-button__arrow">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M23.8797 23.6817L23.8787 2.13383L2.41267 2.13486M24 2.00024L2 24.0002" stroke="black" stroke-width="3"></path>
+</svg>            </span>
+        
+    </a>
+            </div>
+
+        </div>
+    </section>
+
+
+
+
+
+
+    
+    <section class="articles_custom_card pt-120 pb-0 pt-m-80-important pb-m-0" id="articles_custom_card_block_a10f0127fe60c9f2dbaecd597112128d" style="background-color: #f7f9fe">
+        <div class="container-fluid container-fluid--lg blog_block__wrapper">
+                            <h2 class="h2-new pb-55-new js-anim preanimated a-fade-in-bottom">Featured Articles</h2>
+                        <div class="blog_block__post__wrapper js-anim preanimated a-fade-in-bottom">
+                                                                    <div class="blog_block__post d-flex-column">
+                                    <div class="post_info">
+                                        <a href="https://qubstudio.com/blog/product-growth-metrics-benchmarks/" class="blog_block__post__img cover-bg">
+                                            <div class="pb-30">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2024/06/Cover.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABrAAAAPoAQAAAAC+TIO3AAAAAnRSTlMAAHaTzTgAAADnSURBVHja7cExAQAAAMKg9U9tCj+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHgYSAUAARyR6coAAAAASUVORK5CYII=" alt="What Do Your Product Growth Metrics Tell You? Benchmarks Across Industries" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2024/06/Cover.png" class="lazyload" data-eio-rwidth="1712" data-eio-rheight="1000"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2024/06/Cover.png" alt="What Do Your Product Growth Metrics Tell You? Benchmarks Across Industries" data-eio="l"></noscript>
+                                                                                            </div>
+                                        </a>
+                                        <div class="blog_block__post__info fdc">
+                                            <a href="https://qubstudio.com/blog/product-growth-metrics-benchmarks/" class="title_post bodytext2 fw500 new-black">What Do Your Product Growth Metrics Tell You? Benchmarks Across Industries</a>
+                                        </div>
+                                    </div>
+                                                                            <div class="author-info">
+                                                                                        <!-- <a href="https://qubstudio.com/blog/author/daria-rolina/"> -->
+
+                                            <div class="avatar">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2023/07/photo_2023-07-21-14.40.53.jpeg.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPIAAADtAQAAAACtkxVHAAAAAnRSTlMAAHaTzTgAAAAeSURBVFjD7cExAQAAAMKg9U9tCy+gAAAAAAAAAHgYHaAAAVl6krEAAAAASUVORK5CYII=" alt="Daria Rolina" class="author-avatar lazyload" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2023/07/photo_2023-07-21-14.40.53.jpeg" data-eio-rwidth="242" data-eio-rheight="237"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2023/07/photo_2023-07-21-14.40.53.jpeg" alt="Daria Rolina" class="author-avatar" data-eio="l" /></noscript>
+                                                                                            </div>
+                                            <div class="content">
+                                                <p class="subtitle-small fw500">Daria Rolina</p>
+                                                                                                    <p class="subtitle-small fw500 color-gray">Business Analyst</p>
+                                                                                            </div>
+                                            <!-- </a> -->
+                                        </div>
+                                                                    </div>
+                                                                                                                                    <div class="blog_block__post d-flex-column">
+                                <div class="post_info">
+                                    <a href="https://qubstudio.com/fintech-banking-trends-whitepaper/" class="blog_block__post__img cover-bg">
+                                        <div class="pb-30">
+                                                                                            <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2025/04/banking-homepage.jpg.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAB4AAAAQsAQAAAABY77xjAAAAAnRSTlMAAHaTzTgAAAEQSURBVHja7cExAQAAAMKg9U9tDQ+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAeDftmQABmKMaFQAAAABJRU5ErkJggg==" alt="" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2025/04/banking-homepage.jpg" class="lazyload" data-eio-rwidth="3488" data-eio-rheight="1940"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2025/04/banking-homepage.jpg" alt="" data-eio="l"></noscript>
+                                                                                    </div>
+                                    </a>
+                                    <div class="blog_block__post__info fdc">
+                                        <a href="https://qubstudio.com/fintech-banking-trends-whitepaper/" class="title_post bodytext2 fw500 new-black">
+                                            Whitepaper: Fintech &amp; Banking Trends: Transforming Product Experiences in 2025                                        </a>
+                                    </div>
+                                </div>
+                                                                    <div class="author-info">
+                                                                                <div class="avatar">
+                                                                                            <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2021/09/Qub-logo-1-1.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASwAAAEsAQAAAABRBrPYAAAAAnRSTlMAAHaTzTgAAAAiSURBVGje7cExAQAAAMKg9U9tCj+gAAAAAAAAAAAAAAB4GS20AAH/6QlrAAAAAElFTkSuQmCC" alt="Qubstudio" class="author-avatar lazyload" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2021/09/Qub-logo-1-1.png" data-eio-rwidth="300" data-eio-rheight="300"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2021/09/Qub-logo-1-1.png" alt="Qubstudio" class="author-avatar" data-eio="l" /></noscript>
+                                                                                    </div>
+                                        <div class="content">
+                                            <p class="subtitle-small fw500">Qubstudio</p>
+                                                                                            <p class="subtitle-small fw500 color-gray">Design Agency</p>
+                                                                                    </div>
+                                    </div>
+                                                            </div>
+                                                                            <div class="blog_block__post d-flex-column">
+                                    <div class="post_info">
+                                        <a href="https://qubstudio.com/blog/customer-experience-design/" class="blog_block__post__img cover-bg">
+                                            <div class="pb-30">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2023/12/cover-Customer-Experience-1.png.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAABogAAAOrAQAAAABMpDm5AAAAAnRSTlMAAHaTzTgAAADWSURBVHja7cExAQAAAMKg9U9tCU+gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACeBgJzAAH1cIOUAAAAAElFTkSuQmCC" alt="Customer Experience Design: Attracting and Retaining Customers in the Financial Sector" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2023/12/cover-Customer-Experience-1.png" class="lazyload" data-eio-rwidth="1672" data-eio-rheight="939"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2023/12/cover-Customer-Experience-1.png" alt="Customer Experience Design: Attracting and Retaining Customers in the Financial Sector" data-eio="l"></noscript>
+                                                                                            </div>
+                                        </a>
+                                        <div class="blog_block__post__info fdc">
+                                            <a href="https://qubstudio.com/blog/customer-experience-design/" class="title_post bodytext2 fw500 new-black">Customer Experience Design: Attracting and Retaining Customers in the Financial Sector</a>
+                                        </div>
+                                    </div>
+                                                                            <div class="author-info">
+                                                                                        <!-- <a href="https://qubstudio.com/blog/author/nadia-lushchak/"> -->
+
+                                            <div class="avatar">
+                                                                                                    <picture><source type="image/webp" data-srcset="https://qubstudio.com/wp-content/uploads/2023/10/Nadia.jpg.webp"><img decoding="async" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAtAAAALQAQAAAACRLHoxAAAAAnRSTlMAAHaTzTgAAABVSURBVHja7cEBAQAAAIIg/69uSEABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADwaP/wAAHdGfkMAAAAAElFTkSuQmCC" alt="Nadia" class="author-avatar lazyload" data-eio="p" data-src="https://qubstudio.com/wp-content/uploads/2023/10/Nadia.jpg" data-eio-rwidth="720" data-eio-rheight="720"></picture><noscript><img decoding="async" src="https://qubstudio.com/wp-content/uploads/2023/10/Nadia.jpg" alt="Nadia" class="author-avatar" data-eio="l" /></noscript>
+                                                                                            </div>
+                                            <div class="content">
+                                                <p class="subtitle-small fw500">Nadia</p>
+                                                                                                    <p class="subtitle-small fw500 color-gray">Chief Executive Officer</p>
+                                                                                            </div>
+                                            <!-- </a> -->
+                                        </div>
+                                                                    </div>
+                                                                                                                                    </div>
+        </div>
+    </section>
+
+
+
+
+
+
+
+
+
+    <section class="faq_new_block pt-180-to-160 pb-200-to-160  " id="faq_new_block_block_1ec508556065ca14543b969cf9050a18" style="background-color: #f7f9fe">
+        <div class="container-fluid container-fluid--lg container-faq js-anim preanimated a-fade-in-bottom">
+            <div class="title">
+                <div class="h2 h2-new">FAQ</div>
+            </div>
+
+            <div class="accordion-container">
+                <div class="accordion">
+                                            <div class="js-accordion js-default-close accordion accordion--about">
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">What are Qubstudio’s areas of focus?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>As a full-service digital product design agency, we aim to cover the whole process of product creation, starting with analysis and strategy that lead to the design and development of a product.</p>
+<p>We always start with defining your business needs and as a result, either work on your product from scratch or jump into a specific stage.</p>
+<p>Take a look at <strong><a href="https://qubstudio.com/services/">the list of all services</a></strong> we provide or simply <strong><a href="https://qubstudio.com/contacts/">drop us a line</a> </strong>— and we’ll discuss your request personally.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">What is the Qubstudio’s product design workflow?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>Our approach is to create a workflow that in a minimal number of iterations, enables designers to get a proper product that fulfills the customers’ &amp; market needs.</p>
+<p>After 15+ years of experience, we managed to optimize our product design process and now it looks like this: Defining the product → Market and User Research → Conceptualization → Prototyping → Testing → Realization → Development → Quality Assurance.</p>
+<p>If you’d like more details on each stage, take a look at <strong><a href="https://qubstudio.com/blog/okay-qub-how-does-a-productive-digital-product-design-workflow-look-like/">our blog</a></strong>.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">What makes Qubstudio stand out from other digital product design companies?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>Besides being a top-2 UX Design Agency Worldwide by Clutch and winning world-class awards like the Red Dot Award, we believe in three principles that make our work outstanding.</p>
+<p>Creative First, Design Always — we prioritize putting the human experience first.</p>
+<p>Data-Driven Innovation — every decision we make is backed by data.</p>
+<p>Nurturing Lasting Partnerships — fully immersing ourselves in each project, we tend to have long-term cooperations. we achieved an NPS score of 97.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">How do you work with AI?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>We use AI-based tools on two levels:</p>
+<ul>
+<li>For routine tasks, we use AI to optimize processes, accelerate execution, and facilitate rapid idea generation.</li>
+<li>We integrate AI functionalities into the products to enhance the user experience, elevate product quality, and add product value.</li>
+</ul>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">Which industries do you work with?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>As a broad-spectrum digital product design agency, we work with all industries that might need a digital product, since our experience and workflow allow us to adapt to each of them. At the same time, we’ve developed the biggest expertise in <strong><a href="https://qubstudio.com/fintech-ux-ui-design-services/">Fintech</a></strong>, <strong><a href="https://qubstudio.com/logistics-ux-design/">Logistics</a></strong>, <strong><a href="https://qubstudio.com/education-ux-design/">EdTech</a></strong>, <strong><a href="https://qubstudio.com/hrtech/">HRTech</a></strong>, and <strong><a href="https://qubstudio.com/designing-the-future-of-healthcare-products/">Healthcare</a></strong>.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">Which services does your digital product design agency provide at each product lifecycle stage?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>Our approach to making digital products from scratch consists of three main stages: <strong>Ideate &amp; Shape, Create &amp; Launch, and Grow &amp; Scale</strong>.</p>
+<ul>
+<li>While coming up with an <strong>Idea</strong>, we provide design sprints and workshops, user &amp; market research, concepting &amp; prototyping, and hypothesis validation.</li>
+<li>The next stage, <strong>Create</strong>, consists of scoping &amp; prioritization, road mapping, design &amp; development, and launch strategy.</li>
+<li>Finally, at the <strong>Scale </strong>stage, we work on audit &amp; research, redesign strategy &amp; consultancy, product revamp, enhancements &amp; innovation, and design systems.</li>
+</ul>
+<p>Learn more about each service <strong><a href="https://qubstudio.com/services/">from the extended list</a></strong>.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">Does your digital product design agency also provide product development?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>Yes. As a full-scale digital product design agency, we do everything from strategy to product management, design, and development.</p>
+<p>We offer a full-scale development process, whether it’s a product, website or app.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">And how about product management expertise?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p>That’s what we love and do. Our digital product design agency offers comprehensive product management expertise for B2C and B2B digital products and guides them toward achieving market fit. Depending on the product stage and business type, we conduct user testing, research market trends and competitors, help create roadmaps and identify key metrics to focus on.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                            <div class="accordion__item line">
+                                    <div class="accordion__item-header">
+                                                                                                                            <button class="btn btn-link" type="button">
+                                                <h4 class="h4-new">How can I get a proposal for my project?</h4>
+                                            </button>
+                                        
+                                        <div class="accordion__btn new-style">
+                                            <div class="horizontal"></div>
+                                            <div class="vertical"></div>
+                                        </div>
+                                    </div>
+                                    <div class="collapse" style="display: none;">
+
+                                                                                    <div class="card-body">
+                                                <p><a href="https://qubstudio.com/contacts/"><strong>Contact</strong></a> our digital product design agency to discuss as much detail as possible regarding your project requirements. We will expedite the process and furnish you with a comprehensive proposal at the earliest convenience.</p>
+                                            </div>
+                                        
+
+                                    </div>
+                                </div>
+                                                    </div>
+                                    </div>
+            </div>
+
+        </div>
+    </section>
+            <script type="application/ld+json">
+            {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+        {
+            "@type": "Question",
+            "name": "What are Qubstudio’s areas of focus?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "As a full-service digital product design agency, we aim to cover the whole process of product creation, starting with analysis and strategy that lead to the design and development of a product.\nWe always start with defining your business needs and as a result, either work on your product from scratch or jump into a specific stage.\nTake a look at the list of all services we provide or simply drop us a line — and we’ll discuss your request personally."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What is the Qubstudio’s product design workflow?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our approach is to create a workflow that in a minimal number of iterations, enables designers to get a proper product that fulfills the customers’ &amp; market needs.\nAfter 15+ years of experience, we managed to optimize our product design process and now it looks like this: Defining the product → Market and User Research → Conceptualization → Prototyping → Testing → Realization → Development → Quality Assurance.\nIf you’d like more details on each stage, take a look at our blog."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "What makes Qubstudio stand out from other digital product design companies?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Besides being a top-2 UX Design Agency Worldwide by Clutch and winning world-class awards like the Red Dot Award, we believe in three principles that make our work outstanding.\nCreative First, Design Always — we prioritize putting the human experience first.\nData-Driven Innovation — every decision we make is backed by data.\nNurturing Lasting Partnerships — fully immersing ourselves in each project, we tend to have long-term cooperations. we achieved an NPS score of 97."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How do you work with AI?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "We use AI-based tools on two levels:\n\nFor routine tasks, we use AI to optimize processes, accelerate execution, and facilitate rapid idea generation.\nWe integrate AI functionalities into the products to enhance the user experience, elevate product quality, and add product value."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Which industries do you work with?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "As a broad-spectrum digital product design agency, we work with all industries that might need a digital product, since our experience and workflow allow us to adapt to each of them. At the same time, we’ve developed the biggest expertise in Fintech, Logistics, EdTech, HRTech, and Healthcare."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Which services does your digital product design agency provide at each product lifecycle stage?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Our approach to making digital products from scratch consists of three main stages: Ideate &amp; Shape, Create &amp; Launch, and Grow &amp; Scale.\n\nWhile coming up with an Idea, we provide design sprints and workshops, user &amp; market research, concepting &amp; prototyping, and hypothesis validation.\nThe next stage, Create, consists of scoping &amp; prioritization, road mapping, design &amp; development, and launch strategy.\nFinally, at the Scale stage, we work on audit &amp; research, redesign strategy &amp; consultancy, product revamp, enhancements &amp; innovation, and design systems.\n\nLearn more about each service from the extended list."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "Does your digital product design agency also provide product development?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Yes. As a full-scale digital product design agency, we do everything from strategy to product management, design, and development.\nWe offer a full-scale development process, whether it’s a product, website or app."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "And how about product management expertise?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "That’s what we love and do. Our digital product design agency offers comprehensive product management expertise for B2C and B2B digital products and guides them toward achieving market fit. Depending on the product stage and business type, we conduct user testing, research market trends and competitors, help create roadmaps and identify key metrics to focus on."
+            }
+        },
+        {
+            "@type": "Question",
+            "name": "How can I get a proposal for my project?",
+            "acceptedAnswer": {
+                "@type": "Answer",
+                "text": "Contact our digital product design agency to discuss as much detail as possible regarding your project requirements. We will expedite the process and furnish you with a comprehensive proposal at the earliest convenience."
+            }
+        }
+    ]
+}        </script>
+    
+    </main>
+<script type="rocketlazyloadscript">
+    document.addEventListener('DOMContentLoaded', function() {
+        if (window.innerWidth > 1024) {
+            var content = document.querySelector('main');
+
+            if (content) {
+                var links = content.querySelectorAll('a');
+
+                links.forEach(function(link) {
+                    link.setAttribute('target', '_blank');
+                });
+            }
+        }
+    });
+</script>
+
+
+<footer data-wpr-lazyrender="1" class="footer">
+    <div class="container-fluid container-fluid--lg">
+        <div class="row row1 footer__wrapper">
+            <div class="col-lg-7 d-flex-column footer__left">
+                <div class="footer__left__inner">
+                                            <div class="title_footer h3 fw500">Reach Us Today</div>
+                                        <div class="block_contact df aic">
+                                                    <a href="https://qubstudio.com/contacts/" class="write_us fw500">Write us</a>
+                            <span>or</span>
+                        
+    <a class="text-button calendly_link" target="_blank" href="https://calendly.com/oleh-b-qubstudio/30min">Book a call
+                    <span class="text-button__arrow">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M23.8797 23.6817L23.8787 2.13383L2.41267 2.13486M24 2.00024L2 24.0002" stroke="black" stroke-width="3"></path>
+</svg>            </span>
+        
+    </a>
+                    </div>
+                </div>
+                <ul class="footer__social social social--footer df aic jcfs">
+                                            <li>
+                            <a href="https://www.facebook.com/qubstudio/" target="_blank"><i class="icon-facebook"></i></a>
+                        </li>
+                                                                <li>
+                            <a href="https://www.linkedin.com/company/qubstudio/" target="_blank"><i class="icon-linkedin"></i></a>
+                        </li>
+                                                                <li>
+                            <a href="https://www.instagram.com/qubstudiocom/" target="_blank"><i class="icon-instagram"></i></a>
+                        </li>
+                                                                <li>
+                            <a href="https://dribbble.com/qubstudio/" target="_blank"><i class="icon-dribbble2"></i></a>
+                        </li>
+                                                                <li>
+                            <a href="https://www.behance.net/qubstudio" target="_blank"><i class="icon-behance"></i></a>
+                        </li>
+                                    </ul>
+            </div>
+            <div class="col-lg-5 footer__info">
+                                    <div class="locations">
+                                                        <p class="location_text bodytext2">Lviv, Ukraine</p>
+                                <p class="location_text location_text_address bodytext2 additional-margin">KIVSH, 2d floor, Shevchenka Street, 120G  </p>
+                                                        <p class="location_text bodytext2">London, United Kingdom</p>
+                                <p class="location_text location_text_address bodytext2 additional-margin">Level39, 39th floor, One Canada Square, Canary Wharf </p>
+                                            </div>
+                                    <div class="footer__newsletter mt-60">
+                        <div class="location_text bodytext2">Subscribe for the Banking &amp; FinTech insights and Qubstudio updates </div>
+                        
+    <a class="text-button footer__newsletter__link" href="https://qubstudio.com/newsletter/">Sign up for newsletter
+                    <span class="text-button__arrow">
+                <svg width="26" height="26" viewBox="0 0 26 26" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M23.8797 23.6817L23.8787 2.13383L2.41267 2.13486M24 2.00024L2 24.0002" stroke="black" stroke-width="3"></path>
+</svg>            </span>
+        
+    </a>
+                    </div>
+                            </div>
+        </div>
+
+        <div class="show_mob">
+            <div class="col-lg-5 p-0 services_link show_mob">
+                                    <ul class=" aic">
+                        <li class="main-item">
+                            <a class="text-button click-btn">All Services</a>
+                            <ul class="menu_footer">
+                                                                        <li><a href="https://qubstudio.com/digital-product-design/" target="" class="bodytext1">Digital Product Design</a></li>
+                                                                            <li><a href="https://qubstudio.com/branding/" target="" class="bodytext1">Brand Identity Design Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/fintech-ux-ui-design-services/" target="" class="bodytext1">Fintech Design Agency</a></li>
+                                                                            <li><a href="https://qubstudio.com/ux-audit-services/" target="" class="bodytext1">UX Audit Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/concept-sprint-service/" target="" class="bodytext1">Concept Sprint Design</a></li>
+                                                                            <li><a href="https://qubstudio.com/mobile-app-design/" target="" class="bodytext1">Mobile App Design</a></li>
+                                                                            <li><a href="https://qubstudio.com/saas-design-agency/" target="" class="bodytext1">SaaS Design Agency</a></li>
+                                                                            <li><a href="https://qubstudio.com/ux-design-services/" target="" class="bodytext1">UI/UX Design Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/user-research-services/" target="" class="bodytext1">User Research Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/design-system-services/" target="" class="bodytext1">Design System Services</a></li>
+                                                                </ul>
+                        </li>
+                    </ul>
+                            </div>
+
+
+            <ul class="footer__social social social--footer df aic jcfs">
+                                    <li>
+                        <a href="https://www.facebook.com/qubstudio/" target="_blank"><i class="icon-facebook"></i></a>
+                    </li>
+                                                    <li>
+                        <a href="https://www.linkedin.com/company/qubstudio/" target="_blank"><i class="icon-linkedin"></i></a>
+                    </li>
+                                                    <li>
+                        <a href="https://www.instagram.com/qubstudiocom/" target="_blank"><i class="icon-instagram"></i></a>
+                    </li>
+                                                    <li>
+                        <a href="https://dribbble.com/qubstudio/" target="_blank"><i class="icon-dribbble2"></i></a>
+                    </li>
+                                                    <li>
+                        <a href="https://www.behance.net/qubstudio" target="_blank"><i class="icon-behance"></i></a>
+                    </li>
+                            </ul>
+        </div>
+
+        <div class="footer__bottom">
+            <div class="col-lg-7 d-flex-column footer__left additional_links">
+                                    <ul class="footer__menu footer__menu--inline aic">
+                        <li class="copyright">©2025 <span itemprop="name">Qubstudio</span></li>
+
+                                                        <li><a href="https://qubstudio.com/privacy-policy-2/" target="" class="text-button">Privacy Policy</a></li>
+                                                            <li><a href="https://qubstudio.com/terms-of-use/" target="" class="text-button">Terms of Use</a></li>
+                                                </ul>
+                            </div>
+            <div class="col-lg-5 p-0 services_link">
+                                    <ul class="aic">
+                        <li class="main-item">
+                            <a class="text-button click-btn">All Services</a>
+                            <ul class="menu_footer">
+                                                                        <li><a href="https://qubstudio.com/digital-product-design/" target="" class="bodytext1">Digital Product Design</a></li>
+                                                                            <li><a href="https://qubstudio.com/branding/" target="" class="bodytext1">Brand Identity Design Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/fintech-ux-ui-design-services/" target="" class="bodytext1">Fintech Design Agency</a></li>
+                                                                            <li><a href="https://qubstudio.com/ux-audit-services/" target="" class="bodytext1">UX Audit Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/concept-sprint-service/" target="" class="bodytext1">Concept Sprint Design</a></li>
+                                                                            <li><a href="https://qubstudio.com/mobile-app-design/" target="" class="bodytext1">Mobile App Design</a></li>
+                                                                            <li><a href="https://qubstudio.com/saas-design-agency/" target="" class="bodytext1">SaaS Design Agency</a></li>
+                                                                            <li><a href="https://qubstudio.com/ux-design-services/" target="" class="bodytext1">UI/UX Design Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/user-research-services/" target="" class="bodytext1">User Research Services</a></li>
+                                                                            <li><a href="https://qubstudio.com/design-system-services/" target="" class="bodytext1">Design System Services</a></li>
+                                                                </ul>
+                        </li>
+                    </ul>
+                            </div>
+
+
+        </div>
+    </div>
+</footer>    <div class="privacy-officer" style="display: none">
+      <div class="container-fluid">
+        <p>This site uses coookies to provide you with a great user experience. By browsing our website, you provide consent to our use of cookies.</p>
+        <span class="close js-close-privacy-officer"></span>
+      </div>
+    </div>
+  </div>
+      <script type="rocketlazyloadscript">
+        document.addEventListener('DOMContentLoaded', function() {
+            var textConfirmField = document.querySelector('.wpforms-field.wpforms-field-content.text-agree');
+            var submitContainer = document.querySelector('.wpforms-submit-container');
+
+            if (textConfirmField && submitContainer) {
+                submitContainer.appendChild(textConfirmField);
+            }
+        });
+    </script>
+<link rel="stylesheet" id="block-acf-hero-slider-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/blocks/css/hero-slider.css?ver=6.4.0.1" type="text/css" media="all">
+<link rel="stylesheet" id="block-acf-our-agency-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/blocks/css/our-agency.css?ver=6.4.0.1" type="text/css" media="all">
+<link rel="stylesheet" id="block-acf-our-clients-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/blocks/css/our-clients.css?ver=6.4.0.1" type="text/css" media="all">
+<link rel="stylesheet" id="block-acf-project-highlights-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/blocks/css/project-highlights.css?ver=6.4.0.1" type="text/css" media="all">
+<link rel="stylesheet" id="last-cases-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/blocks/css/articles_custom_card.css?ver=6.7.1" type="text/css" media="all">
+<link rel="stylesheet" id="block-acf-faq-new-block-css" href="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/blocks/css/faq-new-block.css?ver=6.4.0.1" type="text/css" media="all">
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="lazy-load-script-js-after">
+/* <![CDATA[ */
+const lazyScript = {};
+/* ]]> */
+</script>
+<script type="text/javascript" id="eio-lazy-load-js-before">
+/* <![CDATA[ */
+var eio_lazy_vars = {"exactdn_domain":"","skip_autoscale":0,"threshold":0,"use_dpr":1};
+/* ]]> */
+</script>
+<script type="text/javascript" src="https://qubstudio.com/wp-content/plugins/ewww-image-optimizer/includes/lazysizes.min.js?ver=813" id="eio-lazy-load-js" async="async" data-wp-strategy="async"></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/vendor/jquery-3.7.1.min.js?ver=3.7.1" id="jquery-js" data-rocket-defer="" defer=""></script>
+<script type="text/javascript" id="dlm-xhr-js-extra">
+/* <![CDATA[ */
+var dlmXHRtranslations = {"error":"An error occurred while trying to download the file. Please try again.","not_found":"Download does not exist.","no_file_path":"No file path defined.","no_file_paths":"No file paths defined.","filetype":"Download is not allowed for this file type.","file_access_denied":"Access denied to this file.","access_denied":"Access denied. You do not have permission to download this file.","security_error":"Something is wrong with the file path.","file_not_found":"File not found."};
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="dlm-xhr-js-before">
+/* <![CDATA[ */
+const dlmXHR = {"xhr_links":{"class":["download-link","download-button"]},"prevent_duplicates":true,"ajaxUrl":"https:\/\/qubstudio.com\/wp-admin\/admin-ajax.php"}; dlmXHRinstance = {}; const dlmXHRGlobalLinks = "https://qubstudio.com/download/"; const dlmNonXHRGlobalLinks = []; dlmXHRgif = "https://qubstudio.com/wp-includes/images/spinner.gif"; const dlmXHRProgress = "1"
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/plugins/download-monitor/assets/js/dlm-xhr.min.js?ver=5.0.23" id="dlm-xhr-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="dlm-xhr-js-after">
+/* <![CDATA[ */
+document.addEventListener("dlm-xhr-modal-data", function(event) { if ("undefined" !== typeof event.detail.headers["x-dlm-tc-required"]) { event.detail.data["action"] = "dlm_terms_conditions_modal"; event.detail.data["dlm_modal_response"] = "true"; }});
+document.addEventListener("dlm-xhr-modal-data", function(event) {if ("undefined" !== typeof event.detail.headers["x-dlm-members-locked"]) {event.detail.data["action"] = "dlm_members_conditions_modal";event.detail.data["dlm_modal_response"] = "true";event.detail.data["dlm_members_form_redirect"] = "https://qubstudio.com/";}});
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="rocket-browser-checker-js-after">
+/* <![CDATA[ */
+"use strict";var _createClass=function(){function defineProperties(target,props){for(var i=0;i<props.length;i++){var descriptor=props[i];descriptor.enumerable=descriptor.enumerable||!1,descriptor.configurable=!0,"value"in descriptor&&(descriptor.writable=!0),Object.defineProperty(target,descriptor.key,descriptor)}}return function(Constructor,protoProps,staticProps){return protoProps&&defineProperties(Constructor.prototype,protoProps),staticProps&&defineProperties(Constructor,staticProps),Constructor}}();function _classCallCheck(instance,Constructor){if(!(instance instanceof Constructor))throw new TypeError("Cannot call a class as a function")}var RocketBrowserCompatibilityChecker=function(){function RocketBrowserCompatibilityChecker(options){_classCallCheck(this,RocketBrowserCompatibilityChecker),this.passiveSupported=!1,this._checkPassiveOption(this),this.options=!!this.passiveSupported&&options}return _createClass(RocketBrowserCompatibilityChecker,[{key:"_checkPassiveOption",value:function(self){try{var options={get passive(){return!(self.passiveSupported=!0)}};window.addEventListener("test",null,options),window.removeEventListener("test",null,options)}catch(err){self.passiveSupported=!1}}},{key:"initRequestIdleCallback",value:function(){!1 in window&&(window.requestIdleCallback=function(cb){var start=Date.now();return setTimeout(function(){cb({didTimeout:!1,timeRemaining:function(){return Math.max(0,50-(Date.now()-start))}})},1)}),!1 in window&&(window.cancelIdleCallback=function(id){return clearTimeout(id)})}},{key:"isDataSaverModeOn",value:function(){return"connection"in navigator&&!0===navigator.connection.saveData}},{key:"supportsLinkPrefetch",value:function(){var elem=document.createElement("link");return elem.relList&&elem.relList.supports&&elem.relList.supports("prefetch")&&window.IntersectionObserver&&"isIntersecting"in IntersectionObserverEntry.prototype}},{key:"isSlowConnection",value:function(){return"connection"in navigator&&"effectiveType"in navigator.connection&&("2g"===navigator.connection.effectiveType||"slow-2g"===navigator.connection.effectiveType)}}]),RocketBrowserCompatibilityChecker}();
+/* ]]> */
+</script>
+<script type="text/javascript" id="rocket-preload-links-js-extra">
+/* <![CDATA[ */
+var RocketPreloadLinksConfig = {"excludeUris":"\/(?:.+\/)?feed(?:\/(?:.+\/?)?)?$|\/(?:.+\/)?embed\/|\/(index.php\/)?(.*)wp-json(\/.*|$)|\/refer\/|\/go\/|\/recommend\/|\/recommends\/","usesTrailingSlash":"1","imageExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif|pdf|doc|docx|xls|xlsx|php","fileExt":"jpg|jpeg|gif|png|tiff|bmp|webp|avif|pdf|doc|docx|xls|xlsx|php|html|htm","siteUrl":"https:\/\/qubstudio.com","onHoverDelay":"100","rateThrottle":"3"};
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" id="rocket-preload-links-js-after">
+/* <![CDATA[ */
+(function() {
+"use strict";var r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(e){return typeof e}:function(e){return e&&"function"==typeof Symbol&&e.constructor===Symbol&&e!==Symbol.prototype?"symbol":typeof e},e=function(){function i(e,t){for(var n=0;n<t.length;n++){var i=t[n];i.enumerable=i.enumerable||!1,i.configurable=!0,"value"in i&&(i.writable=!0),Object.defineProperty(e,i.key,i)}}return function(e,t,n){return t&&i(e.prototype,t),n&&i(e,n),e}}();function i(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var t=function(){function n(e,t){i(this,n),this.browser=e,this.config=t,this.options=this.browser.options,this.prefetched=new Set,this.eventTime=null,this.threshold=1111,this.numOnHover=0}return e(n,[{key:"init",value:function(){!this.browser.supportsLinkPrefetch()||this.browser.isDataSaverModeOn()||this.browser.isSlowConnection()||(this.regex={excludeUris:RegExp(this.config.excludeUris,"i"),images:RegExp(".("+this.config.imageExt+")$","i"),fileExt:RegExp(".("+this.config.fileExt+")$","i")},this._initListeners(this))}},{key:"_initListeners",value:function(e){-1<this.config.onHoverDelay&&document.addEventListener("mouseover",e.listener.bind(e),e.listenerOptions),document.addEventListener("mousedown",e.listener.bind(e),e.listenerOptions),document.addEventListener("touchstart",e.listener.bind(e),e.listenerOptions)}},{key:"listener",value:function(e){var t=e.target.closest("a"),n=this._prepareUrl(t);if(null!==n)switch(e.type){case"mousedown":case"touchstart":this._addPrefetchLink(n);break;case"mouseover":this._earlyPrefetch(t,n,"mouseout")}}},{key:"_earlyPrefetch",value:function(t,e,n){var i=this,r=setTimeout(function(){if(r=null,0===i.numOnHover)setTimeout(function(){return i.numOnHover=0},1e3);else if(i.numOnHover>i.config.rateThrottle)return;i.numOnHover++,i._addPrefetchLink(e)},this.config.onHoverDelay);t.addEventListener(n,function e(){t.removeEventListener(n,e,{passive:!0}),null!==r&&(clearTimeout(r),r=null)},{passive:!0})}},{key:"_addPrefetchLink",value:function(i){return this.prefetched.add(i.href),new Promise(function(e,t){var n=document.createElement("link");n.rel="prefetch",n.href=i.href,n.onload=e,n.onerror=t,document.head.appendChild(n)}).catch(function(){})}},{key:"_prepareUrl",value:function(e){if(null===e||"object"!==(void 0===e?"undefined":r(e))||!1 in e||-1===["http:","https:"].indexOf(e.protocol))return null;var t=e.href.substring(0,this.config.siteUrl.length),n=this._getPathname(e.href,t),i={original:e.href,protocol:e.protocol,origin:t,pathname:n,href:t+n};return this._isLinkOk(i)?i:null}},{key:"_getPathname",value:function(e,t){var n=t?e.substring(this.config.siteUrl.length):e;return n.startsWith("/")||(n="/"+n),this._shouldAddTrailingSlash(n)?n+"/":n}},{key:"_shouldAddTrailingSlash",value:function(e){return this.config.usesTrailingSlash&&!e.endsWith("/")&&!this.regex.fileExt.test(e)}},{key:"_isLinkOk",value:function(e){return null!==e&&"object"===(void 0===e?"undefined":r(e))&&(!this.prefetched.has(e.href)&&e.origin===this.config.siteUrl&&-1===e.href.indexOf("?")&&-1===e.href.indexOf("#")&&!this.regex.excludeUris.test(e.href)&&!this.regex.images.test(e.href))}}],[{key:"run",value:function(){"undefined"!=typeof RocketPreloadLinksConfig&&new n(new RocketBrowserCompatibilityChecker({capture:!0,passive:!0}),RocketPreloadLinksConfig).init()}}]),n}();t.run();
+}());
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/vendor/slick/slick.js?ver=1.8.1" id="slick-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/cursor.js?ver=21.02.2025" id="cursor-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/cursor-projects.js?ver=21.02.2025" id="cursor-projects-js" data-rocket-defer="" defer=""></script>
+<script type="text/javascript" src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/preloader.js?ver=21.02.2025" id="preloader-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/project-highlights.js?ver=21.02.2025" id="project-highlights-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/footer-script.js?ver=21.02.2025" id="footer-script-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://assets.calendly.com/assets/external/widget.js" id="calendly-widget-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/calendly.js?ver=21.02.2025" id="calendly-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/slider.js?ver=21.02.2025" id="qub-sliders-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://cdnjs.cloudflare.com/ajax/libs/ScrollMagic/2.0.8/ScrollMagic.min.js?ver=1.0" id="scroll-magic-js-js" data-rocket-defer="" defer=""></script>
+<script type="text/javascript" id="qub-script-js-extra">
+/* <![CDATA[ */
+var ajax_url = ["https:\/\/qubstudio.com\/wp-admin\/admin-ajax.php"];
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/assets/build/js/app.js?ver=21.02.2025" id="qub-script-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/plugins/google-site-kit/dist/assets/js/googlesitekit-events-provider-wpforms-ed443a3a3d45126a22ce.js" id="googlesitekit-events-provider-wpforms-js" defer=""></script>
+<script type="text/javascript" id="wpforms-user-journey-js-extra">
+/* <![CDATA[ */
+var wpforms_user_journey = {"is_ssl":"1","page_id":"8190"};
+/* ]]> */
+</script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/plugins/wpforms-user-journey/assets/js/wpforms-user-journey.min.js?ver=1.4.0" id="wpforms-user-journey-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/modules/homepage-new/hero-slider/hero-slider.js?ver=6.4.0.1" id="block-acf-hero-slider-js" data-rocket-defer="" defer=""></script>
+<script type="rocketlazyloadscript" data-rocket-type="text/javascript" data-rocket-src="https://qubstudio.com/wp-content/themes/QubStudioNew/modules/homepage-new/our-agency/our-agency.js?ver=6.4.0.1" id="block-acf-our-agency-js" data-rocket-defer="" defer=""></script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9a61c6644ca8ee3a',t:'MTc2NDQxNTg0Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+
+
+</div><iframe height="1" width="1" style="position: absolute; top: 0px; left: 0px; border: none; visibility: hidden;"></iframe></body></html><!-- This website is like a Rocket, isn't it? Performance optimized by WP Rocket. Learn more: https://wp-rocket.me -->

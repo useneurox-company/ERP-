@@ -1,0 +1,38 @@
+========================================
+Emerald ERP - Setup Instructions
+========================================
+
+The application requires a DATABASE_URL environment variable to start.
+
+OPTION 1: Create a .env file
+-----------------------------
+Create a file named ".env" in the project root with:
+
+DATABASE_URL=postgresql://your-connection-string-here
+NODE_ENV=development
+PORT=5000
+SESSION_SECRET=your-secret-key
+
+OPTION 2: Use environment variables
+------------------------------------
+Set environment variables before running:
+
+set DATABASE_URL=postgresql://your-connection-string-here
+set NODE_ENV=development
+set PORT=5000
+npm run dev
+
+DATABASE SETUP:
+---------------
+1. Get a free PostgreSQL database from: https://console.neon.tech
+2. Copy the connection string
+3. Replace "postgresql://your-connection-string-here" with your actual connection string
+
+STARTING THE SERVER:
+--------------------
+After setting DATABASE_URL, run:
+  npm run dev
+
+The server will start on port 5000
+Open: http://localhost:5000
+

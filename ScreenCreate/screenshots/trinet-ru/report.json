@@ -1,0 +1,367 @@
+{
+  "site": "trinet.ru",
+  "siteName": "trinet-ru",
+  "startUrl": "https://trinet.ru",
+  "crawledAt": "2025-11-29T11:20:09.443Z",
+  "totalPages": 10,
+  "options": {
+    "desktop": true,
+    "mobile": true,
+    "tablet": true,
+    "html": true,
+    "meta": true,
+    "compressForAI": true
+  },
+  "pages": [
+    {
+      "url": "https://trinet.ru",
+      "pathname": "/",
+      "title": "Агентство комплексного интернет-маркетинга «TRINET.Group» - профессиональное продвижение вашего бизнеса",
+      "files": {
+        "desktop": "desktop/home.jpg",
+        "mobile": "mobile/home.jpg",
+        "tablet": "tablet/home.jpg",
+        "html": "html/home.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/home_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить консультацию",
+            "file": "interactive/home_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить индивидуальное предло",
+            "file": "interactive/home_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Агентство комплексного интернет-маркетинга «TRINET.Group» - профессиональное продвижение вашего бизнеса",
+        "description": "Услуги комплексного интернет-маркетинга от «TRINET.Group». Создание, продвижение, поддержка любых сайтов. Оказываем услуги по ведению контекстной рекламы и SMM. Закажите разработку или оптимизацию сайта, и мы поможем увеличить ваши продажи в интернете. Звоните +7 (812) 303-87-43.",
+        "ogTitle": "Агентство комплексного интернет-маркетинга «TRINET.Group» - профессиональное продвижение вашего бизнеса",
+        "ogDescription": "Услуги комплексного интернет-маркетинга от «TRINET.Group». Создание, продвижение, поддержка любых сайтов. Оказываем услуги по ведению контекстной рекламы и SMM. Закажите разработку или оптимизацию сайта, и мы поможем увеличить ваши продажи в интернете. Звоните +7 (812) 303-87-43.",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2025/11/diplom-500x411-1.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/seo-prodvizhenie-saytov/",
+      "pathname": "/services/seo-prodvizhenie-saytov/",
+      "title": "SEO продвижение сайта в Санкт-Петербурге – цены на СЕО оптимизацию, заказать раскрутку сайтов в поисковых системах",
+      "files": {
+        "desktop": "desktop/services-seo-prodvizhenie-saytov.jpg",
+        "mobile": "mobile/services-seo-prodvizhenie-saytov.jpg",
+        "tablet": "tablet/services-seo-prodvizhenie-saytov.jpg",
+        "html": "html/services-seo-prodvizhenie-saytov.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-seo-prodvizhenie-saytov_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-seo-prodvizhenie-saytov_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "1 месяц",
+            "file": "interactive/services-seo-prodvizhenie-saytov_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SEO продвижение сайта в Санкт-Петербурге – цены на СЕО оптимизацию, заказать раскрутку сайтов в поисковых системах",
+        "description": "⭐️ SEO продвижение сайтов в Санкт-Петербурге и Москве. Более 20 лет опыта в СЕО оптимизации. ✅ Рассчитайте стоимость раскрутки сайтов в поисковых системах Яндекс и Google прямо сейчас. ☎️ 8 (800) 350-77-06.",
+        "ogTitle": "SEO продвижение сайта в Санкт-Петербурге – цены на СЕО оптимизацию, заказать раскрутку сайтов в поисковых системах",
+        "ogDescription": "⭐️ SEO продвижение сайтов в Санкт-Петербурге и Москве. Более 20 лет опыта в СЕО оптимизации. ✅ Рассчитайте стоимость раскрутки сайтов в поисковых системах Яндекс и Google прямо сейчас. ☎️ 8 (800) 350-77-06.",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2025/11/diplom-500x411-1.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/kontekstnaya-reklama/",
+      "pathname": "/services/kontekstnaya-reklama/",
+      "title": "Контекстная реклама в Санкт-Петербурге: заказать настройку и ведение рекламы по доступным ценам",
+      "files": {
+        "desktop": "desktop/services-kontekstnaya-reklama.jpg",
+        "mobile": "mobile/services-kontekstnaya-reklama.jpg",
+        "tablet": "tablet/services-kontekstnaya-reklama.jpg",
+        "html": "html/services-kontekstnaya-reklama.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-kontekstnaya-reklama_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-kontekstnaya-reklama_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить многоканальную страте",
+            "file": "interactive/services-kontekstnaya-reklama_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Контекстная реклама в Санкт-Петербурге: заказать настройку и ведение рекламы по доступным ценам",
+        "description": "Настройка и ведение контекстной рекламы в Яндекс и Google. С нами вы получите: прицельный охват потенциальных клиентов, рост посетителей на сайте, стабильный поток заявок, прибыль и финансовую стабильность. Закажите настройку контекстной рекламы в компании «TRINET.Group».",
+        "ogTitle": "Контекстная реклама в Санкт-Петербурге: заказать настройку и ведение рекламы по доступным ценам",
+        "ogDescription": "Настройка и ведение контекстной рекламы в Яндекс и Google. С нами вы получите: прицельный охват потенциальных клиентов, рост посетителей на сайте, стабильный поток заявок, прибыль и финансовую стабильность. Закажите настройку контекстной рекламы в компании «TRINET.Group».",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2024/10/top-complex.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/sozdanie-saytov/",
+      "pathname": "/services/sozdanie-saytov/",
+      "title": "Создание и разработка сайтов под ключ в Санкт-Петербурге – цены на создание сайтов с нуля",
+      "files": {
+        "desktop": "desktop/services-sozdanie-saytov.jpg",
+        "mobile": "mobile/services-sozdanie-saytov.jpg",
+        "tablet": "tablet/services-sozdanie-saytov.jpg",
+        "html": "html/services-sozdanie-saytov.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-sozdanie-saytov_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-sozdanie-saytov_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-sozdanie-saytov_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Создание и разработка сайтов под ключ в Санкт-Петербурге – цены на создание сайтов с нуля",
+        "description": "Создание сайтов в Санкт-Петербурге под ключ в компании «TRINET.Group». Комплексный подход к индивидуальной разработке веб-проектов. Создаем сайты с нуля любой сложности и оказываем полное техническое сопровождение.",
+        "ogTitle": "Создание и разработка сайтов под ключ в Санкт-Петербурге – цены на создание сайтов с нуля",
+        "ogDescription": "Создание сайтов в Санкт-Петербурге под ключ в компании «TRINET.Group». Комплексный подход к индивидуальной разработке веб-проектов. Создаем сайты с нуля любой сложности и оказываем полное техническое сопровождение.",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2025/02/top-sozdanie-1.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/case/",
+      "pathname": "/case/",
+      "title": "Кейсы SEO продвижения сайтов от «TRINET.Group»",
+      "files": {
+        "desktop": "desktop/case.jpg",
+        "mobile": "mobile/case.jpg",
+        "tablet": "tablet/case.jpg",
+        "html": "html/case.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/case_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Посмотреть результаты",
+            "file": "interactive/case_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Посмотреть результаты",
+            "file": "interactive/case_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Кейсы SEO продвижения сайтов от «TRINET.Group»",
+        "description": "Кейсы оптимизации сайтов клиентов. Истории успеха и подробные рассказы специалистов «TRINET.Group» о том, как мы работали над клиентскими сайтами и каких результатов достигли.",
+        "ogTitle": "Кейсы SEO продвижения сайтов от «TRINET.Group»",
+        "ogDescription": "Кейсы оптимизации сайтов клиентов. Истории успеха и подробные рассказы специалистов «TRINET.Group» о том, как мы работали над клиентскими сайтами и каких результатов достигли.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/seo-audit/",
+      "pathname": "/services/seo-audit/",
+      "title": "Заказать SEO аудит сайта – цена на комплексный поисковый аудит от TRINET Group",
+      "files": {
+        "desktop": "desktop/services-seo-audit.jpg",
+        "mobile": "mobile/services-seo-audit.jpg",
+        "tablet": "tablet/services-seo-audit.jpg",
+        "html": "html/services-seo-audit.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-seo-audit_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Заказать аудит сайта",
+            "file": "interactive/services-seo-audit_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "element_4",
+            "file": "interactive/services-seo-audit_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Заказать SEO аудит сайта – цена на комплексный поисковый аудит от TRINET Group",
+        "description": "Более 300 проверок! Закажите комплексный SEO аудит вашего сайта в «TRINET.Group». Проведем полный поисковый анализ сайта и выявим ошибки в оптимизации, укажем на точки роста, составим рекомендации для продвижения и повышения видимости сайта, предоставим план для дальнейших действий. Детальный СЕО аудит по выгодной цене!",
+        "ogTitle": "Заказать SEO аудит сайта – цена на комплексный поисковый аудит от TRINET Group",
+        "ogDescription": "Более 300 проверок! Закажите комплексный SEO аудит вашего сайта в «TRINET.Group». Проведем полный поисковый анализ сайта и выявим ошибки в оптимизации, укажем на точки роста, составим рекомендации для продвижения и повышения видимости сайта, предоставим план для дальнейших действий. Детальный СЕО аудит по выгодной цене!",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2025/01/lupa.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/seo-prodvizhenie-saytov/medicinskih-klinik/",
+      "pathname": "/services/seo-prodvizhenie-saytov/medicinskih-klinik/",
+      "title": "SEO продвижение медицинских сайтов - услуги по комплексному продвижению сайтов медицинских центров и клиник",
+      "files": {
+        "desktop": "desktop/services-seo-prodvizhenie-saytov-medicinskih-klinik.jpg",
+        "mobile": "mobile/services-seo-prodvizhenie-saytov-medicinskih-klinik.jpg",
+        "tablet": "tablet/services-seo-prodvizhenie-saytov-medicinskih-klinik.jpg",
+        "html": "html/services-seo-prodvizhenie-saytov-medicinskih-klinik.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-seo-prodvizhenie-saytov-medicinskih-klinik_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-seo-prodvizhenie-saytov-medicinskih-klinik_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-seo-prodvizhenie-saytov-medicinskih-klinik_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SEO продвижение медицинских сайтов - услуги по комплексному продвижению сайтов медицинских центров и клиник",
+        "description": "Эффективное SEO продвижение медицинских сайтов в СПб, Москве и по всей России. Выведем в ТОП. Закажите услуги раскрутки сайта медицинской клиники прямо сейчас ☎️ 8 (800) 350-77-06.",
+        "ogTitle": "SEO продвижение медицинских сайтов - услуги по комплексному продвижению сайтов медицинских центров и клиник",
+        "ogDescription": "Эффективное SEO продвижение медицинских сайтов в СПб, Москве и по всей России. Выведем в ТОП. Закажите услуги раскрутки сайта медицинской клиники прямо сейчас ☎️ 8 (800) 350-77-06.",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2024/09/top-1.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/seo-prodvizhenie-saytov/prodvizhenie-sajtov-za-rubezhom/",
+      "pathname": "/services/seo-prodvizhenie-saytov/prodvizhenie-sajtov-za-rubezhom/",
+      "title": "Продвижение сайтов за рубежом - цены на SEO-продвижение на Западе",
+      "files": {
+        "desktop": "desktop/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom.jpg",
+        "mobile": "mobile/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom.jpg",
+        "tablet": "tablet/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom.jpg",
+        "html": "html/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить консультацию",
+            "file": "interactive/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Отправить заявку",
+            "file": "interactive/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Продвижение сайтов за рубежом - цены на SEO-продвижение на Западе",
+        "description": "Услуги поискового продвижения сайтов за рубежом.? Целевой трафик из Google. Заказать продвижение иностранного сайта в Европе, США, Азии и Латинской Америке. ► Узнать цены на эффективное продвижение за границей.",
+        "ogTitle": "Продвижение сайтов за рубежом - цены на SEO-продвижение на Западе",
+        "ogDescription": "Услуги поискового продвижения сайтов за рубежом.? Целевой трафик из Google. Заказать продвижение иностранного сайта в Европе, США, Азии и Латинской Америке. ► Узнать цены на эффективное продвижение за границей.",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2024/09/oblozhka_burzh.png"
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/seo-prodvizhenie-saytov/mebelnyh-internet-magazinov/",
+      "pathname": "/services/seo-prodvizhenie-saytov/mebelnyh-internet-magazinov/",
+      "title": "SEO продвижение мебельных интернет-магазинов и раскрутка сайтов мебельных фабрик",
+      "files": {
+        "desktop": "desktop/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov.jpg",
+        "mobile": "mobile/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov.jpg",
+        "tablet": "tablet/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov.jpg",
+        "html": "html/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить консультацию",
+            "file": "interactive/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SEO продвижение мебельных интернет-магазинов и раскрутка сайтов мебельных фабрик",
+        "description": "Комплексное SEO продвижение сайтов мебельных фабрик и магазинов в СПб, Москве и по всей России в Яндекс и Google под ключ. Заказать раскрутку в поисковых системах, оптимизацию и поддержку интернет-магазина мебели по выгодной цене прямо сейчас ☎️ 8 (800) 350-77-06.",
+        "ogTitle": "SEO продвижение мебельных интернет-магазинов и раскрутка сайтов мебельных фабрик",
+        "ogDescription": "Комплексное SEO продвижение сайтов мебельных фабрик и магазинов в СПб, Москве и по всей России в Яндекс и Google под ключ. Заказать раскрутку в поисковых системах, оптимизацию и поддержку интернет-магазина мебели по выгодной цене прямо сейчас ☎️ 8 (800) 350-77-06.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://trinet.ru/services/seo-prodvizhenie-saytov/gostinic-i-otelej/",
+      "pathname": "/services/seo-prodvizhenie-saytov/gostinic-i-otelej/",
+      "title": "SEO продвижение сайтов гостиниц и отелей - заказать оптимизацию и раскрутку сайта отеля",
+      "files": {
+        "desktop": "desktop/services-seo-prodvizhenie-saytov-gostinic-i-otelej.jpg",
+        "mobile": "mobile/services-seo-prodvizhenie-saytov-gostinic-i-otelej.jpg",
+        "tablet": "tablet/services-seo-prodvizhenie-saytov-gostinic-i-otelej.jpg",
+        "html": "html/services-seo-prodvizhenie-saytov-gostinic-i-otelej.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Заказать звонок",
+            "file": "interactive/services-seo-prodvizhenie-saytov-gostinic-i-otelej_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить предложение",
+            "file": "interactive/services-seo-prodvizhenie-saytov-gostinic-i-otelej_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "1 месяц",
+            "file": "interactive/services-seo-prodvizhenie-saytov-gostinic-i-otelej_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SEO продвижение сайтов гостиниц и отелей - заказать оптимизацию и раскрутку сайта отеля",
+        "description": "Комплексное SEO продвижение сайта гостиницы в интернете в СПб, Москве и по всей России в Яндекс и Google под ключ. Заказать раскрутку в поисковых системах, оптимизацию и поддержку сайта отеля по выгодной цене от профессионалов поискового продвижения прямо сейчас. ☎️ 8 (800) 350-77-06.",
+        "ogTitle": "SEO продвижение сайтов гостиниц и отелей - заказать оптимизацию и раскрутку сайта отеля",
+        "ogDescription": "Комплексное SEO продвижение сайта гостиницы в интернете в СПб, Москве и по всей России в Яндекс и Google под ключ. Заказать раскрутку в поисковых системах, оптимизацию и поддержку сайта отеля по выгодной цене от профессионалов поискового продвижения прямо сейчас. ☎️ 8 (800) 350-77-06.",
+        "ogImage": "https://trinet.ru/wp-content/uploads/2024/09/hotels.png"
+      }
+    }
+  ]
+}

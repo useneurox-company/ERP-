@@ -1,0 +1,84 @@
+{
+  "id": "www-arhomes-com",
+  "name": "www.arhomes.com",
+  "source": "https://www.arhomes.com/",
+  "createdAt": "2025-11-29T08:44:19.753Z",
+  "screenshots": {
+    "original": "original.png",
+    "skeleton": "skeleton.png"
+  },
+  "structure": {
+    "sections": [
+      {
+        "type": "header",
+        "selector": "#masthead",
+        "description": "Шапка сайта с логотипом и навигацией",
+        "content": {
+          "logo": null,
+          "nav": [
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]"
+          ]
+        }
+      },
+      {
+        "type": "hero",
+        "selector": ".hero",
+        "description": "Главный баннер с заголовком и призывом к действию",
+        "content": {
+          "title": "[HEADLINE]",
+          "subtitle": "[SUBHEADLINE]",
+          "cta": "[BUTTON_TEXT]",
+          "image": null
+        }
+      },
+      {
+        "type": "gallery",
+        "selector": ".home",
+        "description": "Галерея изображений/работ",
+        "content": {
+          "items": [
+            "[IMAGE_1]",
+            "[IMAGE_2]",
+            "[IMAGE_3]",
+            "[IMAGE_4]",
+            "[IMAGE_5]",
+            "[IMAGE_6]",
+            "[IMAGE_7]",
+            "[IMAGE_8]",
+            "[IMAGE_9]",
+            "[IMAGE_10]",
+            "[IMAGE_11]",
+            "[IMAGE_12]"
+          ]
+        }
+      },
+      {
+        "type": "cta",
+        "selector": ".arh-arrow-cta-wrapper",
+        "description": "Призыв к действию",
+        "content": {
+          "title": "[CTA_TITLE]",
+          "button": "[CTA_BUTTON]"
+        }
+      },
+      {
+        "type": "footer",
+        "selector": ".footer",
+        "description": "Подвал с контактами и копирайтом",
+        "content": {
+          "phone": "[PHONE]",
+          "email": "[EMAIL]",
+          "address": "[ADDRESS]"
+        }
+      }
+    ]
+  },
+  "html": "html/home.html",
+  "designSystem": "design-system.json",
+  "aiInstructions": "Для наполнения шаблона: замените все [PLACEHOLDER] на реальный контент. Секции описаны в structure.sections с указанием типа и назначения. Каждая секция имеет description (описание назначения) и content (структура контента с плейсхолдерами)."
+}

@@ -1,0 +1,27 @@
+{
+  "id": "chekhovsmc-ru",
+  "name": "chekhovsmc.ru",
+  "source": "https://chekhovsmc.ru",
+  "createdAt": "2025-11-29T07:38:39.759Z",
+  "screenshots": {
+    "original": "original.png",
+    "skeleton": "skeleton.png"
+  },
+  "structure": {
+    "sections": [
+      {
+        "type": "footer",
+        "selector": ".uk-background-gray",
+        "description": "Подвал с контактами и копирайтом",
+        "content": {
+          "phone": "[PHONE]",
+          "email": "[EMAIL]",
+          "address": "[ADDRESS]"
+        }
+      }
+    ]
+  },
+  "html": "html/home.html",
+  "designSystem": "design-system.json",
+  "aiInstructions": "Для наполнения шаблона: замените все [PLACEHOLDER] на реальный контент. Секции описаны в structure.sections с указанием типа и назначения. Каждая секция имеет description (описание назначения) и content (структура контента с плейсхолдерами)."
+}

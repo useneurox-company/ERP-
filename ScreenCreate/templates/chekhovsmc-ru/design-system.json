@@ -1,0 +1,116 @@
+{
+  "site": "chekhovsmc.ru",
+  "crawledAt": "2025-11-29T07:38:23.139Z",
+  "colors": {
+    "primary": "#d55d3d",
+    "secondary": "#ffffff",
+    "accent": "#666666",
+    "background": "#f8f8f8",
+    "text": "#333333",
+    "palette": [
+      "#ffffff",
+      "#333333",
+      "#666666",
+      "#222222",
+      "#d55d3d",
+      "#d55e3d",
+      "#f8f8f8"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Trebuchet MS",
+      "Etude",
+      "Arial"
+    ],
+    "styles": {
+      "h1": {
+        "font": "Etude",
+        "size": "42px",
+        "weight": 700,
+        "lineHeight": "50.4px"
+      },
+      "h2": {
+        "font": "Etude",
+        "size": "42px",
+        "weight": 700,
+        "lineHeight": "50.4px"
+      },
+      "h3": {
+        "font": "Etude",
+        "size": "24px",
+        "weight": 700,
+        "lineHeight": "33.6px"
+      },
+      "body": {
+        "font": "Trebuchet MS",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "24px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mijzc5k7.svg",
+      "originalSrc": "https://chekhovsmc.ru/media/site/logo-long-white-red-anim.svg",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijzc5xw.svg",
+      "originalSrc": "https://chekhovsmc.ru/media/site/logo-short-white.svg",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijzc6e5.jpg",
+      "originalSrc": "https://chekhovsmc.ru/media/cache/partners/rzd-logo.7a2a782d.jpg",
+      "alt": ""
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mijzc6j8.jpg",
+      "originalSrc": "https://chekhovsmc.ru/media/cache/partners/Sibur_logo_EN_RGB.7a2a782d.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mijzc6nd.jpg",
+      "originalSrc": "https://chekhovsmc.ru/media/cache/header/IMG_20250820_162614.c3977a9b.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mijzc6zs.svg",
+      "originalSrc": "https://chekhovsmc.ru/media/site/10.svg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mijzc73w.jpg",
+      "originalSrc": "https://chekhovsmc.ru/media/cache/site/faq.6919936f.jpg",
+      "alt": ""
+    },
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mijzc7at.svg",
+      "originalSrc": "https://chekhovsmc.ru/media/site/favicon.svg",
+      "alt": "Favicon"
+    },
+    {
+      "type": "og-image",
+      "src": "assets/og-image_mijzc7ez.jpg",
+      "originalSrc": "https://chekhovsmc.ru//media/cache/header/IMG_20250820_162614.47e8e8f0.jpg",
+      "alt": "Open Graph Image"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/metalloizdeliya",
+      "title": "Металлоизделия - Чеховский сервисный металлоцентр",
+      "screenshot": "desktop/metalloizdeliya.jpg"
+    }
+  ]
+}

@@ -1,0 +1,1058 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScreenCreate - Краулер</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #0f0f1a;
+      color: #eee;
+      margin: 0;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    .container { max-width: 1400px; margin: 0 auto; }
+    h1 { color: #00d9ff; text-align: center; margin-bottom: 10px; }
+    .subtitle { text-align: center; color: #888; margin-bottom: 30px; }
+
+    .form-section {
+      background: #1a1a2e;
+      padding: 25px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+    }
+    .form-row {
+      display: flex;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+    .form-group { flex: 1; min-width: 200px; }
+    .form-group.wide { flex: 3; min-width: 300px; }
+    label { display: block; color: #aaa; margin-bottom: 8px; font-size: 14px; }
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #333;
+      border-radius: 8px;
+      background: #16213e;
+      color: #fff;
+      font-size: 16px;
+    }
+    input:focus, select:focus { outline: none; border-color: #00d9ff; }
+    button {
+      padding: 15px 40px;
+      font-size: 16px;
+      font-weight: bold;
+      background: linear-gradient(135deg, #00d9ff, #0077ff);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+    button:hover { opacity: 0.9; }
+    button:disabled { background: #555; cursor: not-allowed; }
+
+    .progress-section {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      display: none;
+    }
+    .progress-section.active { display: block; }
+    .progress-bar {
+      height: 8px;
+      background: #333;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-bottom: 15px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #00d9ff, #00ff88);
+      width: 0%;
+      transition: width 0.3s;
+    }
+    .progress-stats {
+      display: flex;
+      gap: 30px;
+      margin-bottom: 15px;
+    }
+    .stat { text-align: center; }
+    .stat-value { font-size: 28px; font-weight: bold; color: #00d9ff; }
+    .stat-label { font-size: 12px; color: #888; }
+    .log {
+      background: #0f0f1a;
+      border-radius: 8px;
+      padding: 15px;
+      max-height: 200px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .log-item { padding: 4px 0; border-bottom: 1px solid #222; }
+    .log-item.error { color: #ff4757; }
+    .log-item .url { color: #00d9ff; }
+    .log-item .title { color: #888; }
+
+    .gallery-section {
+      background: #1a1a2e;
+      padding: 20px;
+      border-radius: 12px;
+      display: none;
+    }
+    .gallery-section.active { display: block; }
+    .gallery-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .gallery-header h2 { margin: 0; color: #00d9ff; }
+    .download-btn {
+      padding: 10px 20px;
+      background: #28a745;
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .gallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+      gap: 20px;
+    }
+    .gallery-item {
+      background: #16213e;
+      border-radius: 10px;
+      overflow: hidden;
+      transition: transform 0.2s;
+    }
+    .gallery-item:hover { transform: scale(1.02); }
+    .gallery-item img {
+      width: 100%;
+      height: 200px;
+      object-fit: cover;
+      object-position: top;
+      cursor: pointer;
+    }
+    .gallery-item-info {
+      padding: 15px;
+    }
+    .gallery-item-title {
+      font-weight: bold;
+      margin-bottom: 5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .gallery-item-url {
+      font-size: 12px;
+      color: #00d9ff;
+      word-break: break-all;
+    }
+    .gallery-item-path {
+      font-size: 11px;
+      color: #666;
+      margin-top: 5px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.9);
+      z-index: 1000;
+      padding: 20px;
+      overflow: auto;
+    }
+    .modal.active { display: flex; align-items: center; justify-content: center; }
+    .modal img { max-width: 95%; max-height: 95%; border-radius: 8px; }
+    .modal-close {
+      position: fixed;
+      top: 20px;
+      right: 30px;
+      font-size: 40px;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .sites-section {
+      margin-bottom: 30px;
+    }
+    .sites-list {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+    .site-badge {
+      background: #16213e;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .site-badge:hover { background: #1e2a4a; }
+    .site-badge-name { font-weight: bold; }
+    .site-badge-info { font-size: 11px; color: #888; }
+    .site-badge-delete {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 20px;
+      height: 20px;
+      background: #dc3545;
+      border: none;
+      border-radius: 50%;
+      color: #fff;
+      font-size: 14px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+    }
+    .site-badge { position: relative; }
+    .site-badge:hover .site-badge-delete { display: flex; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>ScreenCreate Crawler</h1>
+    <p class="subtitle">Введи URL сайта — получи скриншоты всех страниц</p>
+
+    <div class="sites-section" id="sitesSection">
+      <label>Ранее просканированные сайты:</label>
+      <div class="sites-list" id="sitesList"></div>
+    </div>
+
+    <div class="form-section">
+      <div class="form-row" style="margin-bottom: 15px;">
+        <div style="display: flex; gap: 10px; align-items: center;">
+          <label style="margin: 0; cursor: pointer;">
+            <input type="radio" name="crawlMode" value="single" checked style="margin-right: 5px;">
+            Один сайт
+          </label>
+          <label style="margin: 0; cursor: pointer;">
+            <input type="radio" name="crawlMode" value="multi" style="margin-right: 5px;">
+            Несколько сайтов (до 5)
+          </label>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group wide" id="singleUrlGroup">
+          <label>URL сайта</label>
+          <input type="text" id="url" placeholder="https://example.com" value="https://example.com">
+        </div>
+        <div class="form-group wide" id="multiUrlGroup" style="display: none;">
+          <label>URL сайтов (по одному на строку, макс. 5)</label>
+          <textarea id="urls" rows="5" placeholder="https://site1.com
+https://site2.com
+https://site3.com" style="width: 100%; padding: 12px; border: 2px solid #333; border-radius: 8px; background: #16213e; color: #fff; font-size: 14px; font-family: monospace; resize: vertical;"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Формат</label>
+          <select id="format">
+            <option value="png">PNG</option>
+            <option value="jpeg">JPEG</option>
+            <option value="webp">WebP</option>
+          </select>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; padding-top: 25px;">
+          <input type="checkbox" id="fullPage" checked style="width: 20px; height: 20px; margin-right: 10px;">
+          <label for="fullPage" style="margin: 0; cursor: pointer;">Full Page</label>
+        </div>
+        <div class="form-group" style="display: flex; align-items: center; padding-top: 25px;">
+          <input type="checkbox" id="compressForAI" style="width: 20px; height: 20px; margin-right: 10px;">
+          <label for="compressForAI" style="margin: 0; cursor: pointer; color: #00d9ff;">Сжать для AI</label>
+        </div>
+      </div>
+
+      <!-- Секция: Что собирать -->
+      <div style="margin-top: 20px; padding: 20px; background: #16213e; border-radius: 10px; border: 1px solid #333;">
+        <div style="display: flex; gap: 30px; flex-wrap: wrap;">
+
+          <!-- Скриншоты -->
+          <div style="flex: 1; min-width: 250px;">
+            <label style="color: #00d9ff; font-weight: bold; margin-bottom: 15px; display: block;">📸 СКРИНШОТЫ</label>
+            <div style="display: flex; gap: 15px; flex-wrap: wrap;">
+              <div style="background: #1a1a2e; padding: 12px 15px; border-radius: 8px; border: 2px solid #333;">
+                <input type="checkbox" id="captureDesktop" checked style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                <label for="captureDesktop" style="cursor: pointer; margin: 0;">Desktop</label>
+                <div style="color: #666; font-size: 11px; margin-top: 5px;">1920×1080</div>
+              </div>
+              <div style="background: #1a1a2e; padding: 12px 15px; border-radius: 8px; border: 2px solid #333;">
+                <input type="checkbox" id="captureMobile" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                <label for="captureMobile" style="cursor: pointer; margin: 0;">Mobile</label>
+                <div style="color: #666; font-size: 11px; margin-top: 5px;">375×812</div>
+              </div>
+              <div style="background: #1a1a2e; padding: 12px 15px; border-radius: 8px; border: 2px solid #333;">
+                <input type="checkbox" id="captureTablet" style="width: 18px; height: 18px; margin-right: 8px; vertical-align: middle;">
+                <label for="captureTablet" style="cursor: pointer; margin: 0;">Tablet</label>
+                <div style="color: #666; font-size: 11px; margin-top: 5px;">768×1024</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Дизайн для AI -->
+          <div style="flex: 1; min-width: 250px;">
+            <label style="color: #e056fd; font-weight: bold; margin-bottom: 15px; display: block;">🎨 ДИЗАЙН (для AI)</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureColors" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Цветовая палитра
+              </label>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureTypography" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Типографика (шрифты)
+              </label>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureImages" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Изображения (логотипы)
+              </label>
+            </div>
+          </div>
+
+          <!-- Интерактив -->
+          <div style="flex: 1; min-width: 250px;">
+            <label style="color: #ff9f43; font-weight: bold; margin-bottom: 15px; display: block;">🎯 ИНТЕРАКТИВ</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureHover" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Hover эффекты (кнопки, ссылки)
+              </label>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureTabs" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Клики на табы/аккордеоны
+              </label>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureModals" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Открытые модалки
+              </label>
+            </div>
+          </div>
+
+          <!-- Данные -->
+          <div style="flex: 1; min-width: 200px;">
+            <label style="color: #26de81; font-weight: bold; margin-bottom: 15px; display: block;">📄 ДАННЫЕ</label>
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureHtml" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                HTML код страниц
+              </label>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureCss" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                CSS стили (инлайн)
+              </label>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="captureMeta" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Метаданные (title, OG)
+              </label>
+            </div>
+          </div>
+
+          <!-- Скорость -->
+          <div style="flex: 1; min-width: 200px;">
+            <label style="color: #ffd700; font-weight: bold; margin-bottom: 15px; display: block;">⚡ СКОРОСТЬ</label>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+              <div>
+                <label style="color: #aaa; font-size: 12px; margin-bottom: 5px; display: block;">Параллельных вкладок:</label>
+                <select id="parallelTabs" style="width: 100%; padding: 8px; border: 2px solid #333; border-radius: 6px; background: #1a1a2e; color: #fff;">
+                  <option value="1">1 (стабильно)</option>
+                  <option value="3" selected>3 (оптимально)</option>
+                  <option value="5">5 (быстро)</option>
+                </select>
+              </div>
+              <label style="cursor: pointer; color: #aaa;">
+                <input type="checkbox" id="fastMode" style="width: 16px; height: 16px; margin-right: 8px; vertical-align: middle;">
+                Быстрый режим
+              </label>
+              <small style="color: #666; font-size: 10px;">Быстрее, но меньше ожидания загрузки</small>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="form-row" style="margin-top: 15px;">
+        <div class="form-group wide">
+          <label style="color: #00d9ff;">AI Фильтр (опиши словами какие страницы нужны)</label>
+          <input type="text" id="aiPrompt" placeholder="Например: только карточки товаров, главная и контакты" style="margin-bottom: 10px;">
+          <small style="color: #00d9ff; display: block; margin-top: -5px; margin-bottom: 15px;">AI сам поймёт какие страницы скриншотить. Или используй паттерны ниже:</small>
+
+          <label>Паттерны страниц (альтернатива AI)</label>
+          <textarea id="includePatterns" rows="3" placeholder="/
+/contacts
+/product/*" style="width: 100%; padding: 12px; border: 2px solid #333; border-radius: 8px; background: #16213e; color: #fff; font-size: 14px; font-family: monospace; resize: vertical;"></textarea>
+          <small style="color: #666; display: block; margin-top: 5px;">* = любые символы. AI фильтр имеет приоритет над паттернами</small>
+        </div>
+        <div class="form-group">
+          <label>Лимит страниц</label>
+          <input type="number" id="maxPages" placeholder="Без лимита" min="1">
+          <small style="color: #666; display: block; margin-top: 5px;">Макс. количество страниц</small>
+        </div>
+      </div>
+
+      <button id="startBtn">Начать краулинг</button>
+      <button id="stopBtn" style="background: #dc3545; display: none;">Остановить</button>
+      <button id="findTemplateBtn" style="background: linear-gradient(135deg, #e056fd, #8854d0); margin-left: 10px;">🔍 Найти страницы для шаблона</button>
+    </div>
+
+    <div class="progress-section" id="progressSection">
+      <div class="progress-bar">
+        <div class="progress-bar-fill" id="progressBar"></div>
+      </div>
+      <div class="progress-stats">
+        <div class="stat">
+          <div class="stat-value" id="pagesFound">0</div>
+          <div class="stat-label">Страниц найдено</div>
+        </div>
+        <div class="stat">
+          <div class="stat-value" id="pagesQueued">0</div>
+          <div class="stat-label">В очереди</div>
+        </div>
+      </div>
+      <div class="log" id="log"></div>
+    </div>
+
+    <div class="gallery-section" id="gallerySection">
+      <div class="gallery-header">
+        <h2>Результаты: <span id="siteName"></span></h2>
+        <div style="display: flex; gap: 10px;">
+          <button class="download-btn" id="makeTemplate" style="background: #e056fd;">Сделать шаблон</button>
+          <button class="download-btn" id="downloadTemplate" style="background: #28a745; display: none;">Скачать шаблон</button>
+          <button class="download-btn" id="downloadZip" style="background: #0077ff;">Скачать ZIP</button>
+          <button class="download-btn" id="downloadReport">Скачать отчёт JSON</button>
+        </div>
+      </div>
+      <div class="gallery" id="gallery"></div>
+    </div>
+  </div>
+
+  <div class="modal" id="modal">
+    <span class="modal-close" id="modalClose">&times;</span>
+    <img id="modalImg" src="">
+  </div>
+
+  <!-- Template Pages Finder Modal -->
+  <div class="modal" id="templateFinderModal" style="background: rgba(0,0,0,0.95);">
+    <div style="background: #1a1a2e; border-radius: 16px; max-width: 900px; width: 95%; max-height: 90vh; overflow: hidden; display: flex; flex-direction: column;">
+      <div style="padding: 20px; border-bottom: 1px solid #333; display: flex; justify-content: space-between; align-items: center;">
+        <h2 style="margin: 0; color: #e056fd;">🔍 Поиск страниц для шаблона</h2>
+        <span onclick="closeTemplateFinderModal()" style="font-size: 30px; cursor: pointer; color: #888;">&times;</span>
+      </div>
+
+      <div style="padding: 20px; overflow-y: auto; flex: 1;">
+        <!-- Status -->
+        <div id="templateFinderStatus" style="margin-bottom: 20px; padding: 15px; background: #16213e; border-radius: 10px;">
+          <div id="templateFinderMessage" style="color: #00d9ff;">Готов к поиску</div>
+          <div id="templateFinderProgress" style="margin-top: 10px; color: #888; font-size: 13px;"></div>
+        </div>
+
+        <!-- Found Pages -->
+        <div id="templateFoundPages" style="display: none;">
+          <h3 style="color: #26de81; margin-bottom: 15px;">✓ Найденные страницы:</h3>
+          <div id="templatePagesList" style="display: grid; gap: 10px;"></div>
+        </div>
+
+        <!-- Missing Pages -->
+        <div id="templateMissingPages" style="display: none; margin-top: 20px;">
+          <h3 style="color: #ff6b6b; margin-bottom: 15px;">✗ Не найдено (обязательные):</h3>
+          <div id="templateMissingList"></div>
+        </div>
+      </div>
+
+      <div style="padding: 20px; border-top: 1px solid #333; display: flex; gap: 10px; justify-content: flex-end;">
+        <button id="templateFinderCrawlBtn" style="background: #28a745; display: none;" onclick="crawlFoundPages()">Скачать найденные страницы</button>
+        <button onclick="closeTemplateFinderModal()" style="background: #555;">Закрыть</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const startBtn = document.getElementById('startBtn');
+    const stopBtn = document.getElementById('stopBtn');
+    const progressSection = document.getElementById('progressSection');
+    const gallerySection = document.getElementById('gallerySection');
+    const log = document.getElementById('log');
+    const gallery = document.getElementById('gallery');
+    const modal = document.getElementById('modal');
+    const modalImg = document.getElementById('modalImg');
+    const sitesList = document.getElementById('sitesList');
+
+    let currentReport = null;
+    let currentJobId = null;
+    let abortController = null;
+    let isMultiMode = false;
+
+    // Mode switching
+    document.querySelectorAll('input[name="crawlMode"]').forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        isMultiMode = e.target.value === 'multi';
+        document.getElementById('singleUrlGroup').style.display = isMultiMode ? 'none' : 'block';
+        document.getElementById('multiUrlGroup').style.display = isMultiMode ? 'block' : 'none';
+        startBtn.textContent = isMultiMode ? 'Начать мульти-краулинг' : 'Начать краулинг';
+      });
+    });
+
+    // Load existing sites
+    loadSites();
+
+    async function loadSites() {
+      try {
+        const res = await fetch('/crawl/sites');
+        const sites = await res.json();
+        sitesList.innerHTML = sites.map(s => `
+          <div class="site-badge" onclick="loadSite('${s.siteName}')">
+            <button class="site-badge-delete" onclick="event.stopPropagation(); deleteSite('${s.siteName}')" title="Удалить">&times;</button>
+            <div class="site-badge-name">${s.site}</div>
+            <div class="site-badge-info">${s.totalPages} страниц</div>
+          </div>
+        `).join('');
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    async function deleteSite(siteName) {
+      if (!confirm(`Удалить проект "${siteName}" и все его скриншоты?`)) return;
+      try {
+        const res = await fetch(`/crawl/delete/${siteName}`, { method: 'DELETE' });
+        if (res.ok) {
+          loadSites();
+          if (currentReport && currentReport.siteName === siteName) {
+            gallerySection.classList.remove('active');
+            currentReport = null;
+          }
+        } else {
+          alert('Ошибка удаления');
+        }
+      } catch (e) {
+        alert('Ошибка: ' + e.message);
+      }
+    }
+
+    async function loadSite(siteName) {
+      try {
+        const res = await fetch(`/crawl/report/${siteName}`);
+        const report = await res.json();
+        showGallery(report);
+      } catch (e) {
+        alert('Ошибка загрузки');
+      }
+    }
+
+    startBtn.addEventListener('click', startCrawl);
+    stopBtn.addEventListener('click', stopCrawl);
+
+    async function stopCrawl() {
+      if (currentJobId) {
+        await fetch(`/crawl/stop/${currentJobId}`, { method: 'POST' });
+      }
+      if (abortController) {
+        abortController.abort();
+      }
+      addLog('Остановлено пользователем', true);
+      resetButtons();
+    }
+
+    function resetButtons() {
+      startBtn.disabled = false;
+      startBtn.textContent = 'Начать краулинг';
+      stopBtn.style.display = 'none';
+      loadSites();
+    }
+
+    async function startCrawl() {
+      // Get URLs based on mode
+      let urls = [];
+      if (isMultiMode) {
+        urls = document.getElementById('urls').value
+          .split('\n')
+          .map(u => u.trim())
+          .filter(u => u.length > 0 && u.startsWith('http'));
+        if (urls.length === 0) return alert('Введите хотя бы один URL');
+        if (urls.length > 5) {
+          urls = urls.slice(0, 5);
+          alert('Максимум 5 сайтов. Остальные будут пропущены.');
+        }
+      } else {
+        const url = document.getElementById('url').value;
+        if (!url) return alert('Введите URL');
+        urls = [url];
+      }
+
+      const format = document.getElementById('format').value;
+      const fullPage = document.getElementById('fullPage').checked;
+      const compressForAI = document.getElementById('compressForAI').checked;
+      const aiPrompt = document.getElementById('aiPrompt').value.trim();
+      const includePatterns = document.getElementById('includePatterns').value
+        .split('\n')
+        .map(p => p.trim())
+        .filter(p => p.length > 0);
+      const maxPages = parseInt(document.getElementById('maxPages').value) || 0;
+
+      // Capture options
+      const captureDesktop = document.getElementById('captureDesktop').checked;
+      const captureMobile = document.getElementById('captureMobile').checked;
+      const captureTablet = document.getElementById('captureTablet').checked;
+      const captureHtml = document.getElementById('captureHtml').checked;
+      const captureCss = document.getElementById('captureCss').checked;
+      const captureMeta = document.getElementById('captureMeta').checked;
+      const captureHover = document.getElementById('captureHover').checked;
+      const captureTabs = document.getElementById('captureTabs').checked;
+      const captureModals = document.getElementById('captureModals').checked;
+
+      // Design options for AI
+      const captureColors = document.getElementById('captureColors').checked;
+      const captureTypography = document.getElementById('captureTypography').checked;
+      const captureImages = document.getElementById('captureImages').checked;
+
+      // Speed options
+      const parallelTabs = parseInt(document.getElementById('parallelTabs').value) || 1;
+      const fastMode = document.getElementById('fastMode').checked;
+
+      if (!captureDesktop && !captureMobile && !captureTablet && !captureHtml) {
+        return alert('Выберите хотя бы один тип скриншотов или данных для сбора');
+      }
+
+      startBtn.disabled = true;
+      startBtn.textContent = isMultiMode ? `Краулинг ${urls.length} сайтов...` : 'Краулинг...';
+      stopBtn.style.display = 'inline-block';
+      progressSection.classList.add('active');
+      gallerySection.classList.remove('active');
+      log.innerHTML = '';
+      document.getElementById('pagesFound').textContent = '0';
+      document.getElementById('pagesQueued').textContent = '0';
+
+      // For multi-mode, show site progress blocks
+      if (isMultiMode) {
+        log.innerHTML = urls.map((url, i) => `
+          <div id="site-progress-${i}" class="log-item" style="padding: 10px; margin-bottom: 5px; background: #16213e; border-radius: 6px;">
+            <div style="display: flex; justify-content: space-between;">
+              <span style="color: #00d9ff;">${new URL(url).hostname}</span>
+              <span id="site-status-${i}" style="color: #888;">⏳ Ожидание...</span>
+            </div>
+            <div id="site-pages-${i}" style="color: #666; font-size: 12px; margin-top: 5px;">0 страниц</div>
+          </div>
+        `).join('');
+      }
+
+      abortController = new AbortController();
+
+      try {
+        const endpoint = isMultiMode ? '/crawl/start-multi' : '/crawl/start';
+        const body = isMultiMode
+          ? { urls, format, fullPage, compressForAI, includePatterns, maxPages, aiPrompt: aiPrompt || null, captureDesktop, captureMobile, captureTablet, captureHtml, captureCss, captureMeta, captureHover, captureTabs, captureModals, captureColors, captureTypography, captureImages, parallelTabs, fastMode }
+          : { url: urls[0], format, fullPage, compressForAI, includePatterns, maxPages, aiPrompt: aiPrompt || null, captureDesktop, captureMobile, captureTablet, captureHtml, captureCss, captureMeta, captureHover, captureTabs, captureModals, captureColors, captureTypography, captureImages, parallelTabs, fastMode };
+
+        const res = await fetch(endpoint, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+          signal: abortController.signal
+        });
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = JSON.parse(line.slice(6));
+              if (data.jobId) currentJobId = data.jobId;
+              if (isMultiMode) {
+                handleMultiEvent(data);
+              } else {
+                handleEvent(data);
+              }
+            }
+          }
+        }
+      } catch (e) {
+        if (e.name !== 'AbortError') {
+          addLog('Ошибка: ' + e.message, true);
+        }
+      }
+
+      resetButtons();
+    }
+
+    // Handle multi-site crawling events
+    function handleMultiEvent(data) {
+      const { siteIndex, siteName } = data;
+      console.log('[Multi Event]', data.type, 'siteIndex:', siteIndex, data);
+
+      switch (data.type) {
+        case 'multi_start':
+          document.getElementById('pagesFound').textContent = `0/${data.totalSites}`;
+          break;
+
+        case 'site_start':
+          const statusEl = document.getElementById(`site-status-${siteIndex}`);
+          if (statusEl) {
+            statusEl.textContent = '🔄 Краулинг...';
+            statusEl.style.color = '#00d9ff';
+          }
+          break;
+
+        case 'screenshot':
+          const pagesEl = document.getElementById(`site-pages-${siteIndex}`);
+          if (pagesEl) {
+            pagesEl.textContent = `${data.total} страниц`;
+          }
+          break;
+
+        case 'site_complete':
+          const completeStatusEl = document.getElementById(`site-status-${siteIndex}`);
+          const completePagesEl = document.getElementById(`site-pages-${siteIndex}`);
+          if (completeStatusEl) {
+            completeStatusEl.textContent = '✅ Готово';
+            completeStatusEl.style.color = '#26de81';
+          }
+          if (completePagesEl) {
+            completePagesEl.textContent = `${data.report.totalPages} страниц`;
+          }
+          break;
+
+        case 'site_error':
+          const errorStatusEl = document.getElementById(`site-status-${siteIndex}`);
+          if (errorStatusEl) {
+            errorStatusEl.textContent = '❌ Ошибка';
+            errorStatusEl.style.color = '#ff6b6b';
+          }
+          break;
+
+        case 'multi_complete':
+          document.getElementById('pagesFound').textContent = `${data.summary.success}/${data.summary.total}`;
+          addLog(`Готово! ${data.summary.success} из ${data.summary.total} сайтов`, false);
+          loadSites();
+          break;
+      }
+    }
+
+    function handleEvent(data) {
+      switch (data.type) {
+        case 'start':
+          addLog(`Начинаю краулинг ${data.site}`);
+          break;
+        case 'screenshot':
+          document.getElementById('pagesFound').textContent = data.total;
+          document.getElementById('pagesQueued').textContent = data.queued;
+          addLog(`<span class="url">${data.page.pathname}</span> — <span class="title">${data.page.title}</span>`);
+          break;
+        case 'ai_checking':
+          addLog(`<span class="url">${data.pathname}</span> — <span style="color: #00d9ff;">AI проверяет...</span>`);
+          break;
+        case 'crawling':
+          addLog(`<span class="url">${data.pathname}</span> — <span style="color: #888;">пропущено</span>`);
+          break;
+        case 'limit_reached':
+          addLog(data.message, false);
+          break;
+        case 'error':
+          addLog(`Ошибка: ${data.url} — ${data.error}`, true);
+          break;
+        case 'complete':
+        case 'done':
+          addLog(`Готово! ${data.report.totalPages} страниц`);
+          showGallery(data.report);
+          break;
+      }
+    }
+
+    function addLog(msg, isError = false) {
+      const item = document.createElement('div');
+      item.className = 'log-item' + (isError ? ' error' : '');
+      item.innerHTML = msg;
+      log.appendChild(item);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    function showGallery(report) {
+      currentReport = report;
+      gallerySection.classList.add('active');
+      document.getElementById('siteName').textContent = report.site;
+
+      gallery.innerHTML = report.pages.map(p => {
+        // Support both old (fileName) and new (files) format
+        const primaryFile = p.files?.desktop || p.files?.mobile || p.files?.tablet || p.fileName;
+        const filesInfo = p.files ? Object.entries(p.files).map(([type, file]) => {
+          const icon = type === 'desktop' ? '🖥️' : type === 'mobile' ? '📱' : type === 'tablet' ? '📱' : type === 'html' ? '📄' : '📁';
+          return `<span style="margin-right: 8px; cursor: pointer;" onclick="event.stopPropagation(); openModal('/screenshots/${report.siteName}/${file}')" title="${type}">${icon}</span>`;
+        }).join('') : '';
+
+        return `
+          <div class="gallery-item">
+            <img src="/screenshots/${report.siteName}/${primaryFile}"
+                 onclick="openModal('/screenshots/${report.siteName}/${primaryFile}')"
+                 onerror="this.src='data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%22350%22 height=%22200%22><rect fill=%22%23333%22 width=%22100%25%22 height=%22100%25%22/><text fill=%22%23999%22 x=%2250%25%22 y=%2250%25%22 text-anchor=%22middle%22>Ошибка загрузки</text></svg>'">
+            <div class="gallery-item-info">
+              <div class="gallery-item-title">${escapeHtml(p.title || 'Без названия')}</div>
+              <div class="gallery-item-url">${p.pathname}</div>
+              <div class="gallery-item-path" style="margin-top: 8px;">${filesInfo || `Файл: ${primaryFile}`}</div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function openModal(src) {
+      modalImg.src = src;
+      modal.classList.add('active');
+    }
+
+    document.getElementById('modalClose').onclick = () => modal.classList.remove('active');
+    modal.onclick = (e) => { if (e.target === modal) modal.classList.remove('active'); };
+
+    document.getElementById('downloadReport').onclick = () => {
+      if (!currentReport) return;
+      const blob = new Blob([JSON.stringify(currentReport, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${currentReport.siteName}-report.json`;
+      a.click();
+    };
+
+    document.getElementById('downloadZip').onclick = () => {
+      if (!currentReport) return;
+      window.location.href = `/crawl/download/${currentReport.siteName}`;
+    };
+
+    document.getElementById('makeTemplate').onclick = async () => {
+      if (!currentReport) return;
+
+      const btn = document.getElementById('makeTemplate');
+      const originalText = btn.textContent;
+      btn.disabled = true;
+      btn.textContent = 'Создаю...';
+
+      try {
+        const res = await fetch(`/crawl/make-template/${currentReport.siteName}`, {
+          method: 'POST'
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          // Show template info
+          const sectionsCount = result.template.structure?.sections?.length || 0;
+          alert(`Шаблон создан!\n\nСекций обнаружено: ${sectionsCount}\nФайлы: template.json, README.md, original.png, skeleton.png`);
+
+          // Show download button
+          const downloadBtn = document.getElementById('downloadTemplate');
+          downloadBtn.style.display = 'inline-block';
+          downloadBtn.onclick = () => {
+            window.location.href = `/crawl/download-template/${currentReport.siteName}`;
+          };
+
+          // Auto-download ZIP using iframe (bypasses popup blocker)
+          const iframe = document.createElement('iframe');
+          iframe.style.display = 'none';
+          iframe.src = `/crawl/download-template/${currentReport.siteName}`;
+          document.body.appendChild(iframe);
+          setTimeout(() => iframe.remove(), 10000);
+
+          // Reset make template button
+          btn.textContent = 'Пересоздать шаблон';
+          btn.style.background = '#e056fd';
+          btn.disabled = false;
+        } else {
+          throw new Error(result.error || 'Unknown error');
+        }
+      } catch (e) {
+        alert('Ошибка создания шаблона: ' + e.message);
+        btn.textContent = originalText;
+        btn.style.background = '#e056fd';
+        btn.disabled = false;
+      }
+    };
+
+    function escapeHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ============== Template Pages Finder ==============
+    let foundTemplatePages = [];
+
+    document.getElementById('findTemplateBtn').addEventListener('click', findTemplatePages);
+
+    function closeTemplateFinderModal() {
+      document.getElementById('templateFinderModal').classList.remove('active');
+    }
+
+    async function findTemplatePages() {
+      const url = document.getElementById('url').value;
+      if (!url) return alert('Введите URL сайта');
+
+      const modal = document.getElementById('templateFinderModal');
+      modal.classList.add('active');
+
+      const messageEl = document.getElementById('templateFinderMessage');
+      const progressEl = document.getElementById('templateFinderProgress');
+      const foundPagesEl = document.getElementById('templateFoundPages');
+      const pagesListEl = document.getElementById('templatePagesList');
+      const missingPagesEl = document.getElementById('templateMissingPages');
+      const missingListEl = document.getElementById('templateMissingList');
+      const crawlBtn = document.getElementById('templateFinderCrawlBtn');
+
+      // Reset
+      messageEl.textContent = 'Начинаю поиск страниц...';
+      messageEl.style.color = '#00d9ff';
+      progressEl.textContent = '';
+      foundPagesEl.style.display = 'none';
+      pagesListEl.innerHTML = '';
+      missingPagesEl.style.display = 'none';
+      missingListEl.innerHTML = '';
+      crawlBtn.style.display = 'none';
+      foundTemplatePages = [];
+
+      try {
+        const res = await fetch('/crawl/find-template-pages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url })
+        });
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        let buffer = '';
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const lines = buffer.split('\n\n');
+          buffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              const data = JSON.parse(line.slice(6));
+              handleTemplateFinderEvent(data);
+            }
+          }
+        }
+      } catch (e) {
+        messageEl.textContent = 'Ошибка: ' + e.message;
+        messageEl.style.color = '#ff6b6b';
+      }
+    }
+
+    function handleTemplateFinderEvent(data) {
+      const messageEl = document.getElementById('templateFinderMessage');
+      const progressEl = document.getElementById('templateFinderProgress');
+      const foundPagesEl = document.getElementById('templateFoundPages');
+      const pagesListEl = document.getElementById('templatePagesList');
+      const missingPagesEl = document.getElementById('templateMissingPages');
+      const missingListEl = document.getElementById('templateMissingList');
+      const crawlBtn = document.getElementById('templateFinderCrawlBtn');
+
+      switch (data.type) {
+        case 'start':
+          messageEl.textContent = data.message;
+          break;
+
+        case 'checking':
+          progressEl.textContent = `Проверено: ${data.checked} | В очереди: ${data.queued} | Найдено типов: ${data.found}`;
+          messageEl.textContent = `Проверяю: ${data.pathname}`;
+          break;
+
+        case 'found':
+          messageEl.textContent = `Найдено: ${data.pageType} - ${data.page.pathname}`;
+          messageEl.style.color = '#26de81';
+
+          // Add to list immediately
+          foundPagesEl.style.display = 'block';
+          const pageHtml = `
+            <div style="background: #16213e; padding: 12px 15px; border-radius: 8px; border-left: 4px solid ${data.page?.required ? '#e056fd' : '#26de81'};">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                  <span style="color: #e056fd; font-weight: bold;">${escapeHtml(data.page?.typeName || data.pageType)}</span>
+                  <span style="color: #888; margin-left: 10px;">${escapeHtml(data.page?.pathname || '')}</span>
+                </div>
+                <span style="color: #666; font-size: 12px;">${data.page?.required ? '⭐ обязательная' : 'опциональная'}</span>
+              </div>
+              <div style="color: #666; font-size: 12px; margin-top: 5px;">${escapeHtml(data.page?.title || '')}</div>
+            </div>
+          `;
+          pagesListEl.insertAdjacentHTML('beforeend', pageHtml);
+          break;
+
+        case 'all_required_found':
+          messageEl.textContent = data.message;
+          messageEl.style.color = '#26de81';
+          break;
+
+        case 'error':
+          progressEl.textContent += `\nОшибка: ${data.url}`;
+          break;
+
+        case 'complete':
+        case 'done':
+          const result = data.result;
+          foundTemplatePages = result.foundPages;
+
+          messageEl.textContent = `Готово! Найдено ${result.foundPages.length} типов страниц из ${result.checkedPages} проверенных`;
+          messageEl.style.color = '#26de81';
+
+          // Show missing required pages
+          if (result.missingRequired && result.missingRequired.length > 0) {
+            missingPagesEl.style.display = 'block';
+            missingListEl.innerHTML = result.missingRequired.map(p => `
+              <div style="background: #2d1f1f; padding: 10px 15px; border-radius: 8px; margin-bottom: 8px; border-left: 4px solid #ff6b6b;">
+                <span style="color: #ff6b6b;">${escapeHtml(p.name)}</span>
+                <span style="color: #888; margin-left: 10px; font-size: 12px;">(${p.id})</span>
+              </div>
+            `).join('');
+          }
+
+          // Show crawl button
+          if (result.foundPages.length > 0) {
+            crawlBtn.style.display = 'inline-block';
+          }
+          break;
+      }
+    }
+
+    function crawlFoundPages() {
+      if (foundTemplatePages.length === 0) return;
+
+      // Fill AI prompt with found page types
+      const pageTypes = foundTemplatePages.map(p => p.typeName).join(', ');
+      document.getElementById('aiPrompt').value = pageTypes;
+
+      // Fill patterns with found URLs
+      const patterns = foundTemplatePages.map(p => p.pathname).join('\n');
+      document.getElementById('includePatterns').value = patterns;
+
+      // Set max pages
+      document.getElementById('maxPages').value = foundTemplatePages.length;
+
+      // Close modal
+      closeTemplateFinderModal();
+
+      // Notify user
+      alert(`Найдено ${foundTemplatePages.length} страниц для шаблона!\n\nПаттерны URL добавлены в фильтр.\nНажмите "Начать краулинг" чтобы скачать скриншоты.`);
+    }
+  </script>
+</body>
+</html>

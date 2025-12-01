@@ -1,0 +1,176 @@
+{
+  "site": "trinet.ru",
+  "crawledAt": "2025-11-29T11:18:42.967Z",
+  "colors": {
+    "primary": "#ef0123",
+    "secondary": "#999999",
+    "accent": "#ffffff",
+    "background": "#fafafa",
+    "text": "#333333",
+    "palette": [
+      "#333333",
+      "#999999",
+      "#ffffff",
+      "#363636",
+      "#150000",
+      "#ef0123",
+      "#bdc0c8",
+      "#fafafa",
+      "#838383",
+      "#4d4d4d",
+      "#231f20",
+      "#eb0000",
+      "#f2f2f2",
+      "#f0f2f5",
+      "#cccccc",
+      "#464646",
+      "#00a0d2",
+      "#767676",
+      "#757575",
+      "#007aff"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Roboto",
+      "Montserrat",
+      "Manrope",
+      "Arial",
+      "RobotoSlab"
+    ],
+    "styles": {
+      "h1": {
+        "font": "Roboto",
+        "size": "32px",
+        "weight": 600,
+        "lineHeight": "44.8px"
+      },
+      "h2": {
+        "font": "Montserrat",
+        "size": "34px",
+        "weight": 700,
+        "lineHeight": "44.2px"
+      },
+      "body": {
+        "font": "Roboto",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "22.4px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77i1r.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/08/logo.png",
+      "alt": "Агентство интернет-маркетинга"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77igh.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2025/04/logo.png",
+      "alt": "Логотип"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77ikt.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2025/03/logo.png",
+      "alt": "Логотип"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77ipk.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/12/logo-2.png",
+      "alt": "Логотип"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77itp.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/12/logo.png",
+      "alt": "Логотип"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77iy2.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/12/logo-1-e1733508560222.png",
+      "alt": "Логотип"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77j2d.webp",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/08/logo-medswiss-e1733508741163.webp",
+      "alt": "Логотип"
+    },
+    {
+      "type": "logo",
+      "src": "assets/logo_mik77j79.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/08/logo-73-e1733508999164.png",
+      "alt": "Логотип"
+    },
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mik77jbh.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2024/10/cropped-mstile-144x144-1-150x150.png",
+      "alt": "Favicon"
+    },
+    {
+      "type": "og-image",
+      "src": "assets/og-image_mik77jfq.png",
+      "originalSrc": "https://trinet.ru/wp-content/uploads/2025/11/diplom-500x411-1.png",
+      "alt": "Open Graph Image"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/",
+      "title": "Агентство комплексного интернет-маркетинга «TRINET.Group» - профессиональное продвижение вашего бизнеса",
+      "screenshot": "desktop/home.jpg"
+    },
+    {
+      "url": "/services/seo-prodvizhenie-saytov/",
+      "title": "SEO продвижение сайта в Санкт-Петербурге – цены на СЕО оптимизацию, заказать раскрутку сайтов в поисковых системах",
+      "screenshot": "desktop/services-seo-prodvizhenie-saytov.jpg"
+    },
+    {
+      "url": "/services/kontekstnaya-reklama/",
+      "title": "Контекстная реклама в Санкт-Петербурге: заказать настройку и ведение рекламы по доступным ценам",
+      "screenshot": "desktop/services-kontekstnaya-reklama.jpg"
+    },
+    {
+      "url": "/services/sozdanie-saytov/",
+      "title": "Создание и разработка сайтов под ключ в Санкт-Петербурге – цены на создание сайтов с нуля",
+      "screenshot": "desktop/services-sozdanie-saytov.jpg"
+    },
+    {
+      "url": "/case/",
+      "title": "Кейсы SEO продвижения сайтов от «TRINET.Group»",
+      "screenshot": "desktop/case.jpg"
+    },
+    {
+      "url": "/services/seo-audit/",
+      "title": "Заказать SEO аудит сайта – цена на комплексный поисковый аудит от TRINET Group",
+      "screenshot": "desktop/services-seo-audit.jpg"
+    },
+    {
+      "url": "/services/seo-prodvizhenie-saytov/medicinskih-klinik/",
+      "title": "SEO продвижение медицинских сайтов - услуги по комплексному продвижению сайтов медицинских центров и клиник",
+      "screenshot": "desktop/services-seo-prodvizhenie-saytov-medicinskih-klinik.jpg"
+    },
+    {
+      "url": "/services/seo-prodvizhenie-saytov/prodvizhenie-sajtov-za-rubezhom/",
+      "title": "Продвижение сайтов за рубежом - цены на SEO-продвижение на Западе",
+      "screenshot": "desktop/services-seo-prodvizhenie-saytov-prodvizhenie-sajtov-za-rubezhom.jpg"
+    },
+    {
+      "url": "/services/seo-prodvizhenie-saytov/mebelnyh-internet-magazinov/",
+      "title": "SEO продвижение мебельных интернет-магазинов и раскрутка сайтов мебельных фабрик",
+      "screenshot": "desktop/services-seo-prodvizhenie-saytov-mebelnyh-internet-magazinov.jpg"
+    },
+    {
+      "url": "/services/seo-prodvizhenie-saytov/gostinic-i-otelej/",
+      "title": "SEO продвижение сайтов гостиниц и отелей - заказать оптимизацию и раскрутку сайта отеля",
+      "screenshot": "desktop/services-seo-prodvizhenie-saytov-gostinic-i-otelej.jpg"
+    }
+  ]
+}

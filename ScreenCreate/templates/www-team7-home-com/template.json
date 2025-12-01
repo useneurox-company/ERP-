@@ -1,0 +1,52 @@
+{
+  "id": "www-team7-home-com",
+  "name": "www.team7-home.com",
+  "source": "https://www.team7-home.com/",
+  "createdAt": "2025-11-29T07:35:13.836Z",
+  "screenshots": {
+    "original": "original.png",
+    "skeleton": "skeleton.png"
+  },
+  "structure": {
+    "sections": [
+      {
+        "type": "header",
+        "selector": "#page-header",
+        "description": "Шапка сайта с логотипом и навигацией",
+        "content": {
+          "logo": "[LOGO]",
+          "nav": [
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]",
+            "[NAV_ITEM]"
+          ]
+        }
+      },
+      {
+        "type": "cta",
+        "selector": ".footer-cta-container",
+        "description": "Призыв к действию",
+        "content": {
+          "title": "[CTA_TITLE]",
+          "button": "[CTA_BUTTON]"
+        }
+      },
+      {
+        "type": "footer",
+        "selector": "#page-footer",
+        "description": "Подвал с контактами и копирайтом",
+        "content": {
+          "phone": "[PHONE]",
+          "email": "[EMAIL]",
+          "address": "[ADDRESS]"
+        }
+      }
+    ]
+  },
+  "html": "html/home.html",
+  "designSystem": "design-system.json",
+  "aiInstructions": "Для наполнения шаблона: замените все [PLACEHOLDER] на реальный контент. Секции описаны в structure.sections с указанием типа и назначения. Каждая секция имеет description (описание назначения) и content (структура контента с плейсхолдерами)."
+}

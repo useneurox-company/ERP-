@@ -1,0 +1,351 @@
+{
+  "site": "qubstudio.com",
+  "siteName": "qubstudio-com",
+  "startUrl": "https://qubstudio.com/",
+  "crawledAt": "2025-11-29T11:33:14.491Z",
+  "totalPages": 10,
+  "options": {
+    "desktop": true,
+    "mobile": true,
+    "tablet": true,
+    "html": true,
+    "meta": true,
+    "compressForAI": true
+  },
+  "pages": [
+    {
+      "url": "https://qubstudio.com/",
+      "pathname": "/",
+      "title": "Qubstudio | Digital Product Design Agency",
+      "files": {
+        "desktop": "desktop/home.jpg",
+        "mobile": "mobile/home.jpg",
+        "tablet": "tablet/home.jpg",
+        "html": "html/home.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Ideate & Shape",
+            "file": "interactive/home_hover_1.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Create & Launch",
+            "file": "interactive/home_hover_2.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Grow & Scale",
+            "file": "interactive/home_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "View all works",
+            "file": "interactive/home_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Qubstudio | Digital Product Design Agency",
+        "description": "We are a full-cycle Digital Product Design Agency, working globally to deliver design services and exceptional user experiences.",
+        "ogTitle": "Qubstudio | Digital Product Design Agency",
+        "ogDescription": "We are a full-cycle Digital Product Design Agency, working globally to deliver design services and exceptional user experiences.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/work/",
+      "pathname": "/work/",
+      "title": "Check Our Case Studies & Projects | Qubstudio",
+      "files": {
+        "desktop": "desktop/work.jpg",
+        "mobile": "mobile/work.jpg",
+        "tablet": "tablet/work.jpg",
+        "html": "html/work.html"
+      },
+      "meta": {
+        "title": "Check Our Case Studies & Projects | Qubstudio",
+        "description": "With deep research, detailed analysis, and an entirely customized straightforward design, we create consistent products.",
+        "ogTitle": "Check Our Case Studies & Projects | Qubstudio",
+        "ogDescription": "With deep research, detailed analysis, and an entirely customized straightforward design, we create consistent products.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/services/",
+      "pathname": "/services/",
+      "title": "Services | Qubstudio",
+      "files": {
+        "desktop": "desktop/services.jpg",
+        "mobile": "mobile/services.jpg",
+        "tablet": "tablet/services.jpg",
+        "html": "html/services.html"
+      },
+      "meta": {
+        "title": "Services | Qubstudio",
+        "description": "Learn about services provided by Qubstudio — a digital product design agency with over 600 successful projects.",
+        "ogTitle": "Our Services",
+        "ogDescription": "Learn about services provided by Qubstudio — a digital product design agency with over 600 successful projects.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2020/01/qubstudio-social-cover.jpg"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/digital-product-design/",
+      "pathname": "/digital-product-design/",
+      "title": "Digital Product Design Services | Qubstudio",
+      "files": {
+        "desktop": "desktop/digital-product-design.jpg",
+        "mobile": "mobile/digital-product-design.jpg",
+        "tablet": "tablet/digital-product-design.jpg",
+        "html": "html/digital-product-design.html"
+      },
+      "meta": {
+        "title": "Digital Product Design Services | Qubstudio",
+        "description": "Looking for the best digital product design services? Our expert team provides high-quality product design within a committed timeline.",
+        "ogTitle": "Digital Product Design Services | Qubstudio",
+        "ogDescription": "Looking for the best digital product design services? Our expert team provides high-quality product design within a committed timeline.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/branding/",
+      "pathname": "/branding/",
+      "title": "Branding And Identity Design Services | Qubstudio",
+      "files": {
+        "desktop": "desktop/branding.jpg",
+        "mobile": "mobile/branding.jpg",
+        "tablet": "tablet/branding.jpg",
+        "html": "html/branding.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Explore More Projects",
+            "file": "interactive/branding_hover_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Branding And Identity Design Services | Qubstudio",
+        "description": "Improve your brand with branding and identity design services. Our team delivers high-quality results and crafts effective strategies within your timeline.",
+        "ogTitle": "Branding And Identity Design Services | Qubstudio",
+        "ogDescription": "Improve your brand with branding and identity design services. Our team delivers high-quality results and crafts effective strategies within your timeline.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2019/10/Screenshot-from-2019-10-04-17-20-43.jpg"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/education-ux-design/",
+      "pathname": "/education-ux-design/",
+      "title": "Education UX Design",
+      "files": {
+        "desktop": "desktop/education-ux-design.jpg",
+        "mobile": "mobile/education-ux-design.jpg",
+        "tablet": "tablet/education-ux-design.jpg",
+        "html": "html/education-ux-design.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "How do I know if my EdTech com",
+            "file": "interactive/education-ux-design_hover_1.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Should I outsource my EdTech p",
+            "file": "interactive/education-ux-design_hover_2.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "What is the Qubstudio's produc",
+            "file": "interactive/education-ux-design_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "How long will my EdTech design",
+            "file": "interactive/education-ux-design_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Education UX Design",
+        "description": "We make imparting knowledge more accessible via innovative design solutions by keeping simplicity in mind.",
+        "ogTitle": "Education UX Design",
+        "ogDescription": "We make imparting knowledge more accessible via innovative design solutions by keeping simplicity in mind.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/logistics-ux-design/",
+      "pathname": "/logistics-ux-design/",
+      "title": "Logistics UX Design",
+      "files": {
+        "desktop": "desktop/logistics-ux-design.jpg",
+        "mobile": "mobile/logistics-ux-design.jpg",
+        "tablet": "tablet/logistics-ux-design.jpg",
+        "html": "html/logistics-ux-design.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "How do I know if my logistics ",
+            "file": "interactive/logistics-ux-design_hover_1.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Should I outsource my logistic",
+            "file": "interactive/logistics-ux-design_hover_2.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "What is the Qubstudio's produc",
+            "file": "interactive/logistics-ux-design_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "How long will my design projec",
+            "file": "interactive/logistics-ux-design_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Logistics UX Design",
+        "description": "As an experienced in logistics product design agency, we improve performances via smooth user experiences.",
+        "ogTitle": "Logistics UX Design",
+        "ogDescription": "As an experienced in logistics product design agency, we improve performances via smooth user experiences.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/hrtech/",
+      "pathname": "/hrtech/",
+      "title": "HRtech Design Solutions | Qubstudio",
+      "files": {
+        "desktop": "desktop/hrtech.jpg",
+        "mobile": "mobile/hrtech.jpg",
+        "tablet": "tablet/hrtech.jpg",
+        "html": "html/hrtech.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "How do I know if my HR Tech co",
+            "file": "interactive/hrtech_hover_1.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Should I outsource my HR Tech ",
+            "file": "interactive/hrtech_hover_2.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "What is the Qubstudio's produc",
+            "file": "interactive/hrtech_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "How long will my HR Tech desig",
+            "file": "interactive/hrtech_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "HRtech Design Solutions | Qubstudio",
+        "description": "With intuitive design solutions, we bridge the gap between employees' needs and HR Tech powers.",
+        "ogTitle": "HRtech Design Solutions | Qubstudio",
+        "ogDescription": "With intuitive design solutions, we bridge the gap between employees' needs and HR Tech powers.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/designing-the-future-of-healthcare-products/",
+      "pathname": "/designing-the-future-of-healthcare-products/",
+      "title": "Designing the future of healthcare products",
+      "files": {
+        "desktop": "desktop/designing-the-future-of-healthcare-products.jpg",
+        "mobile": "mobile/designing-the-future-of-healthcare-products.jpg",
+        "tablet": "tablet/designing-the-future-of-healthcare-products.jpg",
+        "html": "html/designing-the-future-of-healthcare-products.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Ideate & Validate",
+            "file": "interactive/designing-the-future-of-healthcare-products_hover_1.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Define & Roadmap",
+            "file": "interactive/designing-the-future-of-healthcare-products_hover_2.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Structure & Flows",
+            "file": "interactive/designing-the-future-of-healthcare-products_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Prototype & Test",
+            "file": "interactive/designing-the-future-of-healthcare-products_hover_4.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "New product",
+            "file": "interactive/designing-the-future-of-healthcare-products_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Existing product",
+            "file": "interactive/designing-the-future-of-healthcare-products_tab_1.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Brand",
+            "file": "interactive/designing-the-future-of-healthcare-products_tab_2.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Designing the future of healthcare products",
+        "description": "Our design mindset and methodologies bring our clients a comprehensive approach to creating a digital product.",
+        "ogTitle": "Designing the future of healthcare products",
+        "ogDescription": "Our design mindset and methodologies bring our clients a comprehensive approach to creating a digital product.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2020/12/healthcare-img2.jpg"
+      }
+    },
+    {
+      "url": "https://qubstudio.com/saas-design-agency/",
+      "pathname": "/saas-design-agency/",
+      "title": "SaaS Design Agency | Qubstudio",
+      "files": {
+        "desktop": "desktop/saas-design-agency.jpg",
+        "mobile": "mobile/saas-design-agency.jpg",
+        "tablet": "tablet/saas-design-agency.jpg",
+        "html": "html/saas-design-agency.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "B2B Projects",
+            "file": "interactive/saas-design-agency_hover_1.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "B2C Projects",
+            "file": "interactive/saas-design-agency_hover_2.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Submit",
+            "file": "interactive/saas-design-agency_hover_3.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "What industries do you cover?",
+            "file": "interactive/saas-design-agency_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SaaS Design Agency | Qubstudio",
+        "description": "Drive success with our SaaS design agency. We offer tailored design solutions to improve user experience and accelerate SaaS growth.",
+        "ogTitle": "SaaS Design Agency | Qubstudio",
+        "ogDescription": "Drive success with our SaaS design agency. We offer tailored design solutions to improve user experience and accelerate SaaS growth.",
+        "ogImage": "https://qubstudio.com/wp-content/uploads/2024/09/web.png"
+      }
+    }
+  ]
+}

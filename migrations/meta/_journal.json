@@ -1,0 +1,13 @@
+{
+  "version": "5",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1763735050256,
+      "tag": "0000_real_landau",
+      "breakpoints": true
+    }
+  ]
+}

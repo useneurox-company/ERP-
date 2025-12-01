@@ -1,0 +1,144 @@
+{
+  "site": "seojazz.ru",
+  "crawledAt": "2025-11-29T11:15:24.065Z",
+  "colors": {
+    "primary": "#00a6f6",
+    "secondary": "#606f84",
+    "accent": "#ffffff",
+    "background": "#f9fafd",
+    "text": "#2e2f30",
+    "palette": [
+      "#2e2f30",
+      "#606f84",
+      "#00a6f6",
+      "#ffffff",
+      "#ff679f",
+      "#615757",
+      "#e7ebef",
+      "#f9fafd",
+      "#7890b2",
+      "#7890b3",
+      "#cfeff7",
+      "#cccccc",
+      "#dbe2ec",
+      "#676f79",
+      "#d8e2ef",
+      "#cedbef",
+      "#f3f8ff",
+      "#ff669f",
+      "#878787",
+      "#23282d"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Stem",
+      "ui-sans-serif",
+      "Times New Roman"
+    ],
+    "styles": {
+      "h1": {
+        "font": "Stem",
+        "size": "54px",
+        "weight": 700,
+        "lineHeight": "67.5px"
+      },
+      "h2": {
+        "font": "Stem",
+        "size": "54px",
+        "weight": 700,
+        "lineHeight": "67.5px"
+      },
+      "h3": {
+        "font": "Stem",
+        "size": "24px",
+        "weight": 700,
+        "lineHeight": "30px"
+      },
+      "body": {
+        "font": "Stem",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "24px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mik738kn.svg",
+      "originalSrc": "https://seojazz.ru/wp-content/uploads/2022/06/seojazz-logo.svg",
+      "alt": "seojazz"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik7390i.webp",
+      "originalSrc": "https://seojazz.ru/wp-content/themes/seojazz-new/assets/img/main.webp",
+      "alt": "Оптимизация и SEO раскрутка сайта"
+    },
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mik7399i.png",
+      "originalSrc": "https://seojazz.ru/wp-content/uploads/2021/12/cropped-fav-32x32.png",
+      "alt": "Favicon"
+    },
+    {
+      "type": "og-image",
+      "src": "assets/og-image_mik739ds.png",
+      "originalSrc": "https://seojazz.ru/wp-content/uploads/2021/12/about.png",
+      "alt": "Open Graph Image"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/",
+      "title": "Продвижение сайтов заказать в Москве - Цена СЕО раскрутки сайта в ТОП 10 Яндекс",
+      "screenshot": "desktop/home.jpg"
+    },
+    {
+      "url": "/recommendations/",
+      "title": "Рекомендации для роста трафика, конверсий и лидов: бесплатный аудит сайта | SeoJazz",
+      "screenshot": "desktop/recommendations.jpg"
+    },
+    {
+      "url": "/uslugi/",
+      "title": "SEO услуги в Москве – продвижение в Яндекс и Google по доступной цене | SeoJazz",
+      "screenshot": "desktop/uslugi.jpg"
+    },
+    {
+      "url": "/geo-prodvizhenie/",
+      "title": "GEO-оптимизация (Генеративная оптимизация) – Услуги продвижения в нейросетях | Компания Seojazz",
+      "screenshot": "desktop/geo-prodvizhenie.jpg"
+    },
+    {
+      "url": "/sozdanie-sajtov/",
+      "title": "Заказать создание сайта – Разработка сайтов под ключ, цены в веб-студии",
+      "screenshot": "desktop/sozdanie-sajtov.jpg"
+    },
+    {
+      "url": "/chto-takoe-seo-prodvizhenie-sajta/",
+      "title": "Что такое SEO продвижение сайтов — СЕО раскрутка",
+      "screenshot": "desktop/chto-takoe-seo-prodvizhenie-sajta.jpg"
+    },
+    {
+      "url": "/prodvizhenie-na-avito-pod-kljuch/",
+      "title": "Заказать продвижение на Авито — Цены на услуги размещения объявлений Avito для бизнеса в Москве и России",
+      "screenshot": "desktop/prodvizhenie-na-avito-pod-kljuch.jpg"
+    },
+    {
+      "url": "/cases/",
+      "title": "Кейсы - seojazz",
+      "screenshot": "desktop/cases.jpg"
+    },
+    {
+      "url": "/blog/",
+      "title": "SEO блог о продвижении и оптимизации сайтов │ seojazz",
+      "screenshot": "desktop/blog.jpg"
+    },
+    {
+      "url": "/privacy-policy/",
+      "title": "Политика конфиденциальности - seojazz",
+      "screenshot": "desktop/privacy-policy.jpg"
+    }
+  ]
+}

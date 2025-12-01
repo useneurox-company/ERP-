@@ -1,0 +1,121 @@
+{
+  "site": "www.arhomes.com",
+  "crawledAt": "2025-11-29T08:41:21.939Z",
+  "colors": {
+    "primary": "#002f3c",
+    "secondary": "#ffffff",
+    "accent": "#007788",
+    "background": "#dad6d1",
+    "text": "#202620",
+    "palette": [
+      "#ffffff",
+      "#202620",
+      "#002f3c",
+      "#007788",
+      "#8c8c8c",
+      "#dad6d1",
+      "#0048ff",
+      "#c1c1c1",
+      "#808080",
+      "#fff300",
+      "#34394d",
+      "#b3c0c3",
+      "#cedce1",
+      "#cccccc"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "montserrat",
+      "Times New Roman",
+      "ivypresto-display"
+    ],
+    "styles": {
+      "h1": {
+        "font": "ivypresto-display",
+        "size": "64px",
+        "weight": 300,
+        "lineHeight": "76.8px"
+      },
+      "h2": {
+        "font": "ivypresto-display",
+        "size": "54px",
+        "weight": 300,
+        "lineHeight": "64.8px"
+      },
+      "body": {
+        "font": "montserrat",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "30.08px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "hero",
+      "src": "assets/hero_mik1l5av.webp",
+      "originalSrc": "https://www.arhomes.com/wp-content/uploads/2024/02/47-web-or-mls-Fountain-PKwy-N-Suite-210-047.webp",
+      "alt": "Display wall of sink faucets and cabinet finishes"
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik1l64m.webp",
+      "originalSrc": "https://www.arhomes.com/wp-content/uploads/2024/02/8-web-or-mls-Fountain-PKwy-N-Suite-210-008.webp",
+      "alt": "Interior design studio in St. Petersburg, Florida, large work table, display racks with sample tile materials"
+    },
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mik1l6ik.png",
+      "originalSrc": "https://www.arhomes.com/wp-content/uploads/2021/03/cropped-arhomes-logo-32x32.png",
+      "alt": "Favicon"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/",
+      "title": "Custom Luxury Homes | AR Homes® by Arthur Rutenberg",
+      "screenshot": "desktop/home.jpg"
+    },
+    {
+      "url": "/contact/",
+      "title": "Contact Us | AR Homes® by Arthur Rutenberg",
+      "screenshot": "desktop/contact.jpg"
+    },
+    {
+      "url": "/frequently-asked-questions/",
+      "title": "Frequently Asked Questions - AR Homes by Arthur Rutenberg",
+      "screenshot": "desktop/frequently-asked-questions.jpg"
+    },
+    {
+      "url": "/about/",
+      "title": "About Us | AR Homes® by Arthur Rutenberg",
+      "screenshot": "desktop/about.jpg"
+    },
+    {
+      "url": "/news/",
+      "title": "AR Homes News | AR Homes® by Arthur Rutenberg",
+      "screenshot": "desktop/news.jpg"
+    },
+    {
+      "url": "/builder/scott-bates-builders-inc/available-homes/custom-envoy-in-chatham-hills/",
+      "title": "Custom Envoy in Chatham Hills - AR Homes by Arthur Rutenberg",
+      "screenshot": "desktop/builder-scott-bates-builders-inc-available-homes-custom-envoy-in-chatham-hills.jpg"
+    },
+    {
+      "url": "/builder/pointe-royale-homes-llc/available-homes/custom-elliston-in-tomball/",
+      "title": "Custom Elliston in Tomball - AR Homes by Arthur Rutenberg",
+      "screenshot": "desktop/builder-pointe-royale-homes-llc-available-homes-custom-elliston-in-tomball.jpg"
+    },
+    {
+      "url": "/builder/scott-bates-builders-inc/available-homes/creekside-model-at-holliday-farms/",
+      "title": "Creekside Model at Holliday Farms - AR Homes by Arthur Rutenberg",
+      "screenshot": "desktop/builder-scott-bates-builders-inc-available-homes-creekside-model-at-holliday-farms.jpg"
+    },
+    {
+      "url": "/builder/monterey-bay-raleigh-llc/available-homes/dawning-ii-at-brixley/",
+      "title": "Dawning II at Brixley - AR Homes by Arthur Rutenberg",
+      "screenshot": "desktop/builder-monterey-bay-raleigh-llc-available-homes-dawning-ii-at-brixley.jpg"
+    }
+  ]
+}

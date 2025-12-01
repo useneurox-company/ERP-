@@ -1,0 +1,170 @@
+{
+  "site": "www.itllekt.ru",
+  "crawledAt": "2025-11-29T11:17:21.614Z",
+  "colors": {
+    "primary": "#de2c32",
+    "secondary": "#3d5270",
+    "accent": "#ffffff",
+    "background": "#f9f9f9",
+    "text": "#333333",
+    "palette": [
+      "#333333",
+      "#de2c32",
+      "#3d5270",
+      "#ffffff",
+      "#3a4e69",
+      "#3b4b61",
+      "#555555",
+      "#5c6c83",
+      "#807e7f",
+      "#eb5757",
+      "#808080",
+      "#f9f9f9",
+      "#df2c32",
+      "#e7eaef",
+      "#eff1f5",
+      "#7a7a7b",
+      "#e01839",
+      "#606a75",
+      "#be040c",
+      "#617187"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Century Gothic",
+      "sans-serif",
+      "Helvetica",
+      "FontAwesome",
+      "Helvetica Neue"
+    ],
+    "styles": {
+      "h2": {
+        "font": "Century Gothic",
+        "size": "24px",
+        "weight": 400,
+        "lineHeight": "26.4px"
+      },
+      "body": {
+        "font": "Century Gothic",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "22.8571px"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "logo",
+      "src": "assets/logo_mik75r9t.png",
+      "originalSrc": "https://www.itllekt.ru/local/include/logo-new.png",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75rps.jpg",
+      "originalSrc": "https://www.itllekt.ru/upload/rk/666/75hzz3we46lg3tzuz3kql2lj2ab8o1nv.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75ry6.jpg",
+      "originalSrc": "https://www.itllekt.ru/upload/rk/901/n4rwlrxlsvmj3v7l3uvcdsj4jf8qlt70.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75s3d.jpg",
+      "originalSrc": "https://www.itllekt.ru/upload/rk/b44/ga3nagd1o3oif4j4ykqofqhkgfeizy7f.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75s7s.jpg",
+      "originalSrc": "https://www.itllekt.ru/upload/rk/5ef/p68jaicyxpktzfi644s1oqpto2eafjk9.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75sd2.jpg",
+      "originalSrc": "https://www.itllekt.ru/upload/rk/ff9/dpd1zo44e1udydzsnhn2u9s1im28v6qg.jpg",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75sl8.png",
+      "originalSrc": "https://www.itllekt.ru/upload/images/1cb-w2.png",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75sqa.png",
+      "originalSrc": "https://www.itllekt.ru/upload/images/b24-w1.png",
+      "alt": ""
+    },
+    {
+      "type": "hero",
+      "src": "assets/hero_mik75sui.png",
+      "originalSrc": "https://www.itllekt.ru/upload/images/bp-home.png",
+      "alt": ""
+    },
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mik75t24.ico",
+      "originalSrc": "https://www.itllekt.ru/upload/images/favicon-new.ico",
+      "alt": "Favicon"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/",
+      "title": "Айтиллект. 1С, САЙТЫ, SEO, БРЕНД, СОФТ, IT-услуги",
+      "screenshot": "desktop/home.jpg"
+    },
+    {
+      "url": "/1c/solutions/",
+      "title": "Купить программы 1С",
+      "screenshot": "desktop/1c-solutions.jpg"
+    },
+    {
+      "url": "/1c/solutions/regulated/buh/",
+      "title": "Купить 1С:Бухгалтерия в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-regulated-buh.jpg"
+    },
+    {
+      "url": "/1c/solutions/trade/ut/",
+      "title": "Купить 1С:Управление торговлей в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-trade-ut.jpg"
+    },
+    {
+      "url": "/1c/solutions/regulated/zup/",
+      "title": "Купить 1C:Зарплата и управление персоналом в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-regulated-zup.jpg"
+    },
+    {
+      "url": "/1c/solutions/managerial/1c-erp-upravlenie-predpriyatiem-2/",
+      "title": "Купить 1С:ERP Управление предприятием 2 в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2.jpg"
+    },
+    {
+      "url": "/1c/solutions/regulated/ka/",
+      "title": "Купить 1C:Комплексная автоматизация в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-regulated-ka.jpg"
+    },
+    {
+      "url": "/1c/solutions/regulated/unf/",
+      "title": "Купить 1C:Управление нашей фирмой в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-regulated-unf.jpg"
+    },
+    {
+      "url": "/1c/solutions/trade/1s-roznitsa/",
+      "title": "Купить 1C: Розница в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-trade-1s-roznitsa.jpg"
+    },
+    {
+      "url": "/1c/solutions/managerial/1c-doc/",
+      "title": "Купить 1С:Документооборот в компании Айтиллект",
+      "screenshot": "desktop/1c-solutions-managerial-1c-doc.jpg"
+    }
+  ]
+}

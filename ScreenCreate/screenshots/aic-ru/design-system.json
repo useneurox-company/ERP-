@@ -1,0 +1,95 @@
+{
+  "site": "aic.ru",
+  "crawledAt": "2025-11-29T11:28:46.959Z",
+  "colors": {
+    "primary": "#141414",
+    "secondary": "#ffffff",
+    "accent": "#0000ee",
+    "background": "#ff6633",
+    "text": "#141414",
+    "palette": [
+      "#141414",
+      "#ffffff",
+      "#ff6633",
+      "#0000ee",
+      "#ff9900",
+      "#ff0000"
+    ]
+  },
+  "typography": {
+    "fonts": [
+      "Suisse Intl",
+      "Suisse Intl Book",
+      "Times New Roman",
+      "Arial"
+    ],
+    "styles": {
+      "body": {
+        "font": "Times New Roman",
+        "size": "16px",
+        "weight": 400,
+        "lineHeight": "normal"
+      }
+    }
+  },
+  "images": [
+    {
+      "type": "favicon",
+      "src": "assets/favicon_mik7kg35.png",
+      "originalSrc": "https://aic.ru/build/_assets/favicon-E2DIIAXC.png",
+      "alt": "Favicon"
+    }
+  ],
+  "pages": [
+    {
+      "url": "/",
+      "title": "aic — сервис дизайн и консалтинг",
+      "screenshot": "desktop/home.jpg"
+    },
+    {
+      "url": "/cases/",
+      "title": "кейсы",
+      "screenshot": "desktop/cases.jpg"
+    },
+    {
+      "url": "/agency/",
+      "title": "агентство",
+      "screenshot": "desktop/agency.jpg"
+    },
+    {
+      "url": "/contacts/",
+      "title": "контакты",
+      "screenshot": "desktop/contacts.jpg"
+    },
+    {
+      "url": "/vacancies/",
+      "title": "вакансии",
+      "screenshot": "desktop/vacancies.jpg"
+    },
+    {
+      "url": "/launch-project/",
+      "title": "aic",
+      "screenshot": "desktop/launch-project.jpg"
+    },
+    {
+      "url": "/cases/park-gorkogo",
+      "title": "парк горького",
+      "screenshot": "desktop/cases-park-gorkogo.jpg"
+    },
+    {
+      "url": "/cases/lanit-hr",
+      "title": "ланит hr",
+      "screenshot": "desktop/cases-lanit-hr.jpg"
+    },
+    {
+      "url": "/cases/yamal",
+      "title": "ямал",
+      "screenshot": "desktop/cases-yamal.jpg"
+    },
+    {
+      "url": "/cases/ekosistema-mts",
+      "title": "экосистема мтс",
+      "screenshot": "desktop/cases-ekosistema-mts.jpg"
+    }
+  ]
+}

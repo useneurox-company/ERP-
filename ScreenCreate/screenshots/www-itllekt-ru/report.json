@@ -1,0 +1,303 @@
+{
+  "site": "www.itllekt.ru",
+  "siteName": "www-itllekt-ru",
+  "startUrl": "https://www.itllekt.ru",
+  "crawledAt": "2025-11-29T11:18:17.360Z",
+  "totalPages": 10,
+  "options": {
+    "desktop": true,
+    "mobile": true,
+    "tablet": true,
+    "html": true,
+    "meta": true,
+    "compressForAI": true
+  },
+  "pages": [
+    {
+      "url": "https://www.itllekt.ru",
+      "pathname": "/",
+      "title": "Айтиллект. 1С, САЙТЫ, SEO, БРЕНД, СОФТ, IT-услуги",
+      "files": {
+        "desktop": "desktop/home.jpg",
+        "mobile": "mobile/home.jpg",
+        "tablet": "tablet/home.jpg",
+        "html": "html/home.html"
+      },
+      "meta": {
+        "title": "Айтиллект. 1С, САЙТЫ, SEO, БРЕНД, СОФТ, IT-услуги",
+        "description": "Компания Айтиллект оказывает услуги в сфере информационных технологий. А именно: продажа, внедрение и сопровождение 1С:Предприятие. Полный комплекс по созданию сайтов начиная от разработки дизайна сайта до интеграции его с другими приложениями. Продвижение сайта и контекстная реклама. Разрабатываем корпоративный бренд, логотипы и рекламную продукцию. А так же интернет-магазин программного обеспечения.",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/",
+      "pathname": "/1c/solutions/",
+      "title": "Купить программы 1С",
+      "files": {
+        "desktop": "desktop/1c-solutions.jpg",
+        "mobile": "mobile/1c-solutions.jpg",
+        "tablet": "tablet/1c-solutions.jpg",
+        "html": "html/1c-solutions.html"
+      },
+      "meta": {
+        "title": "Купить программы 1С",
+        "description": "Купить программы на платформе 1С по низким ценам, у официального представителя - компании Айтиллект. Сопровождаем программы 1С более 13х лет. Установка. Настройка. Обслуживание. Обучение. Доработки.",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/regulated/buh/",
+      "pathname": "/1c/solutions/regulated/buh/",
+      "title": "Купить 1С:Бухгалтерия в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-regulated-buh.jpg",
+        "mobile": "mobile/1c-solutions-regulated-buh.jpg",
+        "tablet": "tablet/1c-solutions-regulated-buh.jpg",
+        "html": "html/1c-solutions-regulated-buh.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-regulated-buh_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "1С:Фреш",
+            "file": "interactive/1c-solutions-regulated-buh_tab_1.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Аренда",
+            "file": "interactive/1c-solutions-regulated-buh_tab_2.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1С:Бухгалтерия в компании Айтиллект",
+        "description": "Компания «Айтиллект» предлагает купить «1С: Бухгалтерия 8» с обслуживанием «под ключ». Мы возьмем на себя все заботы: установку и настройку, обновления, доработку под нужды организации, обеспечим постоянную техническую и информационную поддержку. ",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/trade/ut/",
+      "pathname": "/1c/solutions/trade/ut/",
+      "title": "Купить 1С:Управление торговлей в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-trade-ut.jpg",
+        "mobile": "mobile/1c-solutions-trade-ut.jpg",
+        "tablet": "tablet/1c-solutions-trade-ut.jpg",
+        "html": "html/1c-solutions-trade-ut.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-trade-ut_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Аренда",
+            "file": "interactive/1c-solutions-trade-ut_tab_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1С:Управление торговлей в компании Айтиллект",
+        "description": "Самой популярной программой для  автоматизации бизнес-процессов   в 1С:Предприятие является  продукт 1с:  управление торговлей , купить который можно в компании Айтиллект. Основные функции «1С: УТ»: планирование и оценка деятельности предприятия; взаимодействие с клиентами и поставщиками...",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/regulated/zup/",
+      "pathname": "/1c/solutions/regulated/zup/",
+      "title": "Купить 1C:Зарплата и управление персоналом в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-regulated-zup.jpg",
+        "mobile": "mobile/1c-solutions-regulated-zup.jpg",
+        "tablet": "tablet/1c-solutions-regulated-zup.jpg",
+        "html": "html/1c-solutions-regulated-zup.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-regulated-zup_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "1С:Фреш",
+            "file": "interactive/1c-solutions-regulated-zup_tab_1.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Аренда",
+            "file": "interactive/1c-solutions-regulated-zup_tab_2.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1C:Зарплата и управление персоналом в компании Айтиллект",
+        "description": "Самой востребованной программой по управлению персоналом и учету зарплаты является ее одноименный продукт 1С ЗУП, купить который можно в компании Айтиллект.  Это лучший продукт для предприятий, которые.. ",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/managerial/1c-erp-upravlenie-predpriyatiem-2/",
+      "pathname": "/1c/solutions/managerial/1c-erp-upravlenie-predpriyatiem-2/",
+      "title": "Купить 1С:ERP Управление предприятием 2 в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2.jpg",
+        "mobile": "mobile/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2.jpg",
+        "tablet": "tablet/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2.jpg",
+        "html": "html/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Польза от внедрения",
+            "file": "interactive/1c-solutions-managerial-1c-erp-upravlenie-predpriyatiem-2_tab_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1С:ERP Управление предприятием 2 в компании Айтиллект",
+        "description": "Нужна комплексная программа управления Вашей компании? 1С ЕРП лучший вариант на рынке программного обеспечения, поможет организовать все подразделения вашего предприятия",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/regulated/ka/",
+      "pathname": "/1c/solutions/regulated/ka/",
+      "title": "Купить 1C:Комплексная автоматизация в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-regulated-ka.jpg",
+        "mobile": "mobile/1c-solutions-regulated-ka.jpg",
+        "tablet": "tablet/1c-solutions-regulated-ka.jpg",
+        "html": "html/1c-solutions-regulated-ka.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-regulated-ka_tab_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1C:Комплексная автоматизация в компании Айтиллект",
+        "description": "Самой востребованной программой для комплексного управления   является  1С КА, купить которую можно в компании Айтиллект. 1С Комплексная автоматизация может использоваться..",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/regulated/unf/",
+      "pathname": "/1c/solutions/regulated/unf/",
+      "title": "Купить 1C:Управление нашей фирмой в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-regulated-unf.jpg",
+        "mobile": "mobile/1c-solutions-regulated-unf.jpg",
+        "tablet": "tablet/1c-solutions-regulated-unf.jpg",
+        "html": "html/1c-solutions-regulated-unf.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-regulated-unf_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "1С:Фреш",
+            "file": "interactive/1c-solutions-regulated-unf_tab_1.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Аренда",
+            "file": "interactive/1c-solutions-regulated-unf_tab_2.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1C:Управление нашей фирмой в компании Айтиллект",
+        "description": "Самой востребованной программой для небольшой компании  является  1С УНФ, купить который можно в компании Айтиллект. 1С Управление нашей фирмой обладает широким потенциалом использования..",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/trade/1s-roznitsa/",
+      "pathname": "/1c/solutions/trade/1s-roznitsa/",
+      "title": "Купить 1C: Розница в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-trade-1s-roznitsa.jpg",
+        "mobile": "mobile/1c-solutions-trade-1s-roznitsa.jpg",
+        "tablet": "tablet/1c-solutions-trade-1s-roznitsa.jpg",
+        "html": "html/1c-solutions-trade-1s-roznitsa.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-trade-1s-roznitsa_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Доработка и настройка",
+            "file": "interactive/1c-solutions-trade-1s-roznitsa_tab_1.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Аренда",
+            "file": "interactive/1c-solutions-trade-1s-roznitsa_tab_2.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1C: Розница в компании Айтиллект",
+        "description": "Самой востребованной программой для Розничной торговли является ее одноименный продукт 1С Розница, купить который можно в компании Айтиллект. ",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.itllekt.ru/1c/solutions/managerial/1c-doc/",
+      "pathname": "/1c/solutions/managerial/1c-doc/",
+      "title": "Купить 1С:Документооборот в компании Айтиллект",
+      "files": {
+        "desktop": "desktop/1c-solutions-managerial-1c-doc.jpg",
+        "mobile": "mobile/1c-solutions-managerial-1c-doc.jpg",
+        "tablet": "tablet/1c-solutions-managerial-1c-doc.jpg",
+        "html": "html/1c-solutions-managerial-1c-doc.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Описание",
+            "file": "interactive/1c-solutions-managerial-1c-doc_tab_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Купить 1С:Документооборот в компании Айтиллект",
+        "description": "Самой востребованной программой по документообороту является ее одноименный продукт 1С Документооборот, купить который можно в компании Айтиллект. Эта программа позволит эффективно управлять Вашими бумагами. ",
+        "ogTitle": null,
+        "ogDescription": null,
+        "ogImage": null
+      }
+    }
+  ]
+}

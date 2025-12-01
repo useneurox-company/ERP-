@@ -1,0 +1,342 @@
+{
+  "site": "www.purrweb.com",
+  "siteName": "www-purrweb-com",
+  "startUrl": "https://www.purrweb.com/ru",
+  "crawledAt": "2025-11-29T11:26:21.885Z",
+  "totalPages": 10,
+  "options": {
+    "desktop": true,
+    "mobile": true,
+    "tablet": true,
+    "html": true,
+    "meta": true,
+    "compressForAI": true
+  },
+  "pages": [
+    {
+      "url": "https://www.purrweb.com/ru",
+      "pathname": "/ru",
+      "title": "Комплексная разработка цифровых продуктов - от идеи до релиза",
+      "files": {
+        "desktop": "desktop/ru.jpg",
+        "mobile": "mobile/ru.jpg",
+        "tablet": "tablet/ru.jpg",
+        "html": "html/ru.html",
+        "interactive": [
+          {
+            "type": "tab",
+            "element": "Стартапы",
+            "file": "interactive/ru_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Бизнес",
+            "file": "interactive/ru_tab_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Комплексная разработка цифровых продуктов - от идеи до релиза",
+        "description": "Purrweb: проектирование, разработка и запуск мобильных приложений для бизнеса. ★ UI/UX дизайн ★ QA тестирование ★ Релиз и поддержка",
+        "ogTitle": "Комплексная разработка цифровых продуктов - от идеи до релиза",
+        "ogDescription": "Purrweb: проектирование, разработка и запуск мобильных приложений для бизнеса. ★ UI/UX дизайн ★ QA тестирование ★ Релиз и поддержка",
+        "ogImage": "https://www.purrweb.com/images/og-image.png"
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/privacy-policy/",
+      "pathname": "/ru/privacy-policy/",
+      "title": "Политика конфиденциальности Purrweb",
+      "files": {
+        "desktop": "desktop/ru-privacy-policy.jpg",
+        "mobile": "mobile/ru-privacy-policy.jpg",
+        "tablet": "tablet/ru-privacy-policy.jpg",
+        "html": "html/ru-privacy-policy.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-privacy-policy_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-privacy-policy_hover_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Политика конфиденциальности Purrweb",
+        "description": "Purrweb предоставляет услуги по проектированию (UI/UX) и разработке MVP. Мы помогаем стартапам и существующим компаниям создать MVP за 3 месяца.",
+        "ogTitle": "Политика конфиденциальности Purrweb",
+        "ogDescription": "Purrweb предоставляет услуги по проектированию (UI/UX) и разработке MVP. Мы помогаем стартапам и существующим компаниям создать MVP за 3 месяца.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/personal-data",
+      "pathname": "/ru/personal-data",
+      "title": "Персональные данные",
+      "files": {
+        "desktop": "desktop/ru-personal-data.jpg",
+        "mobile": "mobile/ru-personal-data.jpg",
+        "tablet": "tablet/ru-personal-data.jpg",
+        "html": "html/ru-personal-data.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-personal-data_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-personal-data_hover_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Персональные данные",
+        "description": "Обработка персональных данных осуществляется только с вашего согласия и в рамках закона — подробности и условия в этом документе.",
+        "ogTitle": "Персональные данные",
+        "ogDescription": "Обработка персональных данных осуществляется только с вашего согласия и в рамках закона — подробности и условия в этом документе.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/portfolio/",
+      "pathname": "/ru/portfolio/",
+      "title": "Purrweb в деле: кейсы по разработке и дизайну приложений",
+      "files": {
+        "desktop": "desktop/ru-portfolio.jpg",
+        "mobile": "mobile/ru-portfolio.jpg",
+        "tablet": "tablet/ru-portfolio.jpg",
+        "html": "html/ru-portfolio.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-portfolio_hover_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Purrweb в деле: кейсы по разработке и дизайну приложений",
+        "description": "Изучите кейсы Purrweb – успешные проекты по разработке мобильных приложений и UX/UI дизайну. Узнайте, как мы превращаем идеи в цифровые продукты, создавая удобные и стильные интерфейсы.",
+        "ogTitle": "Purrweb в деле: кейсы по разработке и дизайну приложений",
+        "ogDescription": "Изучите кейсы Purrweb – успешные проекты по разработке мобильных приложений и UX/UI дизайну. Узнайте, как мы превращаем идеи в цифровые продукты, создавая удобные и стильные интерфейсы.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/tekhnologii/",
+      "pathname": "/ru/tekhnologii/",
+      "title": "Команда JavaScript Экспертов",
+      "files": {
+        "desktop": "desktop/ru-tekhnologii.jpg",
+        "mobile": "mobile/ru-tekhnologii.jpg",
+        "tablet": "tablet/ru-tekhnologii.jpg",
+        "html": "html/ru-tekhnologii.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-tekhnologii_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-tekhnologii_hover_3.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Стартапы",
+            "file": "interactive/ru-tekhnologii_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Бизнес",
+            "file": "interactive/ru-tekhnologii_tab_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Команда JavaScript Экспертов",
+        "description": "Работаем с React, React Native, Node.js, Electron. Узкий набор технологий помогает держать экспертизу в Javascript на высоком уровне.",
+        "ogTitle": "Команда JavaScript Экспертов",
+        "ogDescription": "Работаем с React, React Native, Node.js, Electron. Узкий набор технологий помогает держать экспертизу в Javascript на высоком уровне.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/uslugi/react-native-razrabotka/",
+      "pathname": "/ru/uslugi/react-native-razrabotka/",
+      "title": "Разработка React Native приложений на заказ | Purrweb",
+      "files": {
+        "desktop": "desktop/ru-uslugi-react-native-razrabotka.jpg",
+        "mobile": "mobile/ru-uslugi-react-native-razrabotka.jpg",
+        "tablet": "tablet/ru-uslugi-react-native-razrabotka.jpg",
+        "html": "html/ru-uslugi-react-native-razrabotka.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-uslugi-react-native-razrabotka_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-uslugi-react-native-razrabotka_hover_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Разработка React Native приложений на заказ | Purrweb",
+        "description": "Мобильная разработка на React Native: создаем кросс-платформенные решения для вашего бизнеса с качеством и стабильностью на обоих устройствах.",
+        "ogTitle": "Разработка React Native приложений на заказ | Purrweb",
+        "ogDescription": "Мобильная разработка на React Native: создаем кросс-платформенные решения для вашего бизнеса с качеством и стабильностью на обоих устройствах.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/uslugi/razrabotka-na-flutter/",
+      "pathname": "/ru/uslugi/razrabotka-na-flutter/",
+      "title": "Разработка мобильных приложений на Flutter | Purrweb",
+      "files": {
+        "desktop": "desktop/ru-uslugi-razrabotka-na-flutter.jpg",
+        "mobile": "mobile/ru-uslugi-razrabotka-na-flutter.jpg",
+        "tablet": "tablet/ru-uslugi-razrabotka-na-flutter.jpg",
+        "html": "html/ru-uslugi-razrabotka-na-flutter.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-uslugi-razrabotka-na-flutter_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-uslugi-razrabotka-na-flutter_hover_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Разработка мобильных приложений на Flutter | Purrweb",
+        "description": "Создаем кроссплатформенные мобильные приложения для IOS и Android. Узнайте стоимость и сроки разработки мобильного приложения на Flutter в Purrweb.",
+        "ogTitle": "Разработка мобильных приложений на Flutter | Purrweb",
+        "ogDescription": "Создаем кроссплатформенные мобильные приложения для IOS и Android. Узнайте стоимость и сроки разработки мобильного приложения на Flutter в Purrweb.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/uslugi/razrabotka-electron-js-prilozhenij/",
+      "pathname": "/ru/uslugi/razrabotka-electron-js-prilozhenij/",
+      "title": "Разработка приложений Electron | Purrweb",
+      "files": {
+        "desktop": "desktop/ru-uslugi-razrabotka-electron-js-prilozhenij.jpg",
+        "mobile": "mobile/ru-uslugi-razrabotka-electron-js-prilozhenij.jpg",
+        "tablet": "tablet/ru-uslugi-razrabotka-electron-js-prilozhenij.jpg",
+        "html": "html/ru-uslugi-razrabotka-electron-js-prilozhenij.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-uslugi-razrabotka-electron-js-prilozhenij_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-uslugi-razrabotka-electron-js-prilozhenij_hover_3.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Стартапы",
+            "file": "interactive/ru-uslugi-razrabotka-electron-js-prilozhenij_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Бизнес",
+            "file": "interactive/ru-uslugi-razrabotka-electron-js-prilozhenij_tab_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Разработка приложений Electron | Purrweb",
+        "description": "Создайте мощное кросс-платформенное приложение на Electron JS с высокой производительностью и уникальными функциями для вашего бизнеса.",
+        "ogTitle": "Разработка приложений Electron | Purrweb",
+        "ogDescription": "Создайте мощное кросс-платформенное приложение на Electron JS с высокой производительностью и уникальными функциями для вашего бизнеса.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/uslugi/progressivnaya-web-razrabotka/",
+      "pathname": "/ru/uslugi/progressivnaya-web-razrabotka/",
+      "title": "Заказать разработку PWA приложений, внедрение прогрессивных веб приложений",
+      "files": {
+        "desktop": "desktop/ru-uslugi-progressivnaya-web-razrabotka.jpg",
+        "mobile": "mobile/ru-uslugi-progressivnaya-web-razrabotka.jpg",
+        "tablet": "tablet/ru-uslugi-progressivnaya-web-razrabotka.jpg",
+        "html": "html/ru-uslugi-progressivnaya-web-razrabotka.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-uslugi-progressivnaya-web-razrabotka_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-uslugi-progressivnaya-web-razrabotka_hover_3.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Стартапы",
+            "file": "interactive/ru-uslugi-progressivnaya-web-razrabotka_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Бизнес",
+            "file": "interactive/ru-uslugi-progressivnaya-web-razrabotka_tab_1.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Заказать разработку PWA приложений, внедрение прогрессивных веб приложений",
+        "description": "Создаем PWA-приложения с быстрым доступом, офлайн-режимом и высокой производительностью. Поможем внедрить прогрессивные веб-решения для вашего бизнеса.",
+        "ogTitle": "Заказать разработку PWA приложений, внедрение прогрессивных веб приложений",
+        "ogDescription": "Создаем PWA-приложения с быстрым доступом, офлайн-режимом и высокой производительностью. Поможем внедрить прогрессивные веб-решения для вашего бизнеса.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://www.purrweb.com/ru/uslugi/webrtc/",
+      "pathname": "/ru/uslugi/webrtc/",
+      "title": "Разработка на WebRTC на заказ | Purrweb",
+      "files": {
+        "desktop": "desktop/ru-uslugi-webrtc.jpg",
+        "mobile": "mobile/ru-uslugi-webrtc.jpg",
+        "tablet": "tablet/ru-uslugi-webrtc.jpg",
+        "html": "html/ru-uslugi-webrtc.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "СогласенСогласен",
+            "file": "interactive/ru-uslugi-webrtc_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Связаться",
+            "file": "interactive/ru-uslugi-webrtc_hover_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Разработка на WebRTC на заказ | Purrweb",
+        "description": "Услуги по разработке голосовых и видео приложений на WebRTC. Мы создаем цифровые продукты с нуля до выпуска на рынок и поддерживаем разработку после запуска.",
+        "ogTitle": "Разработка на WebRTC на заказ | Purrweb",
+        "ogDescription": "Услуги по разработке голосовых и видео приложений на WebRTC. Мы создаем цифровые продукты с нуля до выпуска на рынок и поддерживаем разработку после запуска.",
+        "ogImage": null
+      }
+    }
+  ]
+}

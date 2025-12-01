@@ -1,0 +1,13 @@
+--- a/shared/schema.ts
++++ b/shared/schema.ts
+@@ -1,6 +1,11 @@
+ import { sqliteTable, text, integer, real } from 'drizzle-orm/sqlite-core';
++import { pgTable, text as pgText, integer as pgInt, real as pgReal, timestamp, boolean } from 'drizzle-orm/pg-core';
+ import { createInsertSchema } from 'drizzle-zod';
+ import { z } from 'zod';
+ import { nanoid } from 'nanoid';
+
++// Check if we're using PostgreSQL
++const isPostgres = process.env.DATABASE_URL?.startsWith('postgresql://');
++
+ const genId = () => nanoid();

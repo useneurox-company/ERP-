@@ -1,0 +1,332 @@
+{
+  "site": "seojazz.ru",
+  "siteName": "seojazz-ru",
+  "startUrl": "https://seojazz.ru",
+  "crawledAt": "2025-11-29T11:16:53.019Z",
+  "totalPages": 10,
+  "options": {
+    "desktop": true,
+    "mobile": true,
+    "tablet": true,
+    "html": true,
+    "meta": true,
+    "compressForAI": true
+  },
+  "pages": [
+    {
+      "url": "https://seojazz.ru",
+      "pathname": "/",
+      "title": "Продвижение сайтов заказать в Москве - Цена СЕО раскрутки сайта в ТОП 10 Яндекс",
+      "files": {
+        "desktop": "desktop/home.jpg",
+        "mobile": "mobile/home.jpg",
+        "tablet": "tablet/home.jpg",
+        "html": "html/home.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/home_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить рекомендации",
+            "file": "interactive/home_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Продвижение сайтов заказать в Москве - Цена СЕО раскрутки сайта в ТОП 10 Яндекс",
+        "description": "Заказать продвижение сайта в поисковых системах по ключевым словам в Москве и России. Услуги по SEO оптимизации и раскрутке в интернете. Комплексное продвижение в Яндекс и Google недорого.",
+        "ogTitle": "Продвижение сайтов заказать в Москве - Цена СЕО раскрутки сайта в ТОП 10 Яндекс",
+        "ogDescription": "Заказать продвижение сайта в поисковых системах по ключевым словам в Москве и России. Услуги по SEO оптимизации и раскрутке в интернете. Комплексное продвижение в Яндекс и Google недорого.",
+        "ogImage": "https://seojazz.ru/wp-content/uploads/2021/12/about.png"
+      }
+    },
+    {
+      "url": "https://seojazz.ru/recommendations/",
+      "pathname": "/recommendations/",
+      "title": "Рекомендации для роста трафика, конверсий и лидов: бесплатный аудит сайта | SeoJazz",
+      "files": {
+        "desktop": "desktop/recommendations.jpg",
+        "mobile": "mobile/recommendations.jpg",
+        "tablet": "tablet/recommendations.jpg",
+        "html": "html/recommendations.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/recommendations_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить рекомендации бесплатн",
+            "file": "interactive/recommendations_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Рекомендации для роста трафика, конверсий и лидов: бесплатный аудит сайта | SeoJazz",
+        "description": "Получите бесплатные рекомендации для роста сайта: увеличение трафика, конверсий и лидов. Полный SEO-аудит, пошаговый план, анализ конкурентов и рынка. Опытная команда с 10+ годами опыта поможет вам увеличить количество посетителей, заказов и выручки на 25-30%.",
+        "ogTitle": "Рекомендации для роста трафика, конверсий и лидов: бесплатный аудит сайта | SeoJazz",
+        "ogDescription": "Получите бесплатные рекомендации для роста сайта: увеличение трафика, конверсий и лидов. Полный SEO-аудит, пошаговый план, анализ конкурентов и рынка. Опытная команда с 10+ годами опыта поможет вам увеличить количество посетителей, заказов и выручки на 25-30%.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://seojazz.ru/uslugi/",
+      "pathname": "/uslugi/",
+      "title": "SEO услуги в Москве – продвижение в Яндекс и Google по доступной цене | SeoJazz",
+      "files": {
+        "desktop": "desktop/uslugi.jpg",
+        "mobile": "mobile/uslugi.jpg",
+        "tablet": "tablet/uslugi.jpg",
+        "html": "html/uslugi.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/uslugi_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Перейти в канал",
+            "file": "interactive/uslugi_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SEO услуги в Москве – продвижение в Яндекс и Google по доступной цене | SeoJazz",
+        "description": "Профессиональные услуги SEO для продвижения вашего сайта в ТОП Яндекс и Google. Внутренняя и внешняя сео оптимизация для привлечения целевого трафика в поисковых системах по доступным ценам. Закажите комплексное SEO-продвижение и добейтесь высоких позиций по ключевым запросам.",
+        "ogTitle": "SEO услуги в Москве – продвижение в Яндекс и Google по доступной цене | SeoJazz",
+        "ogDescription": "Профессиональные услуги SEO для продвижения вашего сайта в ТОП Яндекс и Google. Внутренняя и внешняя сео оптимизация для привлечения целевого трафика в поисковых системах по доступным ценам. Закажите комплексное SEO-продвижение и добейтесь высоких позиций по ключевым запросам.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://seojazz.ru/geo-prodvizhenie/",
+      "pathname": "/geo-prodvizhenie/",
+      "title": "GEO-оптимизация (Генеративная оптимизация) – Услуги продвижения в нейросетях | Компания Seojazz",
+      "files": {
+        "desktop": "desktop/geo-prodvizhenie.jpg",
+        "mobile": "mobile/geo-prodvizhenie.jpg",
+        "tablet": "tablet/geo-prodvizhenie.jpg",
+        "html": "html/geo-prodvizhenie.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/geo-prodvizhenie_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Заказать GEO-аудит",
+            "file": "interactive/geo-prodvizhenie_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "GEO-оптимизация (Генеративная оптимизация) – Услуги продвижения в нейросетях | Компания Seojazz",
+        "description": "GEO (Generative Engine Optimization): продвижение сайтов для генеративных ИИ-ассистентов ChatGPT, ЯндексGPT и др. Улучшение видимости в выдаче AI-ассистентов от компании Seojazz.",
+        "ogTitle": "GEO-оптимизация (Генеративная оптимизация) – Услуги продвижения в нейросетях | Компания Seojazz",
+        "ogDescription": "GEO (Generative Engine Optimization): продвижение сайтов для генеративных ИИ-ассистентов ChatGPT, ЯндексGPT и др. Улучшение видимости в выдаче AI-ассистентов от компании Seojazz.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://seojazz.ru/sozdanie-sajtov/",
+      "pathname": "/sozdanie-sajtov/",
+      "title": "Заказать создание сайта – Разработка сайтов под ключ, цены в веб-студии",
+      "files": {
+        "desktop": "desktop/sozdanie-sajtov.jpg",
+        "mobile": "mobile/sozdanie-sajtov.jpg",
+        "tablet": "tablet/sozdanie-sajtov.jpg",
+        "html": "html/sozdanie-sajtov.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/sozdanie-sajtov_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Получить консультацию",
+            "file": "interactive/sozdanie-sajtov_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Заказать создание сайта – Разработка сайтов под ключ, цены в веб-студии",
+        "description": "Заказать создание сайта под ключ для бизнеса в Москве. Разработка сайтов любой сложности и cms по низкой цене. Дизайн, наполнение контента, продвижение.",
+        "ogTitle": "Заказать создание сайта – Разработка сайтов под ключ, цены в веб-студии",
+        "ogDescription": "Заказать создание сайта под ключ для бизнеса в Москве. Разработка сайтов любой сложности и cms по низкой цене. Дизайн, наполнение контента, продвижение.",
+        "ogImage": "https://seojazz.ru/wp-content/uploads/2022/06/sozdanie-sajtov.jpg"
+      }
+    },
+    {
+      "url": "https://seojazz.ru/chto-takoe-seo-prodvizhenie-sajta/",
+      "pathname": "/chto-takoe-seo-prodvizhenie-sajta/",
+      "title": "Что такое SEO продвижение сайтов — СЕО раскрутка",
+      "files": {
+        "desktop": "desktop/chto-takoe-seo-prodvizhenie-sajta.jpg",
+        "mobile": "mobile/chto-takoe-seo-prodvizhenie-sajta.jpg",
+        "tablet": "tablet/chto-takoe-seo-prodvizhenie-sajta.jpg",
+        "html": "html/chto-takoe-seo-prodvizhenie-sajta.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/chto-takoe-seo-prodvizhenie-sajta_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Бесплатный СЕО аудит",
+            "file": "interactive/chto-takoe-seo-prodvizhenie-sajta_hover_4.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Почему дешевле",
+            "file": "interactive/chto-takoe-seo-prodvizhenie-sajta_tab_0.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Философия",
+            "file": "interactive/chto-takoe-seo-prodvizhenie-sajta_tab_1.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Тематики продвижения",
+            "file": "interactive/chto-takoe-seo-prodvizhenie-sajta_tab_2.jpg"
+          },
+          {
+            "type": "tab",
+            "element": "Фотогалерея",
+            "file": "interactive/chto-takoe-seo-prodvizhenie-sajta_tab_3.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Что такое SEO продвижение сайтов — СЕО раскрутка",
+        "description": "Что такое SEO продвижение сайтов в поисковых системах. Комплексное продвижение в Яндекс и Google недорого. Услуги по SEO оптимизации и раскрутке в интернете в компании Seojazz.",
+        "ogTitle": "Что такое SEO продвижение сайтов — СЕО раскрутка",
+        "ogDescription": "Что такое SEO продвижение сайтов в поисковых системах. Комплексное продвижение в Яндекс и Google недорого. Услуги по SEO оптимизации и раскрутке в интернете в компании Seojazz.",
+        "ogImage": "https://seojazz.ru/wp-content/uploads/2021/12/about.png"
+      }
+    },
+    {
+      "url": "https://seojazz.ru/prodvizhenie-na-avito-pod-kljuch/",
+      "pathname": "/prodvizhenie-na-avito-pod-kljuch/",
+      "title": "Заказать продвижение на Авито — Цены на услуги размещения объявлений Avito для бизнеса в Москве и России",
+      "files": {
+        "desktop": "desktop/prodvizhenie-na-avito-pod-kljuch.jpg",
+        "mobile": "mobile/prodvizhenie-na-avito-pod-kljuch.jpg",
+        "tablet": "tablet/prodvizhenie-na-avito-pod-kljuch.jpg",
+        "html": "html/prodvizhenie-na-avito-pod-kljuch.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/prodvizhenie-na-avito-pod-kljuch_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Оставить заявку",
+            "file": "interactive/prodvizhenie-na-avito-pod-kljuch_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Заказать продвижение на Авито — Цены на услуги размещения объявлений Avito для бизнеса в Москве и России",
+        "description": "Заказать продвижение на Авито объявлений и интернет-магазинов. Невысокая стоимость услуг по эффективному ведению аккаунта в Москве и России. Скидки и акции для постоянных клиентов.",
+        "ogTitle": "Заказать продвижение на Авито — Цены на услуги размещения объявлений Avito для бизнеса в Москве и России",
+        "ogDescription": "Заказать продвижение на Авито объявлений и интернет-магазинов. Невысокая стоимость услуг по эффективному ведению аккаунта в Москве и России. Скидки и акции для постоянных клиентов.",
+        "ogImage": "https://seojazz.ru/wp-content/uploads/2022/06/prodvizhenie-na-avito-min.jpg"
+      }
+    },
+    {
+      "url": "https://seojazz.ru/cases/",
+      "pathname": "/cases/",
+      "title": "Кейсы - seojazz",
+      "files": {
+        "desktop": "desktop/cases.jpg",
+        "mobile": "mobile/cases.jpg",
+        "tablet": "tablet/cases.jpg",
+        "html": "html/cases.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/cases_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Читать кейс подробнее",
+            "file": "interactive/cases_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Кейсы - seojazz",
+        "description": null,
+        "ogTitle": "Кейсы - seojazz",
+        "ogDescription": null,
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://seojazz.ru/blog/",
+      "pathname": "/blog/",
+      "title": "SEO блог о продвижении и оптимизации сайтов │ seojazz",
+      "files": {
+        "desktop": "desktop/blog.jpg",
+        "mobile": "mobile/blog.jpg",
+        "tablet": "tablet/blog.jpg",
+        "html": "html/blog.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/blog_hover_0.jpg"
+          },
+          {
+            "type": "hover",
+            "element": "Все",
+            "file": "interactive/blog_hover_4.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "SEO блог о продвижении и оптимизации сайтов │ seojazz",
+        "description": "SEO блог компании Seojazz: актуальные статьи о продвижении и оптимизации сайтов в интернете. Узнайте, как эффективно раскрутить свой ресурс и выйти в топ поисковых систем.",
+        "ogTitle": "SEO блог о продвижении и оптимизации сайтов │ seojazz",
+        "ogDescription": "SEO блог компании Seojazz: актуальные статьи о продвижении и оптимизации сайтов в интернете. Узнайте, как эффективно раскрутить свой ресурс и выйти в топ поисковых систем.",
+        "ogImage": null
+      }
+    },
+    {
+      "url": "https://seojazz.ru/privacy-policy/",
+      "pathname": "/privacy-policy/",
+      "title": "Политика конфиденциальности - seojazz",
+      "files": {
+        "desktop": "desktop/privacy-policy.jpg",
+        "mobile": "mobile/privacy-policy.jpg",
+        "tablet": "tablet/privacy-policy.jpg",
+        "html": "html/privacy-policy.html",
+        "interactive": [
+          {
+            "type": "hover",
+            "element": "Обсудить проект",
+            "file": "interactive/privacy-policy_hover_0.jpg"
+          }
+        ]
+      },
+      "meta": {
+        "title": "Политика конфиденциальности - seojazz",
+        "description": null,
+        "ogTitle": "Политика конфиденциальности - seojazz",
+        "ogDescription": null,
+        "ogImage": null
+      }
+    }
+  ]
+}

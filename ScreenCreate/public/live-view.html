@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Test View</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #0f0f1a;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      color: #fff;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      padding: 12px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      flex-wrap: wrap;
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      background: #ef4444;
+      box-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    .dot.active {
+      background: #22c55e;
+      box-shadow: 0 0 15px rgba(34, 197, 94, 0.6);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.95); }
+    }
+
+    .url-info {
+      flex: 1;
+      color: #94a3b8;
+      font-size: 13px;
+      font-family: monospace;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      max-width: 500px;
+    }
+
+    .action-badge {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+    }
+
+    .timestamp {
+      color: #64748b;
+      font-size: 12px;
+      font-family: monospace;
+    }
+
+    .viewport {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      background: radial-gradient(ellipse at center, #1a1a2e 0%, #0f0f1a 100%);
+      overflow: hidden;
+    }
+
+    #screenshot {
+      max-width: 100%;
+      max-height: 100%;
+      border-radius: 12px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+      transition: opacity 0.15s ease;
+    }
+
+    .placeholder {
+      text-align: center;
+      color: #64748b;
+    }
+
+    .placeholder-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    .placeholder-text {
+      font-size: 18px;
+      margin-bottom: 8px;
+    }
+
+    .placeholder-hint {
+      font-size: 13px;
+      color: #475569;
+    }
+
+    .footer {
+      background: #16213e;
+      padding: 8px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+      color: #64748b;
+      border-top: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .fps {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .fps-bar {
+      width: 60px;
+      height: 4px;
+      background: #1e293b;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .fps-bar-fill {
+      height: 100%;
+      background: #22c55e;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="status">
+      <div class="dot" id="statusDot"></div>
+      <span id="statusText">Ожидание сессии...</span>
+    </div>
+    <div class="url-info" id="urlInfo">-</div>
+    <div class="action-badge" id="lastAction">-</div>
+    <div class="timestamp" id="timestamp">-</div>
+  </div>
+
+  <div class="viewport" id="viewport">
+    <div class="placeholder" id="placeholder">
+      <div class="placeholder-icon">🖥️</div>
+      <div class="placeholder-text">Нет активной тестовой сессии</div>
+      <div class="placeholder-hint">Запустите тест через /test/start</div>
+    </div>
+    <img id="screenshot" src="" alt="Live View" style="display: none;">
+  </div>
+
+  <div class="footer">
+    <div class="fps">
+      <span>Обновление:</span>
+      <div class="fps-bar">
+        <div class="fps-bar-fill" id="fpsBar" style="width: 0%"></div>
+      </div>
+      <span id="fpsText">0 fps</span>
+    </div>
+    <div>Claude Code Live Test View | ScreenCreate :3500</div>
+  </div>
+
+  <script>
+    const img = document.getElementById('screenshot');
+    const dot = document.getElementById('statusDot');
+    const statusText = document.getElementById('statusText');
+    const urlInfo = document.getElementById('urlInfo');
+    const lastAction = document.getElementById('lastAction');
+    const timestamp = document.getElementById('timestamp');
+    const placeholder = document.getElementById('placeholder');
+    const fpsBar = document.getElementById('fpsBar');
+    const fpsText = document.getElementById('fpsText');
+
+    let frameCount = 0;
+    let lastFpsUpdate = Date.now();
+    let currentFps = 0;
+
+    async function updateView() {
+      const startTime = Date.now();
+
+      try {
+        const res = await fetch('/test/live-frame');
+        const data = await res.json();
+
+        if (data.active) {
+          dot.classList.add('active');
+          statusText.textContent = 'LIVE';
+          img.src = data.screenshot;
+          img.style.display = 'block';
+          placeholder.style.display = 'none';
+          urlInfo.textContent = data.url || '-';
+          lastAction.textContent = data.lastAction || 'Idle';
+
+          const time = new Date(data.timestamp);
+          timestamp.textContent = time.toLocaleTimeString('ru-RU');
+
+          frameCount++;
+        } else {
+          dot.classList.remove('active');
+          statusText.textContent = 'Нет активной сессии';
+          img.style.display = 'none';
+          placeholder.style.display = 'block';
+          urlInfo.textContent = '-';
+          lastAction.textContent = '-';
+          timestamp.textContent = '-';
+        }
+      } catch (e) {
+        dot.classList.remove('active');
+        statusText.textContent = 'Ошибка подключения';
+        console.error('Live View error:', e);
+      }
+
+      // Calculate FPS
+      const now = Date.now();
+      if (now - lastFpsUpdate >= 1000) {
+        currentFps = frameCount;
+        frameCount = 0;
+        lastFpsUpdate = now;
+        fpsText.textContent = `${currentFps} fps`;
+        fpsBar.style.width = `${Math.min(100, currentFps * 50)}%`;
+      }
+    }
+
+    // Update every 500ms (2 fps target)
+    setInterval(updateView, 500);
+    updateView();
+
+    // Visual indicator that page is connected
+    console.log('🔴 Live Test View connected. Waiting for test session...');
+  </script>
+</body>
+</html>
