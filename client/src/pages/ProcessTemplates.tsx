@@ -39,11 +39,13 @@ export default function ProcessTemplates() {
   // Fetch users
   const { data: users = [] } = useQuery<Array<{ id: string; full_name?: string; username: string }>>({
     queryKey: ["/api/users"],
+    refetchInterval: 30000, // Real-time: обновление каждые 30 секунд (редко меняется)
   });
 
   // Fetch templates
   const { data: templates = [], isLoading } = useQuery<ProcessTemplate[]>({
     queryKey: ["/api/templates"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   // Create template mutation

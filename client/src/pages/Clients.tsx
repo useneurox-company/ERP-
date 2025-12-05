@@ -87,6 +87,7 @@ export default function Clients() {
 
   const { data: clients = [], isLoading } = useQuery<Client[]>({
     queryKey: ["/api/clients"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   // Fetch client details when selected

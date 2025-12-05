@@ -403,11 +403,13 @@ export default function ProjectDetailPage() {
   const { data: project, isLoading: projectLoading} = useQuery<Project & { stages: ProjectStage[] }>({
     queryKey: ['/api/projects', id],
     enabled: !!id,
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: items = [], isLoading: itemsLoading } = useQuery<ProjectItem[]>({
     queryKey: ['/api/projects', id, 'items'],
     enabled: !!id,
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   // Query stages for selected item
@@ -425,6 +427,7 @@ export default function ProjectDetailPage() {
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<any[]>({
     queryKey: ['/api/projects', id, 'tasks'],
     enabled: !!id,
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   // Query installers for montage

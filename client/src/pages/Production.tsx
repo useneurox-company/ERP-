@@ -20,6 +20,7 @@ export default function Production() {
 
   const { data: productionTasks = [], isLoading: tasksLoading, error: tasksError } = useQuery<ProductionTaskWithStages[]>({
     queryKey: ["/api/production"],
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({

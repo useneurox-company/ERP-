@@ -52,6 +52,7 @@ export default function Projects() {
       return await apiRequest('GET', url);
     },
     enabled: !!user && !!userRole, // Загружаем только когда есть данные пользователя
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({

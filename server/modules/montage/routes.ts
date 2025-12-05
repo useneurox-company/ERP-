@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { montageRepository } from "./repository";
-import { insertMontageOrderSchema, insertMontageItemSchema, insertMontageStatusSchema, montage_statuses, montage_orders } from "@shared/schema";
+import { insertMontageOrderSchema, insertMontageItemSchema, insertMontageStatusSchema, insertMontageItemStatusSchema, montage_statuses, montage_orders, montage_item_statuses, montage_items } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { db } from "../../db";
 import { eq, asc, and } from "drizzle-orm";
@@ -154,6 +154,157 @@ router.delete("/api/montage/statuses/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting montage status:", error);
     res.status(500).json({ error: "Failed to delete status" });
+  }
+});
+
+// === MONTAGE ITEM STATUSES ===
+
+// GET /api/montage/item-statuses - Get all active item statuses
+router.get("/api/montage/item-statuses", async (req, res) => {
+  try {
+    const statuses = await db.select()
+      .from(montage_item_statuses)
+      .where(eq(montage_item_statuses.is_active, true))
+      .orderBy(asc(montage_item_statuses.order));
+    res.json(statuses);
+  } catch (error) {
+    console.error("Error fetching montage item statuses:", error);
+    res.status(500).json({ error: "Failed to fetch item statuses" });
+  }
+});
+
+// POST /api/montage/item-statuses - Create new item status
+router.post("/api/montage/item-statuses", async (req, res) => {
+  try {
+    const validationResult = insertMontageItemStatusSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      const errorMessage = fromZodError(validationResult.error).toString();
+      res.status(400).json({ error: errorMessage });
+      return;
+    }
+
+    // Get max order
+    const maxOrderResult = await db.select({ maxOrder: montage_item_statuses.order })
+      .from(montage_item_statuses)
+      .orderBy(asc(montage_item_statuses.order));
+    const maxOrder = maxOrderResult.length > 0
+      ? Math.max(...maxOrderResult.map(r => r.maxOrder)) + 1
+      : 0;
+
+    const newStatus = await db.insert(montage_item_statuses)
+      .values({
+        ...validationResult.data,
+        order: validationResult.data.order ?? maxOrder,
+      })
+      .returning();
+
+    res.status(201).json(newStatus[0]);
+  } catch (error) {
+    console.error("Error creating montage item status:", error);
+    res.status(500).json({ error: "Failed to create item status" });
+  }
+});
+
+// PUT /api/montage/item-statuses/:id - Update item status
+router.put("/api/montage/item-statuses/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const validationResult = insertMontageItemStatusSchema.partial().safeParse(req.body);
+
+    if (!validationResult.success) {
+      const errorMessage = fromZodError(validationResult.error).toString();
+      res.status(400).json({ error: errorMessage });
+      return;
+    }
+
+    const updatedStatus = await db.update(montage_item_statuses)
+      .set({
+        ...validationResult.data,
+        updated_at: new Date(),
+      })
+      .where(eq(montage_item_statuses.id, id))
+      .returning();
+
+    if (!updatedStatus[0]) {
+      res.status(404).json({ error: "Item status not found" });
+      return;
+    }
+
+    res.json(updatedStatus[0]);
+  } catch (error) {
+    console.error("Error updating montage item status:", error);
+    res.status(500).json({ error: "Failed to update item status" });
+  }
+});
+
+// DELETE /api/montage/item-statuses/:id - Delete item status
+router.delete("/api/montage/item-statuses/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if status exists and is not system
+    const status = await db.select()
+      .from(montage_item_statuses)
+      .where(eq(montage_item_statuses.id, id));
+
+    if (!status[0]) {
+      res.status(404).json({ error: "Item status not found" });
+      return;
+    }
+
+    if (status[0].is_system) {
+      res.status(400).json({ error: "Cannot delete system status" });
+      return;
+    }
+
+    // Check if any items use this status
+    const itemsWithStatus = await db.select()
+      .from(montage_items)
+      .where(eq(montage_items.status, status[0].code));
+
+    if (itemsWithStatus.length > 0) {
+      res.status(400).json({
+        error: `Cannot delete status: ${itemsWithStatus.length} item(s) use this status`
+      });
+      return;
+    }
+
+    await db.delete(montage_item_statuses)
+      .where(eq(montage_item_statuses.id, id));
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting montage item status:", error);
+    res.status(500).json({ error: "Failed to delete item status" });
+  }
+});
+
+// POST /api/montage/item-statuses/seed - Seed initial item statuses
+router.post("/api/montage/item-statuses/seed", async (req, res) => {
+  try {
+    const defaultStatuses = [
+      { code: 'warehouse', name: 'На складе', color: 'blue', bg_color: 'bg-blue-200', text_color: 'text-blue-700', order: 0, is_system: true },
+      { code: 'on_site', name: 'На объекте', color: 'yellow', bg_color: 'bg-yellow-200', text_color: 'text-yellow-700', order: 1, is_system: false },
+      { code: 'completed', name: 'Готово', color: 'green', bg_color: 'bg-green-200', text_color: 'text-green-700', order: 2, is_system: true },
+    ];
+
+    const results = [];
+    for (const status of defaultStatuses) {
+      // Check if status already exists
+      const existing = await db.select().from(montage_item_statuses).where(eq(montage_item_statuses.code, status.code));
+      if (existing.length === 0) {
+        const newStatus = await db.insert(montage_item_statuses).values(status).returning();
+        results.push(newStatus[0]);
+      } else {
+        results.push(existing[0]);
+      }
+    }
+
+    res.json({ message: 'Item statuses seeded', statuses: results });
+  } catch (error) {
+    console.error("Error seeding item statuses:", error);
+    res.status(500).json({ error: "Failed to seed item statuses" });
   }
 });
 

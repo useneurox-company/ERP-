@@ -27,10 +27,12 @@ export default function Finance() {
 
   const { data: stats, isLoading: statsLoading, error: statsError } = useQuery<FinancialStats>({
     queryKey: ["/api/finance/stats"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   const { data: transactions = [], isLoading: transactionsLoading } = useQuery<FinancialTransaction[]>({
     queryKey: ["/api/finance/transactions"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   if (statsError) {

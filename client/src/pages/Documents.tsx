@@ -11,6 +11,7 @@ export default function Documents() {
 
   const { data: documents = [], isLoading, error } = useQuery<Document[]>({
     queryKey: ["/api/documents"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   if (error) {

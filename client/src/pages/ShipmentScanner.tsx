@@ -62,10 +62,12 @@ export default function ShipmentScanner() {
 
   const { data: items = [] } = useQuery<WarehouseItem[]>({
     queryKey: ["/api/warehouse/items"],
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: projects = [] } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   // Создание накладной

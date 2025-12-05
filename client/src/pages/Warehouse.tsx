@@ -47,6 +47,7 @@ export default function Warehouse() {
 
   const { data: items = [], isLoading, error } = useQuery<WarehouseItem[]>({
     queryKey: ["/api/warehouse/items"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   const { data: users = [] } = useQuery<User[]>({

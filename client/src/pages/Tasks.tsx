@@ -66,6 +66,7 @@ export default function Tasks() {
 
   const { data: tasks = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/tasks"],
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: projects = [] } = useQuery<any[]>({

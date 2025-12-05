@@ -71,6 +71,7 @@ export default function Suppliers() {
 
   const { data: suppliers = [], isLoading } = useQuery<Supplier[]>({
     queryKey: ["/api/suppliers"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   const filteredSuppliers = suppliers.filter((supplier) =>

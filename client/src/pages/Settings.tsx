@@ -43,6 +43,7 @@ export default function Settings() {
       if (!response.ok) throw new Error("Failed to fetch users");
       return response.json();
     },
+    refetchInterval: 30000, // Real-time: обновление каждые 30 секунд (редко меняется)
   });
 
   useEffect(() => {

@@ -13,14 +13,17 @@ export default function Installation() {
 
   const { data: installations = [], isLoading: installationsLoading, error } = useQuery<Installation[]>({
     queryKey: ["/api/installations"],
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery<UserType[]>({
     queryKey: ["/api/users"],
+    refetchInterval: 30000, // Real-time: обновление каждые 30 секунд (редко меняется)
   });
 
   const { data: projects = [], isLoading: projectsLoading } = useQuery<Project[]>({
     queryKey: ["/api/projects"],
+    refetchInterval: 15000, // Real-time: обновление каждые 15 секунд
   });
 
   if (error) {

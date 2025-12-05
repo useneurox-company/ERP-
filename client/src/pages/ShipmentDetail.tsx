@@ -44,6 +44,7 @@ export default function ShipmentDetail() {
   const { data: shipment, isLoading } = useQuery({
     queryKey: [`/api/shipments/${shipmentId}`],
     enabled: !!shipmentId,
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const cancelMutation = useMutation({

@@ -25,6 +25,7 @@ export default function MyTasks() {
   const { data: tasks = [], isLoading } = useQuery<any[]>({
     queryKey: ["/api/my-tasks", user?.id],
     enabled: !!user?.id,
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   // Расчёт дней до дедлайна

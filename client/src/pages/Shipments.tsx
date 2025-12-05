@@ -38,6 +38,7 @@ export default function Shipments() {
 
   const { data: shipments = [] } = useQuery<any[]>({
     queryKey: ["/api/shipments"],
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const deleteMutation = useMutation({

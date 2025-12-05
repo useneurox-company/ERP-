@@ -67,6 +67,7 @@ export default function Sales() {
 
   const { data: deals = [], isLoading: dealsLoading, error: dealsError } = useQuery<Deal[]>({
     queryKey: ["/api/deals"],
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   const { data: users = [], isLoading: usersLoading } = useQuery<User[]>({

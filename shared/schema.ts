@@ -1141,6 +1141,7 @@ export const installers = pgTable('installers', {
   specialization: text('specialization'), // Тип работ: мебель, кухни, и т.д.
   hourly_rate: real('hourly_rate'), // Ставка за час
   qualification_level: text('qualification_level').default('medium'), // low, medium, high - уровень квалификации
+  vehicle_number: text('vehicle_number'), // Номер машины (опционально)
   description: text('description'), // Описание монтажника
   notes: text('notes'),
   is_active: boolean('is_active').default(true).notNull(),
@@ -1230,3 +1231,22 @@ export const montage_statuses = pgTable('montage_statuses', {
 export const insertMontageStatusSchema = createInsertSchema(montage_statuses).omit({ id: true, created_at: true, updated_at: true });
 export type InsertMontageStatus = z.infer<typeof insertMontageStatusSchema>;
 export type MontageStatus = typeof montage_statuses.$inferSelect;
+
+// Montage Item Statuses (Статусы изделий в заказах монтажа)
+export const montage_item_statuses = pgTable('montage_item_statuses', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  code: text('code').notNull().unique(), // warehouse, on_site, completed
+  name: text('name').notNull(), // На складе, На объекте, Готово
+  color: text('color').notNull().default('gray'), // blue, yellow, green
+  bg_color: text('bg_color'), // bg-blue-100, bg-yellow-100
+  text_color: text('text_color'), // text-blue-700, text-yellow-700
+  order: integer('order').notNull().default(0), // Порядок отображения
+  is_system: boolean('is_system').default(false).notNull(), // Системные нельзя удалить
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertMontageItemStatusSchema = createInsertSchema(montage_item_statuses).omit({ id: true, created_at: true, updated_at: true });
+export type InsertMontageItemStatus = z.infer<typeof insertMontageItemStatusSchema>;
+export type MontageItemStatus = typeof montage_item_statuses.$inferSelect;
