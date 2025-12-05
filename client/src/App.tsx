@@ -20,6 +20,7 @@ import ShipmentScanner from "@/pages/ShipmentScanner";
 import ShipmentDetail from "@/pages/ShipmentDetail";
 import Finance from "@/pages/Finance";
 import Installation from "@/pages/Installation";
+import Montage from "@/pages/Montage"; // Montage module
 import Mail from "@/pages/Mail";
 import Documents from "@/pages/Documents";
 import AIAgents from "@/pages/AIAgents";
@@ -46,6 +47,7 @@ function Router() {
       <Route path="/shipments" component={Shipments} />
       <Route path="/finance" component={Finance} />
       <Route path="/installation" component={Installation} />
+      <Route path="/montage" component={Montage} />
       <Route path="/mail" component={Mail} />
       <Route path="/documents" component={Documents} />
       <Route path="/ai-agents" component={AIAgents} />

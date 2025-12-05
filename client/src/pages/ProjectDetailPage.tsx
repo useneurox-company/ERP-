@@ -12,8 +12,9 @@ import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   ArrowLeft, Plus, Edit, Trash2, Calendar, FileText, Layers,
-  AlertCircle, GripVertical, MessageSquare, Play, ImageIcon, File, User as UserIcon, Package, Paperclip, Clock
+  AlertCircle, GripVertical, MessageSquare, Play, ImageIcon, File, User as UserIcon, Package, Paperclip, Clock, Hammer, Check, Users
 } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectItemDialog } from "@/components/ProjectItemDialog";
 import { StageDialog } from "@/components/StageDialog";
 import { StageFlowEditor } from "@/components/StageFlowEditor";
@@ -43,10 +44,42 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable, arrayMove } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { format } from "date-fns";
+
+// Форматирование телефона: +7 XXX XXX-XX-XX
+const formatPhoneNumber = (value: string): string => {
+  // Убираем всё кроме цифр
+  const digits = value.replace(/\D/g, '');
+
+  // Если начинается с 8 или 7, убираем первую цифру
+  const cleanDigits = digits.startsWith('8') || digits.startsWith('7')
+    ? digits.slice(1)
+    : digits;
+
+  // Ограничиваем до 10 цифр (без кода страны)
+  const limited = cleanDigits.slice(0, 10);
+
+  // Форматируем
+  if (limited.length === 0) return '+7 ';
+  if (limited.length <= 3) return `+7 ${limited}`;
+  if (limited.length <= 6) return `+7 ${limited.slice(0, 3)} ${limited.slice(3)}`;
+  if (limited.length <= 8) return `+7 ${limited.slice(0, 3)} ${limited.slice(3, 6)}-${limited.slice(6)}`;
+  return `+7 ${limited.slice(0, 3)} ${limited.slice(3, 6)}-${limited.slice(6, 8)}-${limited.slice(8)}`;
+};
 
 // StageCard component with drag&drop functionality
 interface StageCardProps {
@@ -317,6 +350,36 @@ export default function ProjectDetailPage() {
   const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
   const [selectedItemForTask, setSelectedItemForTask] = useState<ProjectItem | null>(null);
 
+  // Send to Montage dialog state
+  const [sendToMontageOpen, setSendToMontageOpen] = useState(false);
+  const [itemForMontage, setItemForMontage] = useState<ProjectItem | null>(null);
+  const [montageFormData, setMontageFormData] = useState({
+    address: "",
+    client_name: "",
+    client_phone: "",
+    scheduled_date: "",
+    scheduled_time: "",
+    deadline: "",
+    installer_id: "",
+    cost: "",
+    notes: "",
+  });
+
+  // Create Montage from project dialog state
+  const [createMontageDialogOpen, setCreateMontageDialogOpen] = useState(false);
+  const [selectedMontageItemIds, setSelectedMontageItemIds] = useState<string[]>([]);
+  const [selectedMontageInstallerIds, setSelectedMontageInstallerIds] = useState<string[]>([]);
+  const [createMontageFormData, setCreateMontageFormData] = useState({
+    address: "",
+    client_name: "",
+    client_phone: "",
+    scheduled_date: "",
+    scheduled_time: "",
+    deadline: "",
+    total_cost: "",
+    notes: "",
+  });
+
   // Task filters state
   const [taskStatusFilter, setTaskStatusFilter] = useState<string>('all');
   const [taskAssigneeFilter, setTaskAssigneeFilter] = useState<string>('all');
@@ -362,6 +425,165 @@ export default function ProjectDetailPage() {
   const { data: tasks = [], isLoading: tasksLoading } = useQuery<any[]>({
     queryKey: ['/api/projects', id, 'tasks'],
     enabled: !!id,
+  });
+
+  // Query installers for montage
+  const { data: installers = [] } = useQuery<any[]>({
+    queryKey: ['/api/installers'],
+  });
+
+  // Create Montage Order from project mutation
+  const createMontageOrderMutation = useMutation({
+    mutationFn: async (data: {
+      project_id: string;
+      address: string;
+      client_name?: string;
+      client_phone?: string;
+      scheduled_date?: string;
+      scheduled_time?: string;
+      deadline?: string;
+      total_cost?: number;
+      notes?: string;
+      installer_ids: string[];
+      item_ids: string[];
+    }) => {
+      // Create order
+      const res = await fetch('/api/montage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          project_id: data.project_id,
+          address: data.address,
+          client_name: data.client_name || null,
+          client_phone: data.client_phone || null,
+          scheduled_date: data.scheduled_date || null,
+          scheduled_time: data.scheduled_time || null,
+          deadline: data.deadline || null,
+          total_cost: data.total_cost || null,
+          notes: data.notes || null,
+          installer_ids: data.installer_ids,
+        }),
+      });
+      if (!res.ok) throw new Error('Failed to create montage order');
+      const order = await res.json();
+
+      // Add items to order
+      for (const itemId of data.item_ids) {
+        await fetch(`/api/montage/${order.id}/items`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            project_item_id: itemId,
+            quantity: 1,
+            status: 'pending',
+          }),
+        });
+      }
+
+      return order;
+    },
+    onSuccess: () => {
+      toast({ title: "Заказ на монтаж создан", description: "Заказ успешно создан с выбранными позициями" });
+      setCreateMontageDialogOpen(false);
+      setSelectedMontageItemIds([]);
+      setSelectedMontageInstallerIds([]);
+      setCreateMontageFormData({
+        address: "",
+        client_name: "",
+        client_phone: "",
+        scheduled_date: "",
+        scheduled_time: "",
+        deadline: "",
+        total_cost: "",
+        notes: "",
+      });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось создать заказ на монтаж", variant: "destructive" });
+    },
+  });
+
+  // Toggle ready for montage mutation
+  const toggleReadyForMontageMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const res = await fetch(`/api/project-items/${itemId}/ready-for-montage`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) throw new Error('Failed to toggle ready for montage');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', id, 'items'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', id, 'events'] });
+      toast({
+        title: data.ready_for_montage ? "Готово к монтажу" : "Снято с готовности",
+        description: data.ready_for_montage
+          ? `Изделие "${data.name}" помечено как готовое к монтажу`
+          : `Изделие "${data.name}" снято с готовности к монтажу`,
+      });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось изменить статус готовности", variant: "destructive" });
+    },
+  });
+
+  // Send to Montage mutation
+  const sendToMontageMutation = useMutation({
+    mutationFn: async (data: {
+      project_id: string;
+      project_item_id: string;
+      address: string;
+      client_name?: string;
+      client_phone?: string;
+      scheduled_date?: string;
+      scheduled_time?: string;
+      installer_id?: string;
+      cost?: number;
+      notes?: string;
+    }) => {
+      // Create new_order object for the API
+      const payload = {
+        project_item_id: data.project_item_id,
+        cost: data.cost || null,
+        new_order: {
+          project_id: data.project_id,
+          address: data.address,
+          client_name: data.client_name || null,
+          client_phone: data.client_phone || null,
+          scheduled_date: data.scheduled_date || null,
+          scheduled_time: data.scheduled_time || null,
+          installer_id: data.installer_id || null,
+          total_cost: data.cost || null,
+          notes: data.notes || null,
+        },
+      };
+      const res = await fetch('/api/montage/send-to-montage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) throw new Error('Failed to send to montage');
+      return res.json();
+    },
+    onSuccess: () => {
+      toast({ title: "Отправлено на монтаж", description: "Позиция успешно добавлена в заказ на монтаж" });
+      setSendToMontageOpen(false);
+      setItemForMontage(null);
+      setMontageFormData({
+        address: "",
+        client_name: "",
+        client_phone: "",
+        scheduled_date: "",
+        scheduled_time: "",
+        installer_id: "",
+        cost: "",
+        notes: "",
+      });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось отправить на монтаж", variant: "destructive" });
+    },
   });
 
   // Helper function to calculate days until deadline
@@ -875,13 +1097,38 @@ export default function ProjectDetailPage() {
               <h2 className="font-semibold" data-testid="text-items-title">
                 Позиции мебели
               </h2>
-              <Button
-                size="icon"
-                onClick={handleAddItem}
-                data-testid="button-add-item"
-              >
-                <Plus className="w-4 h-4" />
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    // Только если форма ещё не заполнена - авто-заполнить из проекта
+                    if (!createMontageFormData.address) {
+                      setCreateMontageFormData({
+                        ...createMontageFormData,
+                        address: project?.delivery_address || "",
+                        client_name: project?.client_name || "",
+                        client_phone: project?.client_phone || "",
+                      });
+                      // Pre-select items only if no items selected yet
+                      const readyItems = items.filter(item => item.ready_for_montage);
+                      setSelectedMontageItemIds(readyItems.map(item => item.id));
+                    }
+                    setCreateMontageDialogOpen(true);
+                  }}
+                  data-testid="button-create-montage"
+                >
+                  <Hammer className="w-4 h-4 mr-1" />
+                  Монтаж
+                </Button>
+                <Button
+                  size="icon"
+                  onClick={handleAddItem}
+                  data-testid="button-add-item"
+                >
+                  <Plus className="w-4 h-4" />
+                </Button>
+              </div>
             </div>
 
             <Separator />
@@ -1000,6 +1247,26 @@ export default function ProjectDetailPage() {
                                 </Button>
                               </TooltipTrigger>
                               <TooltipContent><p>Создать задачу</p></TooltipContent>
+                            </Tooltip>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button
+                                  size="icon"
+                                  variant={item.ready_for_montage ? "default" : "outline"}
+                                  className={`h-6 w-6 ${item.ready_for_montage ? "bg-green-600 hover:bg-green-700" : ""}`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleReadyForMontageMutation.mutate(item.id);
+                                  }}
+                                  disabled={toggleReadyForMontageMutation.isPending}
+                                  data-testid={`button-toggle-ready-montage-${item.id}`}
+                                >
+                                  <Hammer className="w-3 h-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>{item.ready_for_montage ? "Готово к монтажу (нажмите чтобы снять)" : "Пометить готовым к монтажу"}</p>
+                              </TooltipContent>
                             </Tooltip>
                           </div>
                         </div>
@@ -1365,6 +1632,391 @@ export default function ProjectDetailPage() {
         open={!!selectedTaskId}
         onOpenChange={(open) => !open && setSelectedTaskId(null)}
       />
+
+      {/* Create Montage from Project Dialog */}
+      <Dialog open={createMontageDialogOpen} onOpenChange={setCreateMontageDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Создать заказ на монтаж</DialogTitle>
+            <DialogDescription>
+              Создание заказа на монтаж для проекта "{project?.name}"
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Items Selection */}
+            <div>
+              <Label className="mb-2 block">Изделия для монтажа</Label>
+              {items.length === 0 ? (
+                <div className="text-sm text-gray-500 py-4 text-center border rounded bg-muted/50">
+                  <Package className="h-8 w-8 mx-auto mb-2 opacity-50" />
+                  Нет позиций в проекте
+                </div>
+              ) : (
+                <div className="border rounded max-h-48 overflow-y-auto">
+                  {items.map((item) => (
+                    <div
+                      key={item.id}
+                      className={`flex items-center gap-3 p-3 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 ${
+                        selectedMontageItemIds.includes(item.id) ? "bg-muted" : ""
+                      }`}
+                      onClick={() => {
+                        if (selectedMontageItemIds.includes(item.id)) {
+                          setSelectedMontageItemIds(prev => prev.filter(id => id !== item.id));
+                        } else {
+                          setSelectedMontageItemIds(prev => [...prev, item.id]);
+                        }
+                      }}
+                    >
+                      <Checkbox
+                        checked={selectedMontageItemIds.includes(item.id)}
+                        onCheckedChange={(checked) => {
+                          if (checked) {
+                            setSelectedMontageItemIds(prev => [...prev, item.id]);
+                          } else {
+                            setSelectedMontageItemIds(prev => prev.filter(id => id !== item.id));
+                          }
+                        }}
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-sm">{item.name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {item.quantity} шт.
+                          {item.article && ` • ${item.article}`}
+                        </div>
+                      </div>
+                      {item.ready_for_montage ? (
+                        <Badge className="bg-green-500/10 text-green-600 border-green-500/20">
+                          <Check className="h-3 w-3 mr-1" />
+                          Готово
+                        </Badge>
+                      ) : (
+                        <Badge className="bg-gray-500/10 text-gray-600 border-gray-500/20">
+                          <AlertCircle className="h-3 w-3 mr-1" />
+                          Не готово
+                        </Badge>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {selectedMontageItemIds.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Выбрано: {selectedMontageItemIds.length} из {items.length}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label>Адрес *</Label>
+              <Input
+                value={createMontageFormData.address}
+                onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, address: e.target.value })}
+                placeholder="ул. Ленина, 15"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Имя клиента</Label>
+                <Input
+                  value={createMontageFormData.client_name}
+                  onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, client_name: e.target.value })}
+                  placeholder="Иванов Иван"
+                />
+              </div>
+              <div>
+                <Label>Телефон клиента</Label>
+                <Input
+                  value={createMontageFormData.client_phone || '+7 '}
+                  onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, client_phone: formatPhoneNumber(e.target.value) })}
+                  placeholder="+7 999 123-45-67"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Дата монтажа</Label>
+                <Input
+                  type="date"
+                  value={createMontageFormData.scheduled_date}
+                  onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, scheduled_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Время</Label>
+                <Input
+                  type="time"
+                  value={createMontageFormData.scheduled_time}
+                  onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, scheduled_time: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Срок выполнения</Label>
+                <Input
+                  type="date"
+                  value={createMontageFormData.deadline}
+                  onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, deadline: e.target.value })}
+                />
+              </div>
+            </div>
+
+            {/* Multiple Installers Selection */}
+            <div>
+              <Label className="mb-2 block">Монтажники (можно выбрать несколько)</Label>
+              <div className="border rounded max-h-40 overflow-y-auto">
+                {installers.filter((i: any) => i.is_active).length === 0 ? (
+                  <div className="text-sm text-muted-foreground py-4 text-center">
+                    <Users className="h-6 w-6 mx-auto mb-1 opacity-50" />
+                    Нет активных монтажников
+                  </div>
+                ) : (
+                  installers
+                    .filter((i: any) => i.is_active)
+                    .map((installer: any) => (
+                      <div
+                        key={installer.id}
+                        className={`flex items-center gap-3 p-2 border-b last:border-b-0 cursor-pointer hover:bg-muted/50 ${
+                          selectedMontageInstallerIds.includes(installer.id) ? "bg-muted" : ""
+                        }`}
+                        onClick={() => {
+                          if (selectedMontageInstallerIds.includes(installer.id)) {
+                            setSelectedMontageInstallerIds(prev => prev.filter(id => id !== installer.id));
+                          } else {
+                            setSelectedMontageInstallerIds(prev => [...prev, installer.id]);
+                          }
+                        }}
+                      >
+                        <Checkbox
+                          checked={selectedMontageInstallerIds.includes(installer.id)}
+                          onCheckedChange={(checked) => {
+                            if (checked) {
+                              setSelectedMontageInstallerIds(prev => [...prev, installer.id]);
+                            } else {
+                              setSelectedMontageInstallerIds(prev => prev.filter(id => id !== installer.id));
+                            }
+                          }}
+                        />
+                        <div className="flex-1">
+                          <div className="font-medium text-sm">{installer.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {installer.specialization || "Монтажник"}
+                            {installer.hourly_rate && ` • ${installer.hourly_rate.toLocaleString()} ₽/день`}
+                          </div>
+                        </div>
+                      </div>
+                    ))
+                )}
+              </div>
+              {selectedMontageInstallerIds.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Выбрано: {selectedMontageInstallerIds.length}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <Label>Стоимость монтажа (₽)</Label>
+              <Input
+                type="number"
+                value={createMontageFormData.total_cost}
+                onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, total_cost: e.target.value })}
+                placeholder="5000"
+              />
+            </div>
+
+            <div>
+              <Label>Заметки</Label>
+              <Textarea
+                value={createMontageFormData.notes}
+                onChange={(e) => setCreateMontageFormData({ ...createMontageFormData, notes: e.target.value })}
+                placeholder="Дополнительная информация..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateMontageDialogOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              onClick={() => {
+                if (!createMontageFormData.address) {
+                  toast({ title: "Ошибка", description: "Укажите адрес", variant: "destructive" });
+                  return;
+                }
+                if (selectedMontageItemIds.length === 0) {
+                  toast({ title: "Ошибка", description: "Выберите хотя бы одно изделие", variant: "destructive" });
+                  return;
+                }
+
+                // Валидация: проверяем что все выбранные позиции готовы к монтажу
+                const notReadyItems = items.filter(
+                  item => selectedMontageItemIds.includes(item.id) && !item.ready_for_montage
+                );
+
+                if (notReadyItems.length > 0) {
+                  toast({
+                    title: "Ошибка",
+                    description: `Позиции не готовы к монтажу: ${notReadyItems.map(i => i.name).join(', ')}`,
+                    variant: "destructive"
+                  });
+                  return;
+                }
+
+                if (!id) return;
+                createMontageOrderMutation.mutate({
+                  project_id: id,
+                  address: createMontageFormData.address,
+                  client_name: createMontageFormData.client_name || undefined,
+                  client_phone: createMontageFormData.client_phone || undefined,
+                  scheduled_date: createMontageFormData.scheduled_date || undefined,
+                  scheduled_time: createMontageFormData.scheduled_time || undefined,
+                  deadline: createMontageFormData.deadline || undefined,
+                  total_cost: createMontageFormData.total_cost ? parseFloat(createMontageFormData.total_cost) : undefined,
+                  notes: createMontageFormData.notes || undefined,
+                  installer_ids: selectedMontageInstallerIds,
+                  item_ids: selectedMontageItemIds,
+                });
+              }}
+              disabled={createMontageOrderMutation.isPending}
+            >
+              {createMontageOrderMutation.isPending ? "Создание..." : "Создать заказ"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send to Montage Dialog */}
+      <Dialog open={sendToMontageOpen} onOpenChange={setSendToMontageOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Отправить на монтаж</DialogTitle>
+            <DialogDescription>
+              Создание нового заказа на монтаж для выбранной позиции
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {itemForMontage && (
+              <div className="p-3 bg-muted rounded-lg">
+                <p className="font-medium">{itemForMontage.name}</p>
+                <p className="text-sm text-muted-foreground">
+                  {itemForMontage.quantity} шт. • {itemForMontage.article ? `#${itemForMontage.article}` : ''}
+                </p>
+              </div>
+            )}
+            <div>
+              <Label>Адрес монтажа *</Label>
+              <Input
+                value={montageFormData.address}
+                onChange={(e) => setMontageFormData({ ...montageFormData, address: e.target.value })}
+                placeholder="ул. Ленина, 15"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Имя клиента</Label>
+                <Input
+                  value={montageFormData.client_name}
+                  onChange={(e) => setMontageFormData({ ...montageFormData, client_name: e.target.value })}
+                  placeholder="Иванов Иван"
+                />
+              </div>
+              <div>
+                <Label>Телефон</Label>
+                <Input
+                  value={montageFormData.client_phone || '+7 '}
+                  onChange={(e) => setMontageFormData({ ...montageFormData, client_phone: formatPhoneNumber(e.target.value) })}
+                  placeholder="+7 999 123-45-67"
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Дата</Label>
+                <Input
+                  type="date"
+                  value={montageFormData.scheduled_date}
+                  onChange={(e) => setMontageFormData({ ...montageFormData, scheduled_date: e.target.value })}
+                />
+              </div>
+              <div>
+                <Label>Время</Label>
+                <Input
+                  type="time"
+                  value={montageFormData.scheduled_time}
+                  onChange={(e) => setMontageFormData({ ...montageFormData, scheduled_time: e.target.value })}
+                />
+              </div>
+            </div>
+            <div>
+              <Label>Монтажник</Label>
+              <Select
+                value={montageFormData.installer_id}
+                onValueChange={(value) => setMontageFormData({ ...montageFormData, installer_id: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите монтажника" />
+                </SelectTrigger>
+                <SelectContent>
+                  {installers
+                    .filter((i: any) => i.is_active)
+                    .map((installer: any) => (
+                      <SelectItem key={installer.id} value={installer.id}>
+                        {installer.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Стоимость монтажа (₽)</Label>
+              <Input
+                type="number"
+                value={montageFormData.cost}
+                onChange={(e) => setMontageFormData({ ...montageFormData, cost: e.target.value })}
+                placeholder="5000"
+              />
+            </div>
+            <div>
+              <Label>Заметки</Label>
+              <Textarea
+                value={montageFormData.notes}
+                onChange={(e) => setMontageFormData({ ...montageFormData, notes: e.target.value })}
+                placeholder="Дополнительная информация..."
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSendToMontageOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              onClick={() => {
+                if (!montageFormData.address) {
+                  toast({ title: "Ошибка", description: "Укажите адрес", variant: "destructive" });
+                  return;
+                }
+                if (!itemForMontage || !id) return;
+                sendToMontageMutation.mutate({
+                  project_id: id,
+                  project_item_id: itemForMontage.id,
+                  address: montageFormData.address,
+                  client_name: montageFormData.client_name || undefined,
+                  client_phone: montageFormData.client_phone || undefined,
+                  scheduled_date: montageFormData.scheduled_date || undefined,
+                  scheduled_time: montageFormData.scheduled_time || undefined,
+                  installer_id: montageFormData.installer_id || undefined,
+                  cost: montageFormData.cost ? parseFloat(montageFormData.cost) : undefined,
+                  notes: montageFormData.notes || undefined,
+                });
+              }}
+              disabled={sendToMontageMutation.isPending}
+            >
+              {sendToMontageMutation.isPending ? "Отправка..." : "Отправить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -35,6 +35,7 @@ const modules = [
   { title: "Продажи", url: "/sales", icon: ShoppingCart },
   { title: "Клиенты", url: "/clients", icon: Users },
   { title: "Проекты", url: "/projects", icon: FolderKanban },
+  { title: "Монтаж", url: "/montage", icon: Hammer },
   { title: "Склад", url: "/warehouse", icon: Package },
   { title: "Поставщики", url: "/suppliers", icon: Building2 },
   { title: "Отгрузки", url: "/shipments", icon: Truck },

@@ -10,7 +10,7 @@ import { fromZodError } from "zod-validation-error";
 import { salesRepository } from "../sales/repository";
 import { z } from "zod";
 import { db } from "../../db";
-import { eq, sql } from "drizzle-orm";
+import { eq, sql, and } from "drizzle-orm";
 import { activityLogsRepository, tasksRepository } from "../tasks/repository";
 import { stageTypesRepository } from "../stage-types/repository";
 import { localFileStorage } from "../../localFileStorage";
@@ -1742,5 +1742,99 @@ router.get("/api/stages/:stageId/tasks", async (req, res) => {
   } catch (error) {
     console.error("Error fetching stage tasks:", error);
     res.status(500).json({ error: "Failed to fetch stage tasks" });
+  }
+});
+
+// ===== Project Events (Activity Logs) =====
+
+// GET /api/projects/:projectId/events - Get project events (activity logs)
+router.get("/api/projects/:projectId/events", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const limit = parseInt(req.query.limit as string) || 50;
+
+    // Get activity logs for this project
+    const events = await activityLogsRepository.getActivityLogs('project', projectId, limit);
+    res.json(events);
+  } catch (error) {
+    console.error("Error fetching project events:", error);
+    res.status(500).json({ error: "Failed to fetch project events" });
+  }
+});
+
+// ===== Ready for Montage =====
+
+// PUT /api/project-items/:itemId/ready-for-montage - Toggle ready for montage status
+router.put("/api/project-items/:itemId/ready-for-montage", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const userId = req.headers["x-user-id"] as string;
+
+    // Get current item
+    const item = await db.select().from(project_items).where(eq(project_items.id, itemId)).limit(1);
+
+    if (!item[0]) {
+      res.status(404).json({ error: "Project item not found" });
+      return;
+    }
+
+    const currentItem = item[0];
+    const newStatus = !currentItem.ready_for_montage;
+
+    // Update the item
+    const result = await db
+      .update(project_items)
+      .set({
+        ready_for_montage: newStatus,
+        updated_at: new Date()
+      })
+      .where(eq(project_items.id, itemId))
+      .returning();
+
+    if (!result[0]) {
+      res.status(500).json({ error: "Failed to update item" });
+      return;
+    }
+
+    // Log activity
+    await activityLogsRepository.logActivity({
+      entity_type: "project",
+      entity_id: currentItem.project_id,
+      action_type: newStatus ? "item_ready_for_montage" : "item_not_ready_for_montage",
+      user_id: userId || null,
+      field_changed: "ready_for_montage",
+      old_value: String(!newStatus),
+      new_value: String(newStatus),
+      description: newStatus
+        ? `Изделие "${currentItem.name}" готово к монтажу`
+        : `Изделие "${currentItem.name}" снято с готовности к монтажу`,
+    });
+
+    res.json(result[0]);
+  } catch (error) {
+    console.error("Error updating ready for montage status:", error);
+    res.status(500).json({ error: "Failed to update ready for montage status" });
+  }
+});
+
+// GET /api/projects/:projectId/items/ready-for-montage - Get items ready for montage
+router.get("/api/projects/:projectId/items/ready-for-montage", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+
+    const items = await db
+      .select()
+      .from(project_items)
+      .where(
+        and(
+          eq(project_items.project_id, projectId),
+          eq(project_items.ready_for_montage, true)
+        )
+      );
+
+    res.json(items);
+  } catch (error) {
+    console.error("Error fetching items ready for montage:", error);
+    res.status(500).json({ error: "Failed to fetch items ready for montage" });
   }
 });

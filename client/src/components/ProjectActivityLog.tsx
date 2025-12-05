@@ -11,7 +11,9 @@ import {
   Trash2,
   Play,
   Clock,
-  Loader2
+  Loader2,
+  Hammer,
+  XCircle
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -60,6 +62,12 @@ const getActionIcon = (actionType: string) => {
       return <FileText className={iconClass} />;
     case "deadline_changed":
       return <Clock className={iconClass} />;
+    case "item_ready_for_montage":
+      return <Hammer className={`${iconClass} text-green-500`} />;
+    case "item_not_ready_for_montage":
+      return <XCircle className={`${iconClass} text-gray-500`} />;
+    case "montage_created":
+      return <Hammer className={iconClass} />;
     default:
       return <Activity className={iconClass} />;
   }
@@ -67,13 +75,17 @@ const getActionIcon = (actionType: string) => {
 
 export function ProjectActivityLog({ projectId }: ProjectActivityLogProps) {
   const { data: activityLogs = [], isLoading, isError, error } = useQuery<ActivityLog[]>({
-    queryKey: ['/api/activity-logs', 'project', projectId],
+    queryKey: ['/api/projects', projectId, 'events'],
     queryFn: async () => {
-      const data = await apiRequest('GET', `/api/activity-logs/project/${projectId}`);
+      const response = await fetch(`/api/projects/${projectId}/events`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch events');
+      }
+      const data = await response.json();
       return Array.isArray(data) ? data : [];
     },
     enabled: !!projectId,
-    refetchInterval: 3000, // Обновление каждые 3 секунды
+    refetchInterval: 5000, // Обновление каждые 5 секунд
     staleTime: 0,
   });
 

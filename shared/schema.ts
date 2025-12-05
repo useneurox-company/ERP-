@@ -280,6 +280,7 @@ export const project_items = pgTable('project_items', {
   source_document_id: text('source_document_id').references(() => deal_documents.id),
   order: integer('order').notNull(),
   image_url: text('image_url'),
+  ready_for_montage: boolean('ready_for_montage').default(false).notNull(), // Готово к монтажу
   created_at: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
   updated_at: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
@@ -1130,3 +1131,83 @@ export const clients = pgTable('clients', {
 export const insertClientSchema = createInsertSchema(clients).omit({ id: true, created_at: true, updated_at: true });
 export type InsertClient = z.infer<typeof insertClientSchema>;
 export type Client = typeof clients.$inferSelect;
+
+// Installers (Монтажники)
+export const installers = pgTable('installers', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  name: text('name').notNull(),
+  phone: text('phone'),
+  email: text('email'),
+  specialization: text('specialization'), // Тип работ: мебель, кухни, и т.д.
+  hourly_rate: real('hourly_rate'), // Ставка за час
+  qualification_level: text('qualification_level').default('medium'), // low, medium, high - уровень квалификации
+  description: text('description'), // Описание монтажника
+  notes: text('notes'),
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertInstallerSchema = createInsertSchema(installers).omit({ id: true, created_at: true, updated_at: true });
+export type InsertInstaller = z.infer<typeof insertInstallerSchema>;
+export type Installer = typeof installers.$inferSelect;
+
+// Montage Orders (Заказы на монтаж)
+export const montage_orders = pgTable('montage_orders', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  order_number: text('order_number'), // M-001, M-002 и т.д.
+  project_id: text('project_id').references(() => projects.id, { onDelete: 'cascade' }),
+  address: text('address').notNull(),
+  client_name: text('client_name'),
+  client_phone: text('client_phone'),
+  scheduled_date: text('scheduled_date'), // ISO 8601
+  scheduled_time: text('scheduled_time'), // "10:00" или "10:00-14:00"
+  deadline: text('deadline'), // Срок выполнения (до какого числа надо завершить)
+  status: text('status').notNull().default('planned'), // planned, in_progress, completed, cancelled
+  installer_id: text('installer_id').references(() => installers.id),
+  total_cost: real('total_cost'),
+  notes: text('notes'),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertMontageOrderSchema = createInsertSchema(montage_orders).omit({ id: true, created_at: true, updated_at: true });
+export type InsertMontageOrder = z.infer<typeof insertMontageOrderSchema>;
+export type MontageOrder = typeof montage_orders.$inferSelect;
+
+// Montage Items (Позиции в заказе на монтаж)
+export const montage_items = pgTable('montage_items', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  montage_order_id: text('montage_order_id')
+    .references(() => montage_orders.id, { onDelete: 'cascade' })
+    .notNull(),
+  project_item_id: text('project_item_id')
+    .references(() => project_items.id, { onDelete: 'cascade' })
+    .notNull(),
+  quantity: integer('quantity').notNull().default(1), // Сколько штук из позиции монтируем
+  status: text('status').notNull().default('pending'), // pending, installed, issue
+  cost: real('cost'), // Стоимость монтажа этой позиции
+  notes: text('notes'),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertMontageItemSchema = createInsertSchema(montage_items).omit({ id: true, created_at: true, updated_at: true });
+export type InsertMontageItem = z.infer<typeof insertMontageItemSchema>;
+export type MontageItem = typeof montage_items.$inferSelect;
+
+// Montage Order Installers (Связь заказов на монтаж с монтажниками - many-to-many)
+export const montage_order_installers = pgTable('montage_order_installers', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  montage_order_id: text('montage_order_id')
+    .references(() => montage_orders.id, { onDelete: 'cascade' })
+    .notNull(),
+  installer_id: text('installer_id')
+    .references(() => installers.id, { onDelete: 'cascade' })
+    .notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertMontageOrderInstallerSchema = createInsertSchema(montage_order_installers).omit({ id: true, created_at: true });
+export type InsertMontageOrderInstaller = z.infer<typeof insertMontageOrderInstallerSchema>;
+export type MontageOrderInstaller = typeof montage_order_installers.$inferSelect;

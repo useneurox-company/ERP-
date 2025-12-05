@@ -34,6 +34,8 @@ import { router as authRouter } from "./modules/auth/routes";
 import { procurementRouter } from "./modules/procurement/routes";
 import { router as suppliersRouter } from "./modules/suppliers/routes";
 import { router as clientsRouter } from "./modules/clients/routes";
+import { router as installersRouter } from "./modules/installers/routes";
+import { router as montageRouter } from "./modules/montage/routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply global middleware for all API routes
@@ -88,6 +90,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(procurementRouter);
   app.use(suppliersRouter);
   app.use(clientsRouter);
+  app.use(installersRouter);
+  app.use(montageRouter);
 
   const httpServer = createServer(app);
 
