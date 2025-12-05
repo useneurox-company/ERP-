@@ -386,6 +386,13 @@ export default function Montage() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [selectedItemIds, setSelectedItemIds] = useState<string[]>([]);
 
+  // State for adding items to existing orders
+  const [isAddItemDialogOpen, setIsAddItemDialogOpen] = useState(false);
+  const [addItemProjectId, setAddItemProjectId] = useState<string>("");
+  const [addItemSelectedIds, setAddItemSelectedIds] = useState<string[]>([]);
+  const [addItemQuantity, setAddItemQuantity] = useState(1);
+  const [addItemCost, setAddItemCost] = useState<string>("");
+
   // Fetch orders
   const { data: orders = [], isLoading } = useQuery<MontageOrder[]>({
     queryKey: ["/api/montage"],
@@ -1413,10 +1420,25 @@ export default function Montage() {
                       {selectedOrder.items.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center justify-between p-2 bg-gray-50 rounded"
+                          className="flex items-center gap-3 p-2 bg-muted/30 rounded"
                         >
-                          <div className="flex-1">
-                            <div className="font-medium text-sm">{item.item_name || "Позиция"}</div>
+                          {/* Изображение позиции */}
+                          {item.item_image_url ? (
+                            <img
+                              src={item.item_image_url}
+                              alt={item.item_name || "Позиция"}
+                              className="w-12 h-12 object-cover rounded flex-shrink-0"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                              <Package className="w-6 h-6 text-muted-foreground" />
+                            </div>
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm truncate">{item.item_name || "Без названия"}</div>
+                            {item.item_article && (
+                              <div className="text-xs text-gray-400">Арт: {item.item_article}</div>
+                            )}
                             <div className="text-xs text-gray-500">
                               {item.quantity} шт.
                               {item.cost && ` • ${item.cost.toLocaleString()} ₽`}
