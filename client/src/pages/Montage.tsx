@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
@@ -52,6 +59,9 @@ import {
   Star,
   Check,
   AlertCircle,
+  ChevronDown,
+  Palette,
+  Settings,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -152,6 +162,18 @@ interface Installer {
   is_active: boolean;
 }
 
+interface MontageStatus {
+  id: string;
+  code: string;
+  name: string;
+  color: string;
+  bg_color: string | null;
+  text_color: string | null;
+  order: number;
+  is_system: boolean;
+  is_active: boolean;
+}
+
 const qualificationConfig: Record<string, { label: string; color: string }> = {
   low: { label: "Низкий", color: "bg-orange-200 text-orange-700" },
   medium: { label: "Средний", color: "bg-blue-200 text-blue-700" },
@@ -188,11 +210,24 @@ interface MontageStats {
   total_cost: number;
 }
 
-const statusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
+// Fallback status config (used if API fails)
+const defaultStatusConfig: Record<string, { label: string; color: string; bgColor: string }> = {
   planned: { label: "Запланирован", color: "text-yellow-600", bgColor: "bg-yellow-100" },
   in_progress: { label: "В работе", color: "text-blue-600", bgColor: "bg-blue-100" },
   completed: { label: "Завершён", color: "text-green-600", bgColor: "bg-green-100" },
   cancelled: { label: "Отменён", color: "text-gray-600", bgColor: "bg-gray-100" },
+};
+
+// Color presets for status columns
+const colorPresets: Record<string, { borderColor: string; textColor: string; bgColor: string }> = {
+  yellow: { borderColor: "border-l-amber-500", textColor: "text-yellow-600", bgColor: "bg-yellow-100" },
+  blue: { borderColor: "border-l-blue-500", textColor: "text-blue-600", bgColor: "bg-blue-100" },
+  green: { borderColor: "border-l-emerald-500", textColor: "text-green-600", bgColor: "bg-green-100" },
+  gray: { borderColor: "border-l-gray-500", textColor: "text-gray-600", bgColor: "bg-gray-100" },
+  red: { borderColor: "border-l-red-500", textColor: "text-red-600", bgColor: "bg-red-100" },
+  purple: { borderColor: "border-l-purple-500", textColor: "text-purple-600", bgColor: "bg-purple-100" },
+  orange: { borderColor: "border-l-orange-500", textColor: "text-orange-600", bgColor: "bg-orange-100" },
+  cyan: { borderColor: "border-l-cyan-500", textColor: "text-cyan-600", bgColor: "bg-cyan-100" },
 };
 
 const itemStatusConfig: Record<string, { label: string; color: string }> = {
@@ -202,7 +237,15 @@ const itemStatusConfig: Record<string, { label: string; color: string }> = {
 };
 
 // Sortable Card Component
-function SortableCard({ order, onClick }: { order: MontageOrder; onClick: () => void }) {
+function SortableCard({
+  order,
+  onClick,
+  statusConfig,
+}: {
+  order: MontageOrder;
+  onClick: () => void;
+  statusConfig: Record<string, { label: string; color: string; bgColor: string }>;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: order.id,
   });
@@ -223,6 +266,8 @@ function SortableCard({ order, onClick }: { order: MontageOrder; onClick: () => 
     onClick();
   };
 
+  const statusStyle = statusConfig[order.status] || { label: order.status, color: "text-gray-600", bgColor: "bg-gray-100" };
+
   return (
     <div
       ref={setNodeRef}
@@ -241,8 +286,8 @@ function SortableCard({ order, onClick }: { order: MontageOrder; onClick: () => 
               <GripVertical className="h-4 w-4 text-gray-400" />
               <span className="font-medium text-sm">{order.order_number}</span>
             </div>
-            <Badge className={`${statusConfig[order.status]?.bgColor} ${statusConfig[order.status]?.color} text-xs`}>
-              {statusConfig[order.status]?.label}
+            <Badge className={`${statusStyle.bgColor} ${statusStyle.color} text-xs`}>
+              {statusStyle.label}
             </Badge>
           </div>
 
@@ -284,29 +329,30 @@ function SortableCard({ order, onClick }: { order: MontageOrder; onClick: () => 
   );
 }
 
-// Status column colors - matching Sales/CRM Kanban style
-const columnColors: Record<string, string> = {
-  planned: "border-l-amber-500",
-  in_progress: "border-l-blue-500",
-  completed: "border-l-emerald-500",
-  cancelled: "border-l-gray-500",
-};
-
 // Kanban Column Component with Droppable
 function KanbanColumn({
   title,
   status,
   orders,
   count,
+  borderColor,
+  isSystem,
   onCardClick,
+  onEditStatus,
+  onDeleteStatus,
+  statusConfig,
 }: {
   title: string;
   status: string;
   orders: MontageOrder[];
   count: number;
+  borderColor: string;
+  isSystem: boolean;
   onCardClick: (order: MontageOrder) => void;
+  onEditStatus: () => void;
+  onDeleteStatus: () => void;
+  statusConfig: Record<string, { label: string; color: string; bgColor: string }>;
 }) {
-  const borderColor = columnColors[status];
   const { setNodeRef, isOver } = useDroppable({
     id: status,
   });
@@ -316,7 +362,31 @@ function KanbanColumn({
       <Card className={`border-l-[3px] ${borderColor} bg-zinc-900/95`}>
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium text-white">{title}</CardTitle>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-auto p-1 text-white hover:bg-zinc-700">
+                  <CardTitle className="text-sm font-medium">{title}</CardTitle>
+                  <ChevronDown className="ml-1 h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start">
+                <DropdownMenuItem onClick={onEditStatus}>
+                  <Edit className="mr-2 h-4 w-4" /> Редактировать
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onEditStatus}>
+                  <Palette className="mr-2 h-4 w-4" /> Изменить цвет
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem
+                  onClick={onDeleteStatus}
+                  disabled={isSystem || count > 0}
+                  className="text-red-600"
+                >
+                  <Trash2 className="mr-2 h-4 w-4" />
+                  {isSystem ? "Системный статус" : count > 0 ? `${count} заказов` : "Удалить"}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Badge variant="secondary" className="bg-zinc-700 text-zinc-300">{count}</Badge>
           </div>
         </CardHeader>
@@ -328,7 +398,7 @@ function KanbanColumn({
         >
           <SortableContext items={orders.map((o) => o.id)} strategy={verticalListSortingStrategy}>
             {orders.map((order) => (
-              <SortableCard key={order.id} order={order} onClick={() => onCardClick(order)} />
+              <SortableCard key={order.id} order={order} onClick={() => onCardClick(order)} statusConfig={statusConfig} />
             ))}
           </SortableContext>
           {orders.length === 0 && (
@@ -392,6 +462,39 @@ export default function Montage() {
   const [addItemSelectedIds, setAddItemSelectedIds] = useState<string[]>([]);
   const [addItemQuantity, setAddItemQuantity] = useState(1);
   const [addItemCost, setAddItemCost] = useState<string>("");
+
+  // State for status management
+  const [isStatusFormOpen, setIsStatusFormOpen] = useState(false);
+  const [editingStatus, setEditingStatus] = useState<MontageStatus | null>(null);
+  const [statusFormData, setStatusFormData] = useState({
+    code: "",
+    name: "",
+    color: "blue",
+  });
+
+  // Fetch montage statuses from API
+  const { data: montageStatuses = [] } = useQuery<MontageStatus[]>({
+    queryKey: ["/api/montage/statuses"],
+    queryFn: async () => {
+      const res = await fetch("/api/montage/statuses");
+      if (!res.ok) throw new Error("Failed to fetch statuses");
+      return res.json();
+    },
+  });
+
+  // Create statusConfig from API data
+  const statusConfig = useMemo(() => {
+    if (montageStatuses.length === 0) return defaultStatusConfig;
+    return montageStatuses.reduce((acc, status) => {
+      const preset = colorPresets[status.color] || colorPresets.gray;
+      acc[status.code] = {
+        label: status.name,
+        color: status.text_color || preset.textColor,
+        bgColor: status.bg_color || preset.bgColor,
+      };
+      return acc;
+    }, {} as Record<string, { label: string; color: string; bgColor: string }>);
+  }, [montageStatuses]);
 
   // Fetch orders
   const { data: orders = [], isLoading } = useQuery<MontageOrder[]>({
@@ -596,6 +699,76 @@ export default function Montage() {
     },
   });
 
+  // Create status mutation
+  const createStatusMutation = useMutation({
+    mutationFn: async (data: { code: string; name: string; color: string }) => {
+      const res = await fetch("/api/montage/statuses", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to create status");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/montage/statuses"] });
+      toast({ title: "Статус создан" });
+      setIsStatusFormOpen(false);
+      resetStatusForm();
+    },
+    onError: (error: Error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Update status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<MontageStatus> }) => {
+      const res = await fetch(`/api/montage/statuses/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to update status");
+      }
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/montage/statuses"] });
+      toast({ title: "Статус обновлён" });
+      setIsStatusFormOpen(false);
+      setEditingStatus(null);
+      resetStatusForm();
+    },
+    onError: (error: Error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+    },
+  });
+
+  // Delete status mutation
+  const deleteStatusMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const res = await fetch(`/api/montage/statuses/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.error || "Failed to delete status");
+      }
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/montage/statuses"] });
+      toast({ title: "Статус удалён" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
+    },
+  });
+
   // DnD sensors
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
@@ -615,7 +788,8 @@ export default function Montage() {
 
     const orderId = active.id as string;
     const overId = over.id as string;
-    const statuses = ["planned", "in_progress", "completed", "cancelled"];
+    // Use dynamic statuses from API
+    const statuses = montageStatuses.map(s => s.code);
 
     // Find the dragged order
     const draggedOrderItem = orders.find((o) => o.id === orderId);
@@ -667,6 +841,51 @@ export default function Montage() {
       qualification_level: "medium",
       description: "",
     });
+  };
+
+  const resetStatusForm = () => {
+    setStatusFormData({
+      code: "",
+      name: "",
+      color: "blue",
+    });
+  };
+
+  const handleEditStatus = (status: MontageStatus) => {
+    setEditingStatus(status);
+    setStatusFormData({
+      code: status.code,
+      name: status.name,
+      color: status.color,
+    });
+    setIsStatusFormOpen(true);
+  };
+
+  const handleStatusFormSubmit = () => {
+    if (!statusFormData.name) {
+      toast({ title: "Ошибка", description: "Укажите название статуса", variant: "destructive" });
+      return;
+    }
+    if (!statusFormData.code) {
+      toast({ title: "Ошибка", description: "Укажите код статуса (латиницей)", variant: "destructive" });
+      return;
+    }
+    if (editingStatus) {
+      updateStatusMutation.mutate({
+        id: editingStatus.id,
+        data: statusFormData,
+      });
+    } else {
+      createStatusMutation.mutate(statusFormData);
+    }
+  };
+
+  const handleDeleteStatus = (status: MontageStatus) => {
+    if (status.is_system) {
+      toast({ title: "Ошибка", description: "Нельзя удалить системный статус", variant: "destructive" });
+      return;
+    }
+    deleteStatusMutation.mutate(status.id);
   };
 
   const handleEditInstaller = (installer: Installer) => {
@@ -743,13 +962,21 @@ export default function Montage() {
     );
   });
 
-  // Group orders by status for Kanban
-  const ordersByStatus = {
-    planned: filteredOrders.filter((o) => o.status === "planned"),
-    in_progress: filteredOrders.filter((o) => o.status === "in_progress"),
-    completed: filteredOrders.filter((o) => o.status === "completed"),
-    cancelled: filteredOrders.filter((o) => o.status === "cancelled"),
-  };
+  // Group orders by status for Kanban (dynamic based on API statuses)
+  const ordersByStatus = useMemo(() => {
+    const result: Record<string, MontageOrder[]> = {};
+    // Initialize all statuses with empty arrays
+    montageStatuses.forEach(status => {
+      result[status.code] = filteredOrders.filter((o) => o.status === status.code);
+    });
+    // Fallback for orders with unknown status
+    const knownCodes = montageStatuses.map(s => s.code);
+    const unknownOrders = filteredOrders.filter(o => !knownCodes.includes(o.status));
+    if (unknownOrders.length > 0 && result[knownCodes[0]]) {
+      result[knownCodes[0]] = [...result[knownCodes[0]], ...unknownOrders];
+    }
+    return result;
+  }, [filteredOrders, montageStatuses]);
 
   // Calendar helpers
   const getDaysInMonth = (date: Date) => {
@@ -885,34 +1112,41 @@ export default function Montage() {
               onDragEnd={handleDragEnd}
             >
               <div className="flex gap-4 overflow-x-auto pb-4">
-                <KanbanColumn
-                  title="Запланировано"
-                  status="planned"
-                  orders={ordersByStatus.planned}
-                  count={ordersByStatus.planned.length}
-                  onCardClick={handleOpenDetail}
-                />
-                <KanbanColumn
-                  title="В работе"
-                  status="in_progress"
-                  orders={ordersByStatus.in_progress}
-                  count={ordersByStatus.in_progress.length}
-                  onCardClick={handleOpenDetail}
-                />
-                <KanbanColumn
-                  title="Завершено"
-                  status="completed"
-                  orders={ordersByStatus.completed}
-                  count={ordersByStatus.completed.length}
-                  onCardClick={handleOpenDetail}
-                />
-                <KanbanColumn
-                  title="Отменено"
-                  status="cancelled"
-                  orders={ordersByStatus.cancelled}
-                  count={ordersByStatus.cancelled.length}
-                  onCardClick={handleOpenDetail}
-                />
+                {montageStatuses.map((status) => {
+                  const preset = colorPresets[status.color] || colorPresets.gray;
+                  const orders = ordersByStatus[status.code] || [];
+                  return (
+                    <KanbanColumn
+                      key={status.id}
+                      title={status.name}
+                      status={status.code}
+                      orders={orders}
+                      count={orders.length}
+                      borderColor={preset.borderColor}
+                      isSystem={status.is_system}
+                      onCardClick={handleOpenDetail}
+                      onEditStatus={() => handleEditStatus(status)}
+                      onDeleteStatus={() => handleDeleteStatus(status)}
+                      statusConfig={statusConfig}
+                    />
+                  );
+                })}
+                {/* Add Status Button */}
+                <div className="flex-shrink-0 w-72 md:w-80">
+                  <Card className="border-l-[3px] border-l-dashed border-l-zinc-600 bg-zinc-900/50 hover:bg-zinc-800/50 cursor-pointer transition-colors">
+                    <CardContent
+                      className="flex flex-col items-center justify-center min-h-[200px] text-zinc-500"
+                      onClick={() => {
+                        setEditingStatus(null);
+                        resetStatusForm();
+                        setIsStatusFormOpen(true);
+                      }}
+                    >
+                      <Plus className="h-8 w-8 mb-2" />
+                      <span className="text-sm">Добавить статус</span>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
               <DragOverlay>
                 {draggedOrder && (
@@ -1731,6 +1965,122 @@ export default function Montage() {
                 : editingInstaller
                   ? "Сохранить"
                   : "Добавить"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Status Form Dialog */}
+      <Dialog open={isStatusFormOpen} onOpenChange={setIsStatusFormOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editingStatus ? "Редактировать статус" : "Новый статус"}</DialogTitle>
+            <DialogDescription>
+              {editingStatus ? "Измените параметры статуса" : "Добавьте новую колонку на Kanban доску"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div>
+              <Label>Код (латиница, snake_case)</Label>
+              <Input
+                value={statusFormData.code}
+                onChange={(e) => setStatusFormData({ ...statusFormData, code: e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, '_') })}
+                placeholder="on_hold"
+                disabled={editingStatus?.is_system}
+              />
+              <p className="text-xs text-muted-foreground mt-1">
+                Уникальный код статуса, используется в системе
+              </p>
+            </div>
+            <div>
+              <Label>Название</Label>
+              <Input
+                value={statusFormData.name}
+                onChange={(e) => setStatusFormData({ ...statusFormData, name: e.target.value })}
+                placeholder="На удержании"
+              />
+            </div>
+            <div>
+              <Label>Цвет</Label>
+              <Select
+                value={statusFormData.color}
+                onValueChange={(value) => setStatusFormData({ ...statusFormData, color: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="yellow">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-yellow-500" />
+                      Жёлтый
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="blue">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-blue-500" />
+                      Синий
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="green">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-green-500" />
+                      Зелёный
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="gray">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-gray-500" />
+                      Серый
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="red">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-red-500" />
+                      Красный
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="purple">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-purple-500" />
+                      Фиолетовый
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="orange">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-orange-500" />
+                      Оранжевый
+                    </div>
+                  </SelectItem>
+                  <SelectItem value="cyan">
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 rounded bg-cyan-500" />
+                      Голубой
+                    </div>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {editingStatus?.is_system && (
+              <div className="flex items-center gap-2 p-2 bg-yellow-100 dark:bg-yellow-900/30 rounded text-sm">
+                <AlertCircle className="h-4 w-4 text-yellow-600" />
+                <span className="text-yellow-700 dark:text-yellow-400">Это системный статус. Код нельзя изменить.</span>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsStatusFormOpen(false)}>
+              Отмена
+            </Button>
+            <Button
+              onClick={handleStatusFormSubmit}
+              disabled={createStatusMutation.isPending || updateStatusMutation.isPending}
+            >
+              {createStatusMutation.isPending || updateStatusMutation.isPending
+                ? "Сохранение..."
+                : editingStatus
+                  ? "Сохранить"
+                  : "Создать"}
             </Button>
           </DialogFooter>
         </DialogContent>

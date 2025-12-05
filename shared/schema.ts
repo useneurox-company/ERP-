@@ -1211,3 +1211,22 @@ export const montage_order_installers = pgTable('montage_order_installers', {
 export const insertMontageOrderInstallerSchema = createInsertSchema(montage_order_installers).omit({ id: true, created_at: true });
 export type InsertMontageOrderInstaller = z.infer<typeof insertMontageOrderInstallerSchema>;
 export type MontageOrderInstaller = typeof montage_order_installers.$inferSelect;
+
+// Montage Statuses (Статусы для Kanban колонок)
+export const montage_statuses = pgTable('montage_statuses', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  code: text('code').notNull().unique(), // planned, in_progress, on_hold, etc.
+  name: text('name').notNull(), // Запланирован, В работе, На удержании
+  color: text('color').notNull().default('gray'), // yellow, blue, green, gray, red, purple
+  bg_color: text('bg_color'), // bg-yellow-100, bg-blue-100, etc.
+  text_color: text('text_color'), // text-yellow-600, text-blue-600, etc.
+  order: integer('order').notNull().default(0), // Порядок колонок
+  is_system: boolean('is_system').default(false).notNull(), // Системные нельзя удалить (planned, completed)
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertMontageStatusSchema = createInsertSchema(montage_statuses).omit({ id: true, created_at: true, updated_at: true });
+export type InsertMontageStatus = z.infer<typeof insertMontageStatusSchema>;
+export type MontageStatus = typeof montage_statuses.$inferSelect;

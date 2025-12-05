@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { montageRepository } from "./repository";
-import { insertMontageOrderSchema, insertMontageItemSchema } from "@shared/schema";
+import { insertMontageOrderSchema, insertMontageItemSchema, insertMontageStatusSchema, montage_statuses, montage_orders } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { db } from "../../db";
+import { eq, asc, and } from "drizzle-orm";
 
 export const router = Router();
 
@@ -29,6 +31,129 @@ router.get("/api/montage/stats", async (req, res) => {
   } catch (error) {
     console.error("Error fetching montage stats:", error);
     res.status(500).json({ error: "Failed to fetch stats" });
+  }
+});
+
+// === MONTAGE STATUSES (must be before /:id) ===
+
+// GET /api/montage/statuses - Get all active statuses
+router.get("/api/montage/statuses", async (req, res) => {
+  try {
+    const statuses = await db.select()
+      .from(montage_statuses)
+      .where(eq(montage_statuses.is_active, true))
+      .orderBy(asc(montage_statuses.order));
+    res.json(statuses);
+  } catch (error) {
+    console.error("Error fetching montage statuses:", error);
+    res.status(500).json({ error: "Failed to fetch statuses" });
+  }
+});
+
+// POST /api/montage/statuses - Create new status
+router.post("/api/montage/statuses", async (req, res) => {
+  try {
+    const validationResult = insertMontageStatusSchema.safeParse(req.body);
+
+    if (!validationResult.success) {
+      const errorMessage = fromZodError(validationResult.error).toString();
+      res.status(400).json({ error: errorMessage });
+      return;
+    }
+
+    // Get max order
+    const maxOrderResult = await db.select({ maxOrder: montage_statuses.order })
+      .from(montage_statuses)
+      .orderBy(asc(montage_statuses.order));
+    const maxOrder = maxOrderResult.length > 0
+      ? Math.max(...maxOrderResult.map(r => r.maxOrder)) + 1
+      : 0;
+
+    const newStatus = await db.insert(montage_statuses)
+      .values({
+        ...validationResult.data,
+        order: validationResult.data.order ?? maxOrder,
+      })
+      .returning();
+
+    res.status(201).json(newStatus[0]);
+  } catch (error) {
+    console.error("Error creating montage status:", error);
+    res.status(500).json({ error: "Failed to create status" });
+  }
+});
+
+// PUT /api/montage/statuses/:id - Update status
+router.put("/api/montage/statuses/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const validationResult = insertMontageStatusSchema.partial().safeParse(req.body);
+
+    if (!validationResult.success) {
+      const errorMessage = fromZodError(validationResult.error).toString();
+      res.status(400).json({ error: errorMessage });
+      return;
+    }
+
+    const updatedStatus = await db.update(montage_statuses)
+      .set({
+        ...validationResult.data,
+        updated_at: new Date(),
+      })
+      .where(eq(montage_statuses.id, id))
+      .returning();
+
+    if (!updatedStatus[0]) {
+      res.status(404).json({ error: "Status not found" });
+      return;
+    }
+
+    res.json(updatedStatus[0]);
+  } catch (error) {
+    console.error("Error updating montage status:", error);
+    res.status(500).json({ error: "Failed to update status" });
+  }
+});
+
+// DELETE /api/montage/statuses/:id - Delete status
+router.delete("/api/montage/statuses/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    // Check if status is system
+    const status = await db.select()
+      .from(montage_statuses)
+      .where(eq(montage_statuses.id, id));
+
+    if (!status[0]) {
+      res.status(404).json({ error: "Status not found" });
+      return;
+    }
+
+    if (status[0].is_system) {
+      res.status(400).json({ error: "Cannot delete system status" });
+      return;
+    }
+
+    // Check if any orders use this status
+    const ordersWithStatus = await db.select()
+      .from(montage_orders)
+      .where(eq(montage_orders.status, status[0].code));
+
+    if (ordersWithStatus.length > 0) {
+      res.status(400).json({
+        error: `Cannot delete status: ${ordersWithStatus.length} order(s) use this status`
+      });
+      return;
+    }
+
+    await db.delete(montage_statuses)
+      .where(eq(montage_statuses.id, id));
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting montage status:", error);
+    res.status(500).json({ error: "Failed to delete status" });
   }
 });
 
