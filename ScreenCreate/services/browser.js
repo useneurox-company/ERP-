@@ -53,6 +53,20 @@ async function getBrowser(options = {}) {
 
   // Visible browser (headless: false) - opens real Chrome window
   if (visible) {
+    // Check if existing browser is still connected
+    if (visibleBrowser) {
+      try {
+        // Test if browser is still alive
+        if (!visibleBrowser.isConnected()) {
+          console.log('[Browser] Visible browser disconnected, will create new one');
+          visibleBrowser = null;
+        }
+      } catch (e) {
+        console.log('[Browser] Error checking visible browser, will create new one:', e.message);
+        visibleBrowser = null;
+      }
+    }
+
     if (!visibleBrowser) {
       const launchOptions = {
         headless: false,  // VISIBLE BROWSER!
@@ -66,12 +80,27 @@ async function getBrowser(options = {}) {
       };
       if (CHROME_PATH) launchOptions.executablePath = CHROME_PATH;
 
+      console.log('[Browser] Launching visible browser...');
       visibleBrowser = await puppeteer.launch(launchOptions);
+      console.log('[Browser] Visible browser launched successfully');
     }
     return visibleBrowser;
   }
 
   // Default headless browser
+  // Check if existing browser is still connected
+  if (browser) {
+    try {
+      if (!browser.isConnected()) {
+        console.log('[Browser] Headless browser disconnected, will create new one');
+        browser = null;
+      }
+    } catch (e) {
+      console.log('[Browser] Error checking headless browser, will create new one:', e.message);
+      browser = null;
+    }
+  }
+
   if (!browser) {
     const launchOptions = {
       headless: 'new',
@@ -88,7 +117,9 @@ async function getBrowser(options = {}) {
     };
     if (CHROME_PATH) launchOptions.executablePath = CHROME_PATH;
 
+    console.log('[Browser] Launching headless browser...');
     browser = await puppeteer.launch(launchOptions);
+    console.log('[Browser] Headless browser launched successfully');
   }
   return browser;
 }

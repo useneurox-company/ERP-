@@ -110,15 +110,29 @@ class BrowserAgentService {
     this.stopRequested = false;
 
     try {
+      // Сначала завершаем любую существующую сессию
+      try {
+        await fetch(`${SCREEN_CREATE_URL}/test/end`, { method: 'POST' });
+      } catch (e) {
+        // Игнорируем ошибку завершения
+      }
+
+      // Небольшая пауза между end и start
+      await new Promise(resolve => setTimeout(resolve, 500));
+
       // Запускаем браузер через ScreenCreate (visible для отладки)
+      console.log('[Browser Agent] Starting browser session...');
       const startResponse = await fetch(`${SCREEN_CREATE_URL}/test/start`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ visible: true })
       });
 
-      if (!startResponse.ok) {
-        throw new Error('Failed to start browser session');
+      const startData = await startResponse.json();
+      console.log('[Browser Agent] Start response:', startData);
+
+      if (!startResponse.ok || !startData.success) {
+        throw new Error(startData.error || 'Failed to start browser session');
       }
 
       // Переходим на главную страницу ERP
