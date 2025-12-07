@@ -1,20 +1,18 @@
 /**
  * AgentOverlay Component
  *
- * ЕСЛИ ПОТЕРЯЛ КОНТЕКСТ - ПРОЧИТАЙ BROWSER_AGENT_DEVELOPMENT.md!
- *
- * UI overlay для отображения работы AI Browser Agent:
- * - Затемнение экрана
- * - Live скриншот браузера агента
- * - Лог действий (что делает агент)
+ * UI overlay для работы AI Browser Agent ВНУТРИ текущего окна (как Comet):
+ * - Полупрозрачный overlay поверх контента
+ * - Live скриншот текущей страницы
+ * - Лог действий агента
  * - Кнопка СТОП
  * - Индикатор "Агент думает..."
  *
- * ФАЗА 5: Frontend Overlay
+ * Агент работает в ТОМ ЖЕ окне что и пользователь, не открывает отдельный браузер!
  */
 
 import { useState, useEffect } from "react";
-import { useBrowserAgent, AgentAction } from "@/hooks/useBrowserAgent";
+import { useInPageAgent, AgentAction } from "@/hooks/useInPageAgent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -32,9 +30,8 @@ import {
   Navigation,
   CheckCircle,
   Loader2,
-  Wifi,
-  WifiOff,
   Brain,
+  Eye,
 } from "lucide-react";
 
 interface AgentOverlayProps {
@@ -92,15 +89,15 @@ function formatAction(action: AgentAction): string {
 export function AgentOverlay({ isOpen, onClose, initialTask = "" }: AgentOverlayProps) {
   const [task, setTask] = useState(initialTask);
   const {
-    isConnected,
     session,
     screenshot,
     thinking,
     actions,
     error,
+    isRunning,
     startAgent,
     stopAgent,
-  } = useBrowserAgent();
+  } = useInPageAgent();
 
   // Обновляем задачу если передана извне
   useEffect(() => {
@@ -113,7 +110,6 @@ export function AgentOverlay({ isOpen, onClose, initialTask = "" }: AgentOverlay
     return null;
   }
 
-  const isRunning = session?.status === "running" || session?.status === "starting";
   const isCompleted = session?.status === "completed";
 
   const handleStart = () => {
@@ -133,163 +129,131 @@ export function AgentOverlay({ isOpen, onClose, initialTask = "" }: AgentOverlay
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      {/* Затемнение фона */}
+    <div
+      className="fixed inset-0 z-50 flex items-start justify-center pt-4"
+      data-agent-overlay
+    >
+      {/* Полупрозрачный overlay - позволяет видеть страницу */}
       <div
-        className="absolute inset-0 bg-black/80 backdrop-blur-sm"
+        className="absolute inset-0 bg-black/30 backdrop-blur-[2px]"
         onClick={onClose}
       />
 
-      {/* Основной контейнер */}
-      <div className="relative z-10 w-full max-w-6xl h-[90vh] mx-4 flex gap-4">
-        {/* Левая панель - Скриншот */}
-        <Card className="flex-1 flex flex-col overflow-hidden">
-          <CardHeader className="flex-shrink-0 flex flex-row items-center justify-between py-3 px-4">
-            <div className="flex items-center gap-2">
-              <Bot className="h-5 w-5 text-primary" />
-              <CardTitle className="text-lg">AI Browser Agent</CardTitle>
-              {isConnected ? (
-                <Badge variant="outline" className="text-green-500 border-green-500">
-                  <Wifi className="h-3 w-3 mr-1" />
-                  Подключен
-                </Badge>
-              ) : (
-                <Badge variant="outline" className="text-red-500 border-red-500">
-                  <WifiOff className="h-3 w-3 mr-1" />
-                  Отключен
+      {/* Компактная панель управления сверху */}
+      <Card className="relative z-10 w-full max-w-4xl mx-4 shadow-2xl">
+        <CardHeader className="py-3 px-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2">
+                <Bot className="h-5 w-5 text-primary" />
+                <CardTitle className="text-lg">AI Agent</CardTitle>
+              </div>
+              <Badge variant="outline" className="text-green-500 border-green-500">
+                <Eye className="h-3 w-3 mr-1" />
+                In-Page Mode
+              </Badge>
+              {session?.status && (
+                <Badge variant={isCompleted ? "default" : "secondary"}>
+                  {session.status}
                 </Badge>
               )}
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
               <X className="h-5 w-5" />
             </Button>
-          </CardHeader>
+          </div>
+        </CardHeader>
 
-          <CardContent className="flex-1 flex flex-col gap-3 p-4 overflow-hidden">
-            {/* Ввод задачи */}
-            <div className="flex gap-2">
-              <Input
-                placeholder="Введите задачу для агента..."
-                value={task}
-                onChange={(e) => setTask(e.target.value)}
-                onKeyDown={handleKeyDown}
-                disabled={isRunning}
-                className="flex-1"
-              />
-              {isRunning ? (
-                <Button variant="destructive" onClick={handleStop}>
-                  <Square className="h-4 w-4 mr-2" />
-                  Стоп
-                </Button>
-              ) : (
-                <Button onClick={handleStart} disabled={!task.trim() || !isConnected}>
-                  <Play className="h-4 w-4 mr-2" />
-                  Запустить
-                </Button>
-              )}
-            </div>
-
-            {/* Область скриншота */}
-            <div className="flex-1 relative bg-muted rounded-lg overflow-hidden">
-              {screenshot ? (
-                <img
-                  src={screenshot}
-                  alt="Browser Screenshot"
-                  className="absolute inset-0 w-full h-full object-contain"
-                />
-              ) : (
-                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                  {isRunning ? (
-                    <div className="flex flex-col items-center gap-2">
-                      <Loader2 className="h-8 w-8 animate-spin" />
-                      <span>Загрузка скриншота...</span>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col items-center gap-2">
-                      <Bot className="h-12 w-12" />
-                      <span>Введите задачу и нажмите "Запустить"</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Оверлей статуса */}
-              {isCompleted && (
-                <div className="absolute inset-0 flex items-center justify-center bg-green-500/20">
-                  <Badge className="text-lg py-2 px-4 bg-green-500">
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Задача выполнена!
-                  </Badge>
-                </div>
-              )}
-            </div>
-
-            {/* Индикатор мышления */}
-            {thinking && isRunning && (
-              <div className="flex items-start gap-2 p-3 bg-primary/10 rounded-lg">
-                <Brain className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                <p className="text-sm">{thinking}</p>
-              </div>
+        <CardContent className="py-3 px-4 space-y-3">
+          {/* Ввод задачи */}
+          <div className="flex gap-2">
+            <Input
+              placeholder="Введите задачу для агента... (например: 'Открой раздел Проекты')"
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              onKeyDown={handleKeyDown}
+              disabled={isRunning}
+              className="flex-1"
+            />
+            {isRunning ? (
+              <Button variant="destructive" onClick={handleStop}>
+                <Square className="h-4 w-4 mr-2" />
+                Стоп
+              </Button>
+            ) : (
+              <Button onClick={handleStart} disabled={!task.trim()}>
+                <Play className="h-4 w-4 mr-2" />
+                Запустить
+              </Button>
             )}
+          </div>
 
-            {/* Ошибка */}
-            {error && (
-              <div className="p-3 bg-destructive/10 text-destructive rounded-lg">
-                {error}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+          {/* Индикатор мышления */}
+          {thinking && isRunning && (
+            <div className="flex items-start gap-2 p-3 bg-primary/10 rounded-lg">
+              <Brain className="h-5 w-5 text-primary flex-shrink-0 mt-0.5 animate-pulse" />
+              <p className="text-sm">{thinking}</p>
+            </div>
+          )}
 
-        {/* Правая панель - Лог действий */}
-        <Card className="w-80 flex flex-col overflow-hidden">
-          <CardHeader className="flex-shrink-0 py-3 px-4">
-            <CardTitle className="text-lg flex items-center gap-2">
-              <Clock className="h-5 w-5" />
-              История действий
-              {actions.length > 0 && (
+          {/* Ошибка */}
+          {error && (
+            <div className="p-3 bg-destructive/10 text-destructive rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
+          {/* Успешное завершение */}
+          {isCompleted && (
+            <div className="p-3 bg-green-500/10 text-green-700 rounded-lg flex items-center gap-2">
+              <CheckCircle className="h-5 w-5" />
+              <span className="font-medium">Задача выполнена!</span>
+            </div>
+          )}
+
+          {/* История действий (компактная) */}
+          {actions.length > 0 && (
+            <div className="border rounded-lg">
+              <div className="px-3 py-2 border-b bg-muted/30 flex items-center justify-between">
+                <span className="text-sm font-medium flex items-center gap-2">
+                  <Clock className="h-4 w-4" />
+                  История действий
+                </span>
                 <Badge variant="secondary">{actions.length}</Badge>
-              )}
-            </CardTitle>
-          </CardHeader>
-
-          <CardContent className="flex-1 p-0 overflow-hidden">
-            <ScrollArea className="h-full">
-              <div className="p-4 space-y-2">
-                {actions.length === 0 ? (
-                  <p className="text-muted-foreground text-sm text-center py-4">
-                    Действия появятся здесь
-                  </p>
-                ) : (
-                  actions.map((action, index) => (
+              </div>
+              <ScrollArea className="max-h-32">
+                <div className="p-2 space-y-1">
+                  {actions.map((action, index) => (
                     <div
                       key={index}
-                      className="flex items-start gap-2 p-2 bg-muted/50 rounded-lg"
+                      className="flex items-center gap-2 p-1.5 bg-muted/30 rounded text-xs"
                     >
-                      <div className="flex-shrink-0 mt-0.5">
-                        <ActionIcon type={action.type} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">
-                          {formatAction(action)}
-                        </p>
-                        {action.result && (
-                          <p className="text-xs text-muted-foreground truncate">
-                            {action.result}
-                          </p>
-                        )}
-                      </div>
-                      <span className="text-xs text-muted-foreground flex-shrink-0">
-                        #{index + 1}
-                      </span>
+                      <ActionIcon type={action.type} />
+                      <span className="flex-1 truncate">{formatAction(action)}</span>
+                      <span className="text-muted-foreground">#{index + 1}</span>
                     </div>
-                  ))
-                )}
-              </div>
-            </ScrollArea>
-          </CardContent>
-        </Card>
-      </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            </div>
+          )}
+
+          {/* Подсказка */}
+          {!isRunning && !session && (
+            <p className="text-xs text-muted-foreground text-center">
+              Агент будет работать прямо в этом окне браузера, выполняя клики и ввод текста
+            </p>
+          )}
+
+          {/* Индикатор работы */}
+          {isRunning && (
+            <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Агент работает... Следите за страницей</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
