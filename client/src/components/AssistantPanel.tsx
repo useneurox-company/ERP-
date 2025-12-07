@@ -19,8 +19,10 @@ import {
   Zap,
   Minus,
   History,
-  Trash2
+  Trash2,
+  Monitor
 } from "lucide-react";
+import { AgentOverlay } from "./AgentOverlay";
 import { cn } from "@/lib/utils";
 
 const STORAGE_KEY_MESSAGES = "assistant_chat_history";
@@ -71,6 +73,7 @@ export function AssistantPanel({ isOpen, onClose, isMinimized, onMinimize }: Ass
     const saved = localStorage.getItem(STORAGE_KEY_SAVE_ENABLED);
     return saved === "true";
   });
+  const [isAgentOverlayOpen, setIsAgentOverlayOpen] = useState(false);
 
   // Get user ID from localStorage
   useEffect(() => {
@@ -305,6 +308,23 @@ export function AssistantPanel({ isOpen, onClose, isMinimized, onMinimize }: Ass
           </div>
         </div>
         <div className="flex items-center gap-1">
+          {/* Agent Mode button */}
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-7 w-7"
+                onClick={() => setIsAgentOverlayOpen(true)}
+                data-testid="button-agent-mode"
+              >
+                <Monitor className="h-3.5 w-3.5 text-primary" />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p className="text-xs">AI Agent Mode</p>
+            </TooltipContent>
+          </Tooltip>
           {/* History toggle */}
           <Tooltip>
             <TooltipTrigger asChild>
@@ -456,6 +476,12 @@ export function AssistantPanel({ isOpen, onClose, isMinimized, onMinimize }: Ass
           </Button>
         </div>
       </div>
+
+      {/* Agent Overlay */}
+      <AgentOverlay
+        isOpen={isAgentOverlayOpen}
+        onClose={() => setIsAgentOverlayOpen(false)}
+      />
     </div>
   );
 }
