@@ -71,6 +71,29 @@ export interface AgentMemory {
   startTime: number;
   filledFields: Set<string>; // Отслеживание заполненных полей
   dialogActionsCount: number; // Счётчик действий в диалоге
+  // Backtracking & Exploration
+  triedActions: Set<string>; // Действия которые уже пробовали
+  urlBeforeAction: string; // URL до действия для отката
+  explorationStack: ExplorationState[]; // Стек состояний для backtracking
+  currentExplorationIndex: number; // Какой вариант сейчас пробуем
+}
+
+// Состояние для backtracking
+export interface ExplorationState {
+  url: string;
+  dialogOpen: boolean;
+  availableActions: string[]; // Список возможных действий
+  triedActions: string[]; // Уже испробованные
+  successfulPath?: string[]; // Если нашли успешный путь
+}
+
+// Результат успешного выполнения задачи для обучения
+export interface LearnedPath {
+  task: string;
+  taskKeywords: string[];
+  actions: { type: string; selector?: string; text?: string }[];
+  successRate: number;
+  lastUsed: number;
 }
 
 export interface AgentSession {
@@ -995,6 +1018,7 @@ function saveAgentState(memory: AgentMemory) {
     ...memory,
     failedAttempts: Array.from(memory.failedAttempts.entries()),
     filledFields: Array.from(memory.filledFields),
+    triedActions: Array.from(memory.triedActions),
     timestamp: Date.now()
   }));
 }
@@ -1014,7 +1038,12 @@ function loadAgentState(): AgentMemory | null {
       ...state,
       failedAttempts: new Map(state.failedAttempts || []),
       filledFields: new Set(state.filledFields || []),
-      dialogActionsCount: state.dialogActionsCount || 0
+      dialogActionsCount: state.dialogActionsCount || 0,
+      // Backtracking & Exploration
+      triedActions: new Set(state.triedActions || []),
+      urlBeforeAction: state.urlBeforeAction || window.location.pathname,
+      explorationStack: state.explorationStack || [],
+      currentExplorationIndex: state.currentExplorationIndex || 0
     };
   } catch {
     return null;
@@ -1023,6 +1052,214 @@ function loadAgentState(): AgentMemory | null {
 
 function clearAgentState() {
   sessionStorage.removeItem(AGENT_STATE_KEY);
+}
+
+// ============= LEARNING SYSTEM =============
+
+const LEARNED_PATHS_KEY = 'emerald_agent_learned_paths';
+
+function extractTaskKeywords(task: string): string[] {
+  const words = task.toLowerCase().split(/\s+/);
+  const keywords: string[] = [];
+
+  // Извлекаем ключевые слова
+  const actionWords = ['открой', 'открыть', 'создай', 'создать', 'добавь', 'добавить', 'перейди', 'зайди', 'найди'];
+  const targetWords = ['проект', 'клиент', 'поставщик', 'позиц', 'монтаж', 'задач', 'склад', 'финанс'];
+
+  for (const word of words) {
+    for (const kw of [...actionWords, ...targetWords]) {
+      if (word.includes(kw)) {
+        keywords.push(kw);
+      }
+    }
+  }
+
+  return Array.from(new Set(keywords));
+}
+
+function saveLearnedPath(task: string, actions: AgentAction[]) {
+  try {
+    const existing = localStorage.getItem(LEARNED_PATHS_KEY);
+    const paths: LearnedPath[] = existing ? JSON.parse(existing) : [];
+
+    const keywords = extractTaskKeywords(task);
+    const simplifiedActions = actions
+      .filter(a => a.type !== 'complete' && a.type !== 'observe')
+      .map(a => ({
+        type: a.type,
+        selector: a.params?.selector,
+        text: a.params?.text
+      }));
+
+    // Проверяем есть ли похожий путь
+    const existingIndex = paths.findIndex(p => {
+      const commonKeywords = p.taskKeywords.filter(k => keywords.includes(k));
+      return commonKeywords.length >= Math.min(2, keywords.length);
+    });
+
+    if (existingIndex >= 0) {
+      // Обновляем существующий
+      paths[existingIndex].successRate = (paths[existingIndex].successRate + 1) / 2 + 0.5;
+      paths[existingIndex].lastUsed = Date.now();
+      paths[existingIndex].actions = simplifiedActions;
+    } else {
+      // Добавляем новый
+      paths.push({
+        task,
+        taskKeywords: keywords,
+        actions: simplifiedActions,
+        successRate: 1,
+        lastUsed: Date.now()
+      });
+    }
+
+    // Храним только последние 50 путей
+    const sorted = paths.sort((a, b) => b.lastUsed - a.lastUsed).slice(0, 50);
+    localStorage.setItem(LEARNED_PATHS_KEY, JSON.stringify(sorted));
+
+    console.log('[Agent] Learned path saved:', task, simplifiedActions.length, 'actions');
+  } catch (err) {
+    console.warn('[Agent] Failed to save learned path:', err);
+  }
+}
+
+function findLearnedPath(task: string): LearnedPath | null {
+  try {
+    const existing = localStorage.getItem(LEARNED_PATHS_KEY);
+    if (!existing) return null;
+
+    const paths: LearnedPath[] = JSON.parse(existing);
+    const keywords = extractTaskKeywords(task);
+
+    // Ищем путь с максимальным совпадением ключевых слов
+    let bestMatch: LearnedPath | null = null;
+    let bestScore = 0;
+
+    for (const path of paths) {
+      const commonKeywords = path.taskKeywords.filter(k => keywords.includes(k));
+      const score = commonKeywords.length * path.successRate;
+
+      if (score > bestScore && commonKeywords.length >= 2) {
+        bestScore = score;
+        bestMatch = path;
+      }
+    }
+
+    if (bestMatch) {
+      console.log('[Agent] Found learned path:', bestMatch.task, 'score:', bestScore);
+    }
+
+    return bestMatch;
+  } catch {
+    return null;
+  }
+}
+
+// ============= BACKTRACKING & EXPLORATION =============
+
+function goBack(): boolean {
+  // Если есть диалог - закрываем его
+  const dialog = document.querySelector('[role="dialog"], [data-radix-dialog-content]');
+  if (dialog) {
+    const closeBtn = dialog.querySelector('button[aria-label="Close"], button:has(svg[class*="x"]), [data-dismiss]');
+    if (closeBtn) {
+      (closeBtn as HTMLElement).click();
+      console.log('[Agent] Closed dialog via close button');
+      return true;
+    }
+
+    // Пробуем ESC
+    document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    console.log('[Agent] Sent Escape to close dialog');
+    return true;
+  }
+
+  // Иначе используем history.back()
+  if (window.history.length > 1) {
+    window.history.back();
+    console.log('[Agent] Navigated back in history');
+    return true;
+  }
+
+  return false;
+}
+
+function getAlternativeActions(pageState: PageState, triedActions: Set<string>): { type: string; params: any }[] {
+  const alternatives: { type: string; params: any; priority: number }[] = [];
+
+  // Собираем все возможные действия
+  const allElements = [
+    ...pageState.elements.navigation,
+    ...pageState.elements.actions,
+    ...pageState.elements.forms
+  ];
+
+  for (const elem of allElements) {
+    const actionKey = `click:${elem.text || elem.selector}`;
+
+    // Пропускаем уже испробованные
+    if (triedActions.has(actionKey)) continue;
+
+    // Пропускаем отключённые
+    if (!elem.enabled) continue;
+
+    let priority = 0;
+
+    // Приоритизация по типу
+    if (elem.type === 'button') priority += 10;
+    if (elem.type === 'link') priority += 5;
+
+    // Приоритизация по тексту
+    const text = elem.text.toLowerCase();
+    if (text.includes('создать') || text.includes('добавить') || text.includes('новый')) priority += 20;
+    if (text.includes('открыть') || text.includes('перейти')) priority += 15;
+    if (text === '+' || text === '＋') priority += 25;
+
+    // Приоритизация по расположению
+    if (elem.location === 'dialog') priority += 30; // В диалоге - высший приоритет
+    if (elem.location === 'main') priority += 5;
+
+    alternatives.push({
+      type: 'click',
+      params: { text: elem.text, selector: elem.selector, x: elem.x, y: elem.y },
+      priority
+    });
+  }
+
+  // Сортируем по приоритету
+  return alternatives
+    .sort((a, b) => b.priority - a.priority)
+    .slice(0, 10)
+    .map(a => ({ type: a.type, params: a.params }));
+}
+
+function shouldBacktrack(memory: AgentMemory, pageState: PageState, lastActionSuccess: boolean): boolean {
+  // 1. Если последнее действие не удалось
+  if (!lastActionSuccess) return true;
+
+  // 2. Если URL сильно изменился в неожиданном направлении
+  const currentUrl = window.location.pathname;
+  const recentPages = memory.pageHistory.slice(-3);
+
+  // Проверяем уходим ли мы от цели (например, были на /projects, ушли на /settings)
+  if (recentPages.length >= 2) {
+    const previousUrl = recentPages[recentPages.length - 2];
+    // Если вернулись на главную без причины - возможно ошиблись
+    if (currentUrl === '/' && previousUrl !== '/') {
+      console.log('[Agent] Unexpectedly returned to home, should backtrack');
+      return true;
+    }
+  }
+
+  // 3. Если мы уже пробовали это состояние много раз
+  const stateKey = `${currentUrl}:${pageState.hasDialog}`;
+  const attempts = memory.failedAttempts.get(stateKey) || 0;
+  if (attempts >= 3) {
+    console.log('[Agent] Too many attempts in this state, should backtrack');
+    return true;
+  }
+
+  return false;
 }
 
 // ============= MAIN HOOK =============
@@ -1147,13 +1384,25 @@ export function useInPageAgent(): UseInPageAgentReturn {
     let consecutiveErrors = 0;
     let lastActionKey = '';
     let sameActionCount = 0;
+    let backtrackCount = 0;
+    const MAX_BACKTRACKS = 5;
 
     // Определяем тип задачи для auto-completion
     const taskType = analyzeTaskType(memory.task);
     console.log('[Agent] Task type:', taskType);
 
-    setThinking('Анализирую задачу...');
-    showFloatingIndicator('Анализирую задачу...', 'thinking');
+    // Проверяем есть ли выученный путь для похожей задачи
+    const learnedPath = findLearnedPath(memory.task);
+    let learnedPathIndex = 0;
+
+    if (learnedPath) {
+      console.log('[Agent] Found learned path with', learnedPath.actions.length, 'actions');
+      setThinking(`Использую знания из похожей задачи: "${learnedPath.task}"`);
+      showFloatingIndicator('Применяю изученный путь...', 'thinking');
+    } else {
+      setThinking('Анализирую задачу...');
+      showFloatingIndicator('Анализирую задачу...', 'thinking');
+    }
 
     while (!stopRequestedRef.current && iteration < MAX_ITERATIONS) {
       iteration++;
@@ -1194,6 +1443,8 @@ export function useInPageAgent(): UseInPageAgentReturn {
 
           await shortDelay(500);
           hideFloatingIndicator();
+          // LEARNING: Сохраняем успешный путь
+          saveLearnedPath(memory.task, memory.actions);
           setSession(prev => prev ? { ...prev, status: 'completed' } : null);
           clearAgentState();
           break;
@@ -1252,6 +1503,8 @@ export function useInPageAgent(): UseInPageAgentReturn {
                 setActions(prev => [...prev, completeAction]);
 
                 hideFloatingIndicator();
+                // LEARNING: Сохраняем успешный путь
+                saveLearnedPath(memory.task, memory.actions);
                 setSession(prev => prev ? { ...prev, status: 'completed' } : null);
                 clearAgentState();
                 break;
@@ -1263,8 +1516,26 @@ export function useInPageAgent(): UseInPageAgentReturn {
         // 4. Показываем что думаем
         updateFloatingIndicator('Думаю...', 'thinking');
 
-        // 5. Получаем следующее действие от AI
-        const analysis = await analyzeWithAI(pageState, memory);
+        // 5. Получаем следующее действие - сначала проверяем learned path
+        let analysis: { thinking: string; action: AgentAction; plan?: TaskStep[] };
+
+        if (learnedPath && learnedPathIndex < learnedPath.actions.length) {
+          // Используем действие из выученного пути
+          const learnedAction = learnedPath.actions[learnedPathIndex];
+          analysis = {
+            thinking: `Использую изученный путь (шаг ${learnedPathIndex + 1}/${learnedPath.actions.length})`,
+            action: {
+              type: learnedAction.type as AgentAction['type'],
+              params: { text: learnedAction.text, selector: learnedAction.selector },
+              timestamp: new Date()
+            }
+          };
+          learnedPathIndex++;
+          console.log(`[Agent] Using learned action ${learnedPathIndex}: ${learnedAction.type}`);
+        } else {
+          // Получаем следующее действие от AI
+          analysis = await analyzeWithAI(pageState, memory);
+        }
 
         setThinking(analysis.thinking);
         updateFloatingIndicator(analysis.thinking?.substring(0, 50) + '...', 'thinking');
@@ -1358,6 +1629,8 @@ export function useInPageAgent(): UseInPageAgentReturn {
         // 7. Проверяем завершение
         if (action.type === 'complete') {
           hideFloatingIndicator();
+          // LEARNING: Сохраняем успешный путь
+          saveLearnedPath(memory.task, memory.actions);
           setSession(prev => prev ? { ...prev, status: 'completed' } : null);
           clearAgentState();
           break;
@@ -1382,9 +1655,55 @@ export function useInPageAgent(): UseInPageAgentReturn {
         } else {
           consecutiveErrors++;
 
+          // Отмечаем это действие как неудачное
+          const actionKey = `${action.type}:${action.params?.text || action.params?.selector || ''}`;
+          memory.triedActions.add(actionKey);
+
           const attemptKey = `${memory.currentStep}:${action.type}:${action.params?.text || ''}`;
           const attempts = (memory.failedAttempts.get(attemptKey) || 0) + 1;
           memory.failedAttempts.set(attemptKey, attempts);
+
+          // BACKTRACKING: Если действие не удалось - пробуем вернуться и попробовать другое
+          if (attempts >= 2 && backtrackCount < MAX_BACKTRACKS) {
+            console.log(`[Agent] Action failed ${attempts} times, trying backtracking...`);
+            setThinking('Это не сработало, пробую другой вариант...');
+            updateFloatingIndicator('Возвращаюсь назад...', 'navigate');
+
+            // EXPLORATION: Ищем альтернативные действия
+            const alternatives = getAlternativeActions(pageState, memory.triedActions);
+
+            if (alternatives.length > 0) {
+              console.log(`[Agent] Found ${alternatives.length} alternative actions`);
+              // Берём следующее альтернативное действие
+              const altAction = alternatives[0];
+              memory.triedActions.add(`${altAction.type}:${altAction.params?.text || altAction.params?.selector || ''}`);
+
+              // Выполняем альтернативное действие вместо backtrack
+              setThinking(`Пробую: ${altAction.params?.text || 'альтернативное действие'}`);
+              updateFloatingIndicator(`Пробую: ${altAction.params?.text?.substring(0, 20) || 'другой вариант'}`, 'click');
+
+              const altResult = await executeAction({
+                type: altAction.type as AgentAction['type'],
+                params: altAction.params,
+                timestamp: new Date()
+              }, pageState);
+
+              if (altResult.success && altResult.verified) {
+                console.log('[Agent] Alternative action succeeded!');
+                consecutiveErrors = 0;
+                backtrackCount = 0;
+              } else {
+                backtrackCount++;
+              }
+            } else {
+              // Нет альтернатив - используем goBack
+              if (goBack()) {
+                backtrackCount++;
+                console.log(`[Agent] Backtracked (${backtrackCount}/${MAX_BACKTRACKS})`);
+                await shortDelay(500);
+              }
+            }
+          }
 
           if (attempts >= MAX_RETRIES_PER_STEP) {
             console.log(`[Agent] Step ${memory.currentStep} failed after ${MAX_RETRIES_PER_STEP} attempts`);
@@ -1458,7 +1777,12 @@ export function useInPageAgent(): UseInPageAgentReturn {
       failedAttempts: new Map(),
       startTime: Date.now(),
       filledFields: new Set(),
-      dialogActionsCount: 0
+      dialogActionsCount: 0,
+      // Backtracking & Exploration
+      triedActions: new Set(),
+      urlBeforeAction: window.location.pathname,
+      explorationStack: [],
+      currentExplorationIndex: 0
     };
 
     memoryRef.current = memory;
