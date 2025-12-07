@@ -230,13 +230,15 @@ router.get("/api/attachments/download/:id", async (req, res) => {
 
     console.log(`[Download] Found attachment: ${attachment.file_name} from ${attachment.source}, path: ${attachment.file_path}`);
 
-    const filePath = attachment.file_path;
+    // Преобразуем URL path (/objects/...) в файловый путь
+    const { exists, filePath } = await localFileStorage.getFile(attachment.file_path);
 
-    // Проверяем существование файла
-    if (!fs.existsSync(filePath)) {
+    if (!exists) {
       console.log(`[Download] File not found on disk: ${filePath}`);
       return res.status(404).json({ error: "File not found on disk" });
     }
+
+    console.log(`[Download] Real file path: ${filePath}`);
 
     // Получаем размер файла для Content-Length
     const stat = fs.statSync(filePath);

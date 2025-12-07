@@ -4,13 +4,13 @@ import {
   insertProjectSchema, insertProjectStageSchema, insertProjectItemSchema,
   insertStageDependencySchema, insertProcessTemplateSchema, insertTemplateStageSchema,
   insertTemplateDependencySchema, insertStageMessageSchema, insertProjectMessageSchema, insertStageDocumentSchema, project_stages,
-  project_items, projects, tasks
+  project_items, projects, tasks, project_supplier_documents, insertProjectSupplierDocumentSchema
 } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { salesRepository } from "../sales/repository";
 import { z } from "zod";
 import { db } from "../../db";
-import { eq, sql, and } from "drizzle-orm";
+import { eq, sql, and, desc } from "drizzle-orm";
 import { activityLogsRepository, tasksRepository } from "../tasks/repository";
 import { stageTypesRepository } from "../stage-types/repository";
 import { localFileStorage } from "../../localFileStorage";
@@ -1836,5 +1836,92 @@ router.get("/api/projects/:projectId/items/ready-for-montage", async (req, res) 
   } catch (error) {
     console.error("Error fetching items ready for montage:", error);
     res.status(500).json({ error: "Failed to fetch items ready for montage" });
+  }
+});
+
+// === SUPPLIER DOCUMENTS (Документы поставщиков) ===
+
+// GET /api/projects/:projectId/supplier-documents - Get all supplier documents
+router.get("/api/projects/:projectId/supplier-documents", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const documents = await db
+      .select()
+      .from(project_supplier_documents)
+      .where(eq(project_supplier_documents.project_id, projectId))
+      .orderBy(desc(project_supplier_documents.created_at));
+
+    res.json(documents);
+  } catch (error) {
+    console.error("Error fetching supplier documents:", error);
+    res.status(500).json({ error: "Failed to fetch supplier documents" });
+  }
+});
+
+// POST /api/projects/:projectId/supplier-documents - Upload supplier document
+router.post("/api/projects/:projectId/supplier-documents", async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { file_name, file_path, file_size, mime_type } = req.body;
+
+    if (!file_name || !file_path) {
+      res.status(400).json({ error: "file_name and file_path are required" });
+      return;
+    }
+
+    // Explicitly only insert allowed fields (no uploaded_by to avoid FK issues)
+    const newDoc = await db
+      .insert(project_supplier_documents)
+      .values({
+        project_id: projectId,
+        file_name,
+        file_path,
+        file_size: file_size || null,
+        mime_type: mime_type || null,
+      })
+      .returning();
+
+    res.status(201).json(newDoc[0]);
+  } catch (error) {
+    console.error("Error creating supplier document:", error);
+    res.status(500).json({ error: "Failed to create supplier document" });
+  }
+});
+
+// DELETE /api/projects/:projectId/supplier-documents/:docId - Delete supplier document
+router.delete("/api/projects/:projectId/supplier-documents/:docId", async (req, res) => {
+  try {
+    const { docId } = req.params;
+
+    // Get the document to find file path
+    const doc = await db
+      .select()
+      .from(project_supplier_documents)
+      .where(eq(project_supplier_documents.id, docId))
+      .limit(1);
+
+    if (doc.length === 0) {
+      res.status(404).json({ error: "Document not found" });
+      return;
+    }
+
+    // Delete file from storage
+    if (doc[0].file_path) {
+      try {
+        await localFileStorage.deleteFile(doc[0].file_path);
+      } catch (e) {
+        console.warn("Failed to delete file from storage:", e);
+      }
+    }
+
+    // Delete from database
+    await db
+      .delete(project_supplier_documents)
+      .where(eq(project_supplier_documents.id, docId));
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error("Error deleting supplier document:", error);
+    res.status(500).json({ error: "Failed to delete supplier document" });
   }
 });

@@ -1,5 +1,5 @@
 import { db } from "../../db";
-import { deal_attachments, deal_documents, stage_documents, task_attachments, documents, type InsertDealAttachment, type DealAttachment } from "@shared/schema";
+import { deal_attachments, deal_documents, stage_documents, task_attachments, documents, project_supplier_documents, type InsertDealAttachment, type DealAttachment } from "@shared/schema";
 import { eq, and } from "drizzle-orm";
 
 // Универсальный тип для любого вложения
@@ -9,7 +9,7 @@ export interface UniversalAttachment {
   file_path: string;
   file_size?: number | null;
   mime_type?: string | null;
-  source: 'deal' | 'deal_document' | 'stage' | 'task' | 'document';
+  source: 'deal' | 'deal_document' | 'stage' | 'task' | 'document' | 'supplier_document';
 }
 
 export const attachmentsRepository = {
@@ -107,6 +107,19 @@ export const attachmentsRepository = {
         file_size: doc.size,
         mime_type: doc.type,
         source: 'document'
+      };
+    }
+
+    // 5. Проверяем в project_supplier_documents (документы поставщиков)
+    const [supplierDoc] = await db.select().from(project_supplier_documents).where(eq(project_supplier_documents.id, id));
+    if (supplierDoc) {
+      return {
+        id: supplierDoc.id,
+        file_name: supplierDoc.file_name,
+        file_path: supplierDoc.file_path,
+        file_size: supplierDoc.file_size,
+        mime_type: supplierDoc.mime_type,
+        source: 'supplier_document'
       };
     }
 

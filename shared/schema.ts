@@ -289,6 +289,24 @@ export const insertProjectItemSchema = createInsertSchema(project_items).omit({ 
 export type InsertProjectItem = z.infer<typeof insertProjectItemSchema>;
 export type ProjectItem = typeof project_items.$inferSelect;
 
+// Project Supplier Documents (Документы поставщиков)
+export const project_supplier_documents = pgTable('project_supplier_documents', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  project_id: text('project_id').references(() => projects.id, { onDelete: 'cascade' }).notNull(),
+  file_name: text('file_name').notNull(),
+  file_path: text('file_path').notNull(),
+  file_size: integer('file_size'),
+  mime_type: text('mime_type'),
+  thumbnail_url: text('thumbnail_url'),
+  uploaded_by: text('uploaded_by').references(() => users.id),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+// uploaded_by excluded to avoid FK constraint issues
+export const insertProjectSupplierDocumentSchema = createInsertSchema(project_supplier_documents).omit({ id: true, created_at: true, uploaded_by: true });
+export type InsertProjectSupplierDocument = z.infer<typeof insertProjectSupplierDocumentSchema>;
+export type ProjectSupplierDocument = typeof project_supplier_documents.$inferSelect;
+
 // Project Stages
 export const project_stages = pgTable('project_stages', {
   id: text('id').$defaultFn(() => genId()).primaryKey(),
