@@ -725,11 +725,60 @@ async function executeAction(action: AgentAction, pageState: PageState): Promise
       // Если элемент не найден - пробуем умный поиск
       if (!element) {
         const searchText = action.params?.text?.toLowerCase() || '';
+        const selectorText = action.params?.selector?.toLowerCase() || '';
+
+        // Определяем что ищем по селектору
+        let targetText = searchText;
+        if (!targetText && selectorText) {
+          // Извлекаем текст из селектора типа data-testid="link-проекты"
+          const match = selectorText.match(/link-(\w+)|проект|клиент|поставщик|склад|монтаж|продаж|финанс|задач|настройк/i);
+          if (match) {
+            targetText = match[1] || match[0];
+          }
+        }
+
+        // 1. Ищем навигационные ссылки в sidebar
+        const sidebar = document.querySelector('aside, nav, [data-sidebar], [class*="sidebar"], [class*="Sidebar"]');
+        if (sidebar && targetText) {
+          const links = Array.from(sidebar.querySelectorAll('a[href]'));
+          for (const link of links) {
+            const linkText = (link as HTMLElement).innerText?.trim().toLowerCase();
+            const href = link.getAttribute('href')?.toLowerCase() || '';
+
+            if (linkText.includes(targetText) || href.includes(targetText)) {
+              element = link;
+              const rect = link.getBoundingClientRect();
+              clickX = rect.x + rect.width / 2;
+              clickY = rect.y + rect.height / 2;
+              console.log(`[Agent] Found sidebar link: "${linkText}" -> ${href}`);
+              break;
+            }
+          }
+        }
+
+        // 2. Ищем по всему документу если не нашли в sidebar
+        if (!element && targetText) {
+          const allLinks = Array.from(document.querySelectorAll('a[href]'));
+          for (const link of allLinks) {
+            const linkText = (link as HTMLElement).innerText?.trim().toLowerCase();
+            const href = link.getAttribute('href')?.toLowerCase() || '';
+
+            if (linkText.includes(targetText) || href.includes(targetText)) {
+              element = link;
+              const rect = link.getBoundingClientRect();
+              clickX = rect.x + rect.width / 2;
+              clickY = rect.y + rect.height / 2;
+              console.log(`[Agent] Found link: "${linkText}" -> ${href}`);
+              break;
+            }
+          }
+        }
+
         const mainContent = document.querySelector('main') || document.body;
         const allButtons = Array.from(mainContent.querySelectorAll('button, [role="button"], a[href]'));
 
-        // Ищем кнопку "+" для добавления
-        if (searchText.includes('+') || searchText.includes('добав') || searchText.includes('новый') || searchText.includes('создать') || searchText.includes('new') || searchText.includes('add')) {
+        // 3. Ищем кнопку "+" для добавления
+        if (!element && (searchText.includes('+') || searchText.includes('добав') || searchText.includes('новый') || searchText.includes('создать') || searchText.includes('new') || searchText.includes('add') || selectorText.includes('create') || selectorText.includes('add') || selectorText.includes('new'))) {
           for (const btn of allButtons) {
             const text = (btn as HTMLElement).innerText?.trim();
             const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
@@ -745,7 +794,7 @@ async function executeAction(action: AgentAction, pageState: PageState): Promise
           }
         }
 
-        // Ищем по SVG иконке (Plus icon)
+        // 4. Ищем по SVG иконке (Plus icon)
         if (!element) {
           const svgButtons = Array.from(mainContent.querySelectorAll('button svg, [role="button"] svg'));
           for (const svg of svgButtons) {
