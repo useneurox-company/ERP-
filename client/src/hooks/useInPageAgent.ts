@@ -12,6 +12,7 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
+import html2canvas from 'html2canvas';
 
 // ============= ТИПЫ =============
 
@@ -547,130 +548,176 @@ function updateFloatingIndicator(text: string, type?: 'click' | 'type' | 'naviga
 
 // ============= SCREENSHOT CAPTURE =============
 
-// Создаём информативную DOM-карту страницы (без html2canvas - он не поддерживает modern CSS)
+// Захватываем реальный скриншот страницы с помощью html2canvas
 async function captureScreenshot(): Promise<string | null> {
   try {
+    // Скрываем floating indicator перед скриншотом
+    const indicator = document.getElementById('agent-floating-indicator');
+    if (indicator) indicator.style.display = 'none';
+
+    // Определяем что снимать - диалог или всю страницу
+    const dialog = document.querySelector('[role="dialog"], [data-radix-dialog-content]') as HTMLElement;
+    const targetElement = dialog || document.body;
+
+    // Настройки html2canvas для обработки modern CSS
+    const canvas = await html2canvas(targetElement, {
+      scale: 0.5, // Уменьшаем для компактности
+      useCORS: true,
+      allowTaint: true,
+      logging: false,
+      backgroundColor: '#0f172a',
+      width: dialog ? dialog.offsetWidth : Math.min(window.innerWidth, 1200),
+      height: dialog ? dialog.offsetHeight : Math.min(window.innerHeight, 800),
+      // Игнорируем элементы с проблемными стилями
+      ignoreElements: (element) => {
+        // Пропускаем элементы которые могут вызвать ошибки
+        if (element.id === 'agent-floating-indicator') return true;
+        if (element.id === 'agent-click-animation') return true;
+        if (element.classList?.contains('agent-indicator-spinner')) return true;
+        return false;
+      },
+      onclone: (clonedDoc) => {
+        // Исправляем проблемные CSS-свойства в клонированном документе
+        const allElements = clonedDoc.querySelectorAll('*');
+        allElements.forEach((el) => {
+          const htmlEl = el as HTMLElement;
+          const style = htmlEl.style;
+          // Удаляем проблемные color() функции
+          if (style.color && style.color.includes('color(')) {
+            style.color = '#ffffff';
+          }
+          if (style.backgroundColor && style.backgroundColor.includes('color(')) {
+            style.backgroundColor = '#1e293b';
+          }
+        });
+      }
+    });
+
+    // Возвращаем indicator
+    if (indicator) indicator.style.display = 'flex';
+
+    // Конвертируем в base64
+    const dataUrl = canvas.toDataURL('image/png', 0.8);
+    console.log('[Agent] Screenshot captured:', dataUrl.length, 'bytes');
+    return dataUrl;
+
+  } catch (err) {
+    console.warn('[Agent] html2canvas failed, using fallback:', err);
+
+    // Возвращаем indicator
+    const indicator = document.getElementById('agent-floating-indicator');
+    if (indicator) indicator.style.display = 'flex';
+
+    // Fallback: простое текстовое описание страницы
+    return createFallbackScreenshot();
+  }
+}
+
+// Fallback скриншот если html2canvas не работает
+function createFallbackScreenshot(): string | null {
+  try {
     const canvas = document.createElement('canvas');
-    canvas.width = 320;
-    canvas.height = 220;
+    canvas.width = 400;
+    canvas.height = 300;
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
 
     // Фон
     ctx.fillStyle = '#0f172a';
-    ctx.fillRect(0, 0, 320, 220);
+    ctx.fillRect(0, 0, 400, 300);
 
-    // Сайдбар
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(0, 0, 50, 220);
+    // Заголовок
+    ctx.fillStyle = '#f1f5f9';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.fillText(`URL: ${window.location.pathname}`, 10, 25);
 
-    // Хедер
-    ctx.fillStyle = '#1e293b';
-    ctx.fillRect(50, 0, 270, 28);
-
-    // URL в хедере
-    ctx.fillStyle = '#94a3b8';
-    ctx.font = '10px sans-serif';
-    const path = window.location.pathname;
-    ctx.fillText(path.length > 35 ? path.substring(0, 35) + '...' : path, 55, 18);
-
-    // Контент
-    ctx.fillStyle = '#334155';
-    ctx.fillRect(55, 33, 260, 182);
-
-    // Проверяем есть ли диалог
+    // Диалог?
     const dialog = document.querySelector('[role="dialog"], [data-radix-dialog-content]');
     if (dialog) {
-      // Overlay
-      ctx.fillStyle = 'rgba(0,0,0,0.6)';
-      ctx.fillRect(50, 28, 270, 192);
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText('📋 ДИАЛОГ ОТКРЫТ', 10, 50);
+      const title = dialog.querySelector('h1, h2, h3')?.textContent?.trim() || 'Форма';
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '12px sans-serif';
+      ctx.fillText(`Заголовок: ${title}`, 10, 70);
 
-      // Диалог
-      ctx.fillStyle = '#1e293b';
-      ctx.beginPath();
-      ctx.roundRect(90, 55, 180, 130, 8);
-      ctx.fill();
-
-      // Граница диалога
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 1;
-      ctx.stroke();
-
-      // Заголовок диалога
-      const dialogTitle = dialog.querySelector('h1, h2, h3, [class*="title"], [class*="Title"]')?.textContent?.trim() || 'Диалог';
-      ctx.fillStyle = '#f1f5f9';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(dialogTitle.substring(0, 25), 100, 75);
-
-      // Количество полей в диалоге
+      // Поля формы
       const inputs = dialog.querySelectorAll('input, textarea, select');
-      const buttons = dialog.querySelectorAll('button');
+      let y = 95;
       ctx.fillStyle = '#94a3b8';
-      ctx.font = '9px sans-serif';
-      ctx.fillText(`Полей: ${inputs.length} | Кнопок: ${buttons.length}`, 100, 95);
+      inputs.forEach((input, i) => {
+        if (i < 6) {
+          const name = (input as HTMLInputElement).name || (input as HTMLInputElement).placeholder || `field${i}`;
+          const value = (input as HTMLInputElement).value || '(пусто)';
+          ctx.fillText(`• ${name}: ${value.substring(0, 30)}`, 15, y);
+          y += 18;
+        }
+      });
 
-      // Кнопки диалога
-      let btnY = 110;
+      // Кнопки
+      const buttons = dialog.querySelectorAll('button');
+      y += 10;
+      ctx.fillStyle = '#10b981';
+      ctx.fillText('Кнопки:', 10, y);
+      y += 18;
       buttons.forEach((btn, i) => {
-        if (i < 3) {
-          const text = (btn as HTMLElement).innerText?.trim().substring(0, 20) || 'Кнопка';
-          ctx.fillStyle = '#475569';
-          ctx.fillRect(100, btnY, 120, 18);
-          ctx.fillStyle = '#e2e8f0';
-          ctx.font = '9px sans-serif';
-          ctx.fillText(text, 105, btnY + 13);
-          btnY += 22;
+        if (i < 4) {
+          const text = (btn as HTMLElement).innerText?.trim() || 'button';
+          ctx.fillStyle = '#3b82f6';
+          ctx.fillRect(15, y - 12, text.length * 7 + 20, 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.fillText(text, 25, y);
+          y += 22;
         }
       });
     } else {
-      // Показываем основные элементы страницы
-      const mainContent = document.querySelector('main') || document.body;
+      // Страница
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '12px sans-serif';
 
-      // Заголовок страницы
-      const pageTitle = document.querySelector('h1, h2, [class*="title"]')?.textContent?.trim() || 'Страница';
-      ctx.fillStyle = '#f1f5f9';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(pageTitle.substring(0, 35), 60, 50);
+      // Навигация
+      const sidebar = document.querySelector('aside, nav, [data-sidebar]');
+      if (sidebar) {
+        const links = sidebar.querySelectorAll('a[href]');
+        ctx.fillText(`Навигация: ${links.length} ссылок`, 10, 50);
+        let y = 70;
+        links.forEach((link, i) => {
+          if (i < 8) {
+            const text = (link as HTMLElement).innerText?.trim() || '';
+            const href = link.getAttribute('href') || '';
+            if (text) {
+              ctx.fillStyle = href === window.location.pathname ? '#10b981' : '#64748b';
+              ctx.fillText(`• ${text} → ${href}`, 15, y);
+              y += 16;
+            }
+          }
+        });
+      }
 
       // Кнопки на странице
-      const buttons = mainContent.querySelectorAll('button:not([disabled])');
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '9px sans-serif';
-      ctx.fillText(`Кнопок: ${buttons.length}`, 60, 70);
-
-      // Отображаем первые кнопки
-      let btnY = 85;
+      const main = document.querySelector('main') || document.body;
+      const buttons = main.querySelectorAll('button:not([disabled])');
+      let y = 200;
+      ctx.fillStyle = '#fbbf24';
+      ctx.fillText(`Кнопки (${buttons.length}):`, 10, y);
+      y += 18;
       let btnCount = 0;
       buttons.forEach((btn) => {
         const text = (btn as HTMLElement).innerText?.trim();
-        if (text && text.length > 0 && text.length < 30 && btnCount < 5) {
-          ctx.fillStyle = '#10b981';
-          ctx.fillRect(60, btnY, Math.min(text.length * 6 + 10, 200), 16);
+        if (text && text.length > 1 && text.length < 25 && btnCount < 4) {
+          ctx.fillStyle = '#3b82f6';
+          ctx.fillRect(15, y - 12, text.length * 7 + 10, 16);
           ctx.fillStyle = '#ffffff';
-          ctx.font = '9px sans-serif';
-          ctx.fillText(text.substring(0, 30), 65, btnY + 12);
-          btnY += 20;
+          ctx.fillText(text, 20, y);
+          y += 20;
           btnCount++;
         }
       });
-
-      // Формы
-      const inputs = mainContent.querySelectorAll('input:not([type="hidden"]), textarea');
-      if (inputs.length > 0) {
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '9px sans-serif';
-        ctx.fillText(`Полей ввода: ${inputs.length}`, 60, btnY + 15);
-      }
     }
-
-    // Метка что это DOM Preview
-    ctx.fillStyle = '#3b82f6';
-    ctx.font = '8px sans-serif';
-    ctx.fillText('DOM Preview', 255, 215);
 
     return canvas.toDataURL('image/png', 0.9);
   } catch (err) {
-    console.warn('[Agent] Screenshot capture failed:', err);
+    console.warn('[Agent] Fallback screenshot failed:', err);
     return null;
   }
 }
