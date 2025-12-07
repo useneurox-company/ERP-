@@ -6,7 +6,7 @@ const crawlRoutes = require('./routes/crawl');
 const testRoutes = require('./routes/test');
 
 const app = express();
-const PORT = 5500;
+const PORT = 3500;
 
 // Static files (UI)
 app.use(express.static(path.join(__dirname, 'public')));

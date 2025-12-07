@@ -10,52 +10,6 @@ let testBrowser = null;
 let lastAction = null;
 let lastActionTime = null;
 
-// Console logs storage - captures ALL console messages
-let consoleLogs = [];
-const MAX_CONSOLE_LOGS = 500; // Limit to prevent memory issues
-
-// Setup console capture for a page
-function setupConsoleCapture(page) {
-  consoleLogs = []; // Clear on new session
-
-  // Capture all console messages
-  page.on('console', msg => {
-    const logEntry = {
-      type: msg.type(), // log, error, warn, info, debug, etc.
-      text: msg.text(),
-      timestamp: new Date().toISOString(),
-      location: msg.location() // {url, lineNumber, columnNumber}
-    };
-
-    consoleLogs.push(logEntry);
-
-    // Keep only last MAX_CONSOLE_LOGS entries
-    if (consoleLogs.length > MAX_CONSOLE_LOGS) {
-      consoleLogs = consoleLogs.slice(-MAX_CONSOLE_LOGS);
-    }
-  });
-
-  // Capture page errors (uncaught exceptions)
-  page.on('pageerror', error => {
-    consoleLogs.push({
-      type: 'pageerror',
-      text: error.message,
-      stack: error.stack,
-      timestamp: new Date().toISOString()
-    });
-  });
-
-  // Capture request failures
-  page.on('requestfailed', request => {
-    consoleLogs.push({
-      type: 'network-error',
-      text: `Failed to load: ${request.url()}`,
-      reason: request.failure()?.errorText || 'Unknown',
-      timestamp: new Date().toISOString()
-    });
-  });
-}
-
 // GET /test/live-frame — Live View frame for real-time monitoring
 router.get('/live-frame', async (req, res) => {
   try {
@@ -91,10 +45,6 @@ router.post('/start', express.json(), async (req, res) => {
     testBrowser = await getBrowser({ visible });
     testPage = await testBrowser.newPage();
     await setupPage(testPage);
-
-    // Setup console capture BEFORE any navigation
-    setupConsoleCapture(testPage);
-
     // Don't change viewport for visible browser - use natural window size
     if (!visible) {
       await testPage.setViewport({ width: 1920, height: 1080 });
@@ -399,7 +349,6 @@ router.post('/end', async (req, res) => {
 });
 
 // Quick test - navigate, screenshot, check content in one call
-// NOW INCLUDES CONSOLE ERRORS!
 router.post('/quick', express.json(), async (req, res) => {
   try {
     const { url, checkSelector, checkText } = req.body;
@@ -409,21 +358,11 @@ router.post('/quick', express.json(), async (req, res) => {
       testBrowser = await getBrowser();
       testPage = await testBrowser.newPage();
       await setupPage(testPage);
-
-      // Setup console capture for quick test too!
-      setupConsoleCapture(testPage);
-
       await testPage.setViewport({ width: 1920, height: 1080 });
-    } else {
-      // Clear previous console logs for fresh test
-      consoleLogs = [];
     }
 
     // Navigate
     await testPage.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
-
-    // Small delay to catch any post-load errors
-    await new Promise(resolve => setTimeout(resolve, 500));
 
     const title = await testPage.title();
     const result = { success: true, url, title };
@@ -443,27 +382,6 @@ router.post('/quick', express.json(), async (req, res) => {
     // Take screenshot
     const screenshot = await testPage.screenshot({ encoding: 'base64' });
     result.screenshot = `data:image/png;base64,${screenshot}`;
-
-    // ALWAYS include console info
-    const errors = consoleLogs.filter(l =>
-      ['error', 'pageerror', 'network-error'].includes(l.type)
-    );
-    const warnings = consoleLogs.filter(l =>
-      l.type === 'warning' || l.type === 'warn'
-    );
-
-    result.console = {
-      total: consoleLogs.length,
-      errorCount: errors.length,
-      warningCount: warnings.length,
-      hasErrors: errors.length > 0,
-      hasWarnings: warnings.length > 0,
-      errors: errors,
-      warnings: warnings
-    };
-
-    // Add convenience flag
-    result.consoleClean = errors.length === 0;
 
     res.json(result);
   } catch (error) {
@@ -704,74 +622,18 @@ router.post('/wait-network', express.json(), async (req, res) => {
   }
 });
 
-// Get ALL console logs (errors, warnings, info, etc.)
-router.post('/console', express.json(), async (req, res) => {
-  try {
-    const { filter, since } = req.body || {};
-
-    let logs = [...consoleLogs];
-
-    // Filter by type if specified (error, warn, log, info, pageerror, network-error)
-    if (filter) {
-      const filterTypes = Array.isArray(filter) ? filter : [filter];
-      logs = logs.filter(l => filterTypes.includes(l.type));
-    }
-
-    // Filter by timestamp if specified
-    if (since) {
-      const sinceTime = new Date(since).getTime();
-      logs = logs.filter(l => new Date(l.timestamp).getTime() > sinceTime);
-    }
-
-    // Separate by severity for convenience
-    const errors = logs.filter(l => ['error', 'pageerror', 'network-error'].includes(l.type));
-    const warnings = logs.filter(l => l.type === 'warning' || l.type === 'warn');
-    const info = logs.filter(l => !['error', 'pageerror', 'network-error', 'warning', 'warn'].includes(l.type));
-
-    res.json({
-      success: true,
-      total: logs.length,
-      errorCount: errors.length,
-      warningCount: warnings.length,
-      logs,
-      errors,
-      warnings,
-      hasErrors: errors.length > 0,
-      hasWarnings: warnings.length > 0
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// Get ONLY errors (shortcut)
+// Check for console errors
 router.post('/console-errors', express.json(), async (req, res) => {
   try {
-    const errors = consoleLogs.filter(l =>
-      ['error', 'pageerror', 'network-error'].includes(l.type)
-    );
+    if (!testPage) {
+      return res.status(400).json({ error: 'No test session' });
+    }
 
-    res.json({
-      success: true,
-      count: errors.length,
-      errors,
-      hasErrors: errors.length > 0
+    const errors = await testPage.evaluate(() => {
+      return window.__consoleErrors || [];
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
 
-// Clear console logs
-router.post('/console-clear', express.json(), async (req, res) => {
-  try {
-    const previousCount = consoleLogs.length;
-    consoleLogs = [];
-
-    res.json({
-      success: true,
-      message: `Cleared ${previousCount} console entries`
-    });
+    res.json({ success: true, errors });
   } catch (error) {
     res.status(500).json({ error: error.message });
   }
@@ -839,358 +701,6 @@ router.post('/count', express.json(), async (req, res) => {
     const count = await testPage.$$eval(selector, els => els.length);
 
     res.json({ success: true, count });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// ============================================
-// FAST ELEMENT SEARCH - для быстрого поиска
-// ============================================
-
-// FIND - быстрый поиск элемента по тексту, возвращает готовый селектор
-router.post('/find', express.json(), async (req, res) => {
-  try {
-    if (!testPage) {
-      return res.status(400).json({ error: 'No test session. Call /test/start first' });
-    }
-
-    const { text, type, near } = req.body;
-    // text - искать по тексту
-    // type - тип элемента: button, link, input, any
-    // near - искать рядом с элементом (label)
-
-    const found = await testPage.evaluate(({ text, type, near }) => {
-      const results = [];
-
-      // Генерация уникального селектора
-      const getUniqueSelector = (el) => {
-        if (el.id) return `#${el.id}`;
-        if (el.name) return `[name="${el.name}"]`;
-        if (el.dataset.testid) return `[data-testid="${el.dataset.testid}"]`;
-        if (el.placeholder) return `[placeholder="${el.placeholder}"]`;
-
-        // Для кнопок - по тексту
-        if (el.tagName === 'BUTTON' || el.getAttribute('role') === 'button') {
-          const btnText = el.textContent?.trim();
-          if (btnText && btnText.length < 50) {
-            return `text=${btnText}`;
-          }
-        }
-
-        // По классам
-        if (el.className && typeof el.className === 'string') {
-          const classes = el.className.split(' ').filter(c => c && !c.includes(':'))[0];
-          if (classes) {
-            const tag = el.tagName.toLowerCase();
-            return `${tag}.${classes}`;
-          }
-        }
-
-        return el.tagName.toLowerCase();
-      };
-
-      // Определяем какие элементы искать
-      let selectors = [];
-      if (type === 'button' || !type) {
-        selectors.push('button', '[role="button"]', 'input[type="submit"]', 'input[type="button"]', 'a.btn', 'a.button');
-      }
-      if (type === 'link' || !type) {
-        selectors.push('a[href]');
-      }
-      if (type === 'input' || !type) {
-        selectors.push('input:not([type="hidden"])', 'textarea', 'select');
-      }
-      if (type === 'any') {
-        selectors = ['*'];
-      }
-
-      const searchText = text?.toLowerCase() || '';
-
-      selectors.forEach(sel => {
-        document.querySelectorAll(sel).forEach(el => {
-          if (el.offsetParent === null) return; // невидимый
-
-          const elText = (el.textContent || el.value || el.placeholder || el.title || '').toLowerCase();
-          const label = el.labels?.[0]?.textContent?.toLowerCase() || '';
-          const ariaLabel = el.getAttribute('aria-label')?.toLowerCase() || '';
-
-          // Поиск по тексту
-          if (searchText && (
-            elText.includes(searchText) ||
-            label.includes(searchText) ||
-            ariaLabel.includes(searchText)
-          )) {
-            results.push({
-              selector: getUniqueSelector(el),
-              text: el.textContent?.trim().slice(0, 50) || el.value || '',
-              tag: el.tagName.toLowerCase(),
-              type: el.type || '',
-              placeholder: el.placeholder || ''
-            });
-          }
-        });
-      });
-
-      return results.slice(0, 10); // макс 10 результатов
-    }, { text, type, near });
-
-    if (found.length === 0) {
-      return res.json({
-        success: false,
-        message: `Element with text "${text}" not found`,
-        suggestions: 'Try /test/ui-map to see all elements'
-      });
-    }
-
-    // Если нашли ровно один - сразу даём селектор
-    if (found.length === 1) {
-      return res.json({
-        success: true,
-        found: true,
-        selector: found[0].selector,
-        element: found[0]
-      });
-    }
-
-    // Если несколько - даём список
-    res.json({
-      success: true,
-      found: true,
-      count: found.length,
-      message: 'Multiple matches, pick one:',
-      elements: found
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// UI-MAP - полная карта UI в удобном формате для Claude
-router.post('/ui-map', express.json(), async (req, res) => {
-  try {
-    if (!testPage) {
-      return res.status(400).json({ error: 'No test session. Call /test/start first' });
-    }
-
-    const uiMap = await testPage.evaluate(() => {
-      const map = {
-        page: {
-          url: window.location.href,
-          title: document.title
-        },
-        buttons: [],
-        forms: [],
-        inputs: [],
-        links: [],
-        modals: []
-      };
-
-      // Кнопки - самое важное!
-      document.querySelectorAll('button, [role="button"], input[type="submit"], input[type="button"], a.btn, a.button, .btn').forEach(el => {
-        if (el.offsetParent === null) return;
-        const text = el.textContent?.trim() || el.value || '';
-        if (!text) return;
-
-        map.buttons.push({
-          text: text.slice(0, 40),
-          selector: el.id ? `#${el.id}` :
-                    el.name ? `[name="${el.name}"]` :
-                    `text=${text.slice(0, 30)}`,
-          disabled: el.disabled || false
-        });
-      });
-
-      // Формы
-      document.querySelectorAll('form').forEach((form, i) => {
-        const formInfo = {
-          selector: form.id ? `#${form.id}` : `form:nth-of-type(${i + 1})`,
-          action: form.action || '',
-          fields: []
-        };
-
-        form.querySelectorAll('input:not([type="hidden"]), textarea, select').forEach(field => {
-          if (field.offsetParent === null) return;
-          const label = field.labels?.[0]?.textContent?.trim() || field.placeholder || field.name || '';
-          formInfo.fields.push({
-            label: label.slice(0, 30),
-            selector: field.id ? `#${field.id}` :
-                      field.name ? `[name="${field.name}"]` :
-                      field.placeholder ? `[placeholder="${field.placeholder}"]` :
-                      field.tagName.toLowerCase(),
-            type: field.type || field.tagName.toLowerCase(),
-            required: field.required || false
-          });
-        });
-
-        if (formInfo.fields.length > 0) {
-          map.forms.push(formInfo);
-        }
-      });
-
-      // Отдельные инпуты (вне форм)
-      document.querySelectorAll('input:not([type="hidden"]), textarea, select').forEach(el => {
-        if (el.offsetParent === null || el.closest('form')) return;
-        const label = el.labels?.[0]?.textContent?.trim() || el.placeholder || el.name || '';
-        map.inputs.push({
-          label: label.slice(0, 30),
-          selector: el.id ? `#${el.id}` :
-                    el.name ? `[name="${el.name}"]` :
-                    el.placeholder ? `[placeholder="${el.placeholder}"]` :
-                    el.tagName.toLowerCase(),
-          type: el.type || el.tagName.toLowerCase()
-        });
-      });
-
-      // Навигационные ссылки
-      document.querySelectorAll('nav a, header a, .menu a, .nav a').forEach(el => {
-        if (el.offsetParent === null) return;
-        const text = el.textContent?.trim();
-        if (!text || text.length > 50) return;
-        map.links.push({
-          text: text,
-          href: el.getAttribute('href') || '',
-          selector: `text=${text}`
-        });
-      });
-
-      // Модальные окна
-      document.querySelectorAll('.modal, [role="dialog"], .popup, .overlay').forEach(el => {
-        const isVisible = window.getComputedStyle(el).display !== 'none' &&
-                          window.getComputedStyle(el).visibility !== 'hidden' &&
-                          window.getComputedStyle(el).opacity !== '0';
-        map.modals.push({
-          selector: el.id ? `#${el.id}` : el.className.split(' ')[0] ? `.${el.className.split(' ')[0]}` : 'modal',
-          visible: isVisible
-        });
-      });
-
-      return map;
-    });
-
-    // Форматируем для быстрого чтения
-    let quickRef = `## UI MAP: ${uiMap.page.title}\n`;
-    quickRef += `URL: ${uiMap.page.url}\n\n`;
-
-    if (uiMap.buttons.length) {
-      quickRef += `### BUTTONS (${uiMap.buttons.length}):\n`;
-      uiMap.buttons.slice(0, 15).forEach(b => {
-        quickRef += `  "${b.text}" → ${b.selector}${b.disabled ? ' [DISABLED]' : ''}\n`;
-      });
-    }
-
-    if (uiMap.forms.length) {
-      quickRef += `\n### FORMS (${uiMap.forms.length}):\n`;
-      uiMap.forms.forEach(f => {
-        quickRef += `  ${f.selector}:\n`;
-        f.fields.slice(0, 10).forEach(field => {
-          quickRef += `    "${field.label}" → ${field.selector} (${field.type})${field.required ? ' *' : ''}\n`;
-        });
-      });
-    }
-
-    if (uiMap.inputs.length) {
-      quickRef += `\n### INPUTS (${uiMap.inputs.length}):\n`;
-      uiMap.inputs.slice(0, 10).forEach(inp => {
-        quickRef += `  "${inp.label}" → ${inp.selector} (${inp.type})\n`;
-      });
-    }
-
-    res.json({
-      success: true,
-      quickRef,  // Текстовый формат для быстрого чтения
-      map: uiMap // Структурированные данные
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// CLICK-TEXT - клик по тексту кнопки (самый быстрый способ)
-router.post('/click-text', express.json(), async (req, res) => {
-  try {
-    if (!testPage) {
-      return res.status(400).json({ error: 'No test session' });
-    }
-
-    const { text } = req.body;
-    lastAction = `Click: "${text}"`;
-    lastActionTime = Date.now();
-
-    const clicked = await testPage.evaluate((searchText) => {
-      const elements = [...document.querySelectorAll('button, a, [role="button"], input[type="submit"], input[type="button"], .btn, .button')];
-      const el = elements.find(e => {
-        const elText = (e.textContent || e.value || '').trim().toLowerCase();
-        return elText.includes(searchText.toLowerCase());
-      });
-
-      if (el) {
-        el.click();
-        return { found: true, text: el.textContent?.trim() || el.value };
-      }
-      return { found: false };
-    }, text);
-
-    if (!clicked.found) {
-      return res.json({ success: false, error: `Button with text "${text}" not found` });
-    }
-
-    await new Promise(resolve => setTimeout(resolve, 500));
-    res.json({ success: true, clicked: clicked.text });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-// FILL-FORM - заполнить форму одним запросом
-router.post('/fill-form', express.json(), async (req, res) => {
-  try {
-    if (!testPage) {
-      return res.status(400).json({ error: 'No test session' });
-    }
-
-    const { formSelector, fields } = req.body;
-    // fields: { "fieldName": "value", ... } или { "placeholder": "value", ... }
-
-    const results = await testPage.evaluate(({ formSelector, fields }) => {
-      const form = formSelector ? document.querySelector(formSelector) : document.querySelector('form');
-      if (!form) return { error: 'Form not found' };
-
-      const filled = [];
-      for (const [key, value] of Object.entries(fields)) {
-        // Ищем поле по разным атрибутам
-        let field = form.querySelector(`[name="${key}"]`) ||
-                    form.querySelector(`#${key}`) ||
-                    form.querySelector(`[placeholder*="${key}" i]`) ||
-                    form.querySelector(`[aria-label*="${key}" i]`);
-
-        // Ищем по label
-        if (!field) {
-          const labels = form.querySelectorAll('label');
-          labels.forEach(label => {
-            if (label.textContent.toLowerCase().includes(key.toLowerCase())) {
-              field = label.control || form.querySelector(`#${label.getAttribute('for')}`);
-            }
-          });
-        }
-
-        if (field) {
-          if (field.type === 'checkbox' || field.type === 'radio') {
-            field.checked = !!value;
-          } else if (field.tagName === 'SELECT') {
-            field.value = value;
-          } else {
-            field.value = value;
-            field.dispatchEvent(new Event('input', { bubbles: true }));
-          }
-          filled.push(key);
-        }
-      }
-
-      return { success: true, filled };
-    }, { formSelector, fields });
-
-    res.json(results);
   } catch (error) {
     res.status(500).json({ error: error.message });
   }

@@ -62,6 +62,7 @@ import {
   ChevronDown,
   Palette,
   Settings,
+  Truck,
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -622,6 +623,18 @@ export default function Montage() {
       if (!selectedProjectId) return [];
       const res = await fetch(`/api/projects/${selectedProjectId}/items`);
       if (!res.ok) throw new Error("Failed to fetch project items");
+      return res.json();
+    },
+    enabled: !!selectedProjectId,
+  });
+
+  // Fetch assigned items (already in active montage orders)
+  const { data: assignedItemIds = [] } = useQuery<string[]>({
+    queryKey: ["/api/montage/items/assigned", selectedProjectId],
+    queryFn: async () => {
+      if (!selectedProjectId) return [];
+      const res = await fetch(`/api/montage/items/assigned?project_id=${selectedProjectId}`);
+      if (!res.ok) throw new Error("Failed to fetch assigned items");
       return res.json();
     },
     enabled: !!selectedProjectId,
@@ -1740,50 +1753,65 @@ export default function Montage() {
                   </div>
                 ) : (
                   <div className="border rounded max-h-48 overflow-y-auto">
-                    {projectItems.map((item) => (
-                      <div
-                        key={item.id}
-                        className={`flex items-center gap-3 p-3 border-b last:border-b-0 cursor-pointer hover:bg-zinc-800/50 ${
-                          selectedItemIds.includes(item.id) ? "bg-zinc-700/50" : ""
-                        }`}
-                        onClick={() => {
-                          if (selectedItemIds.includes(item.id)) {
-                            setSelectedItemIds(prev => prev.filter(id => id !== item.id));
-                          } else {
-                            setSelectedItemIds(prev => [...prev, item.id]);
-                          }
-                        }}
-                      >
-                        <Checkbox
-                          checked={selectedItemIds.includes(item.id)}
-                          onCheckedChange={(checked) => {
-                            if (checked) {
-                              setSelectedItemIds(prev => [...prev, item.id]);
-                            } else {
+                    {projectItems.map((item) => {
+                      const isAssigned = assignedItemIds.includes(item.id);
+                      return (
+                        <div
+                          key={item.id}
+                          className={`flex items-center gap-3 p-3 border-b last:border-b-0 ${
+                            isAssigned
+                              ? "opacity-60 cursor-not-allowed"
+                              : "cursor-pointer hover:bg-zinc-800/50"
+                          } ${
+                            selectedItemIds.includes(item.id) ? "bg-zinc-700/50" : ""
+                          }`}
+                          onClick={() => {
+                            if (isAssigned) return;
+                            if (selectedItemIds.includes(item.id)) {
                               setSelectedItemIds(prev => prev.filter(id => id !== item.id));
+                            } else {
+                              setSelectedItemIds(prev => [...prev, item.id]);
                             }
                           }}
-                        />
-                        <div className="flex-1">
-                          <div className="font-medium text-sm">{item.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {item.quantity} шт.
-                            {item.article && ` • ${item.article}`}
+                        >
+                          <Checkbox
+                            checked={selectedItemIds.includes(item.id)}
+                            disabled={isAssigned}
+                            onCheckedChange={(checked) => {
+                              if (isAssigned) return;
+                              if (checked) {
+                                setSelectedItemIds(prev => [...prev, item.id]);
+                              } else {
+                                setSelectedItemIds(prev => prev.filter(id => id !== item.id));
+                              }
+                            }}
+                          />
+                          <div className="flex-1">
+                            <div className="font-medium text-sm">{item.name}</div>
+                            <div className="text-xs text-gray-500">
+                              {item.quantity} шт.
+                              {item.article && ` • ${item.article}`}
+                            </div>
                           </div>
+                          {isAssigned ? (
+                            <Badge className="bg-orange-200 text-orange-700">
+                              <Truck className="h-3 w-3 mr-1" />
+                              В монтаже
+                            </Badge>
+                          ) : item.ready_for_montage ? (
+                            <Badge className="bg-green-200 text-green-700">
+                              <Check className="h-3 w-3 mr-1" />
+                              Готово
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-gray-200 text-gray-600">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Не готово
+                            </Badge>
+                          )}
                         </div>
-                        {item.ready_for_montage ? (
-                          <Badge className="bg-green-200 text-green-700">
-                            <Check className="h-3 w-3 mr-1" />
-                            Готово
-                          </Badge>
-                        ) : (
-                          <Badge className="bg-gray-200 text-gray-600">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            Не готово
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
                 {selectedItemIds.length > 0 && (

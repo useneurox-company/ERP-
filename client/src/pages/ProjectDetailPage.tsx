@@ -26,6 +26,7 @@ import { ProjectBusinessProcesses } from "@/components/ProjectBusinessProcesses"
 import { ProjectChat } from "@/components/ProjectChat";
 import { ProjectActivityLog } from "@/components/ProjectActivityLog";
 import { ProjectDocumentsRepository } from "@/components/ProjectDocumentsRepository";
+import { ProjectSupplierDocuments } from "@/components/ProjectSupplierDocuments";
 import { InlineEditField } from "@/components/InlineEditField";
 import { TaskList } from "@/components/TaskList";
 import { CreateTaskDialog } from "@/components/CreateTaskDialog";
@@ -1307,6 +1308,9 @@ export default function ProjectDetailPage() {
               <TabsTrigger value="tasks" data-testid="tab-tasks">
                 Задачи
               </TabsTrigger>
+              <TabsTrigger value="supplier-docs" data-testid="tab-supplier-docs">
+                Документы поставщиков
+              </TabsTrigger>
             </TabsList>
 
             <TabsContent value="gantt" className="mt-6 space-y-4" data-testid="content-gantt">
@@ -1472,6 +1476,10 @@ export default function ProjectDetailPage() {
                   })}
                 </div>
               )}
+            </TabsContent>
+
+            <TabsContent value="supplier-docs" className="mt-6" data-testid="content-supplier-docs">
+              <ProjectSupplierDocuments projectId={id!} />
             </TabsContent>
           </Tabs>
         </Card>

@@ -3,7 +3,7 @@ import { montageRepository } from "./repository";
 import { insertMontageOrderSchema, insertMontageItemSchema, insertMontageStatusSchema, insertMontageItemStatusSchema, montage_statuses, montage_orders, montage_item_statuses, montage_items } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { db } from "../../db";
-import { eq, asc, and } from "drizzle-orm";
+import { eq, asc, and, ne, inArray, isNotNull } from "drizzle-orm";
 
 export const router = Router();
 
@@ -419,6 +419,43 @@ router.delete("/api/montage/:id", async (req, res) => {
 });
 
 // === MONTAGE ITEMS ===
+
+// GET /api/montage/items/assigned - Get assigned project_item_ids (already in active montage orders)
+router.get("/api/montage/items/assigned", async (req, res) => {
+  try {
+    const { project_id } = req.query;
+
+    if (!project_id) {
+      res.status(400).json({ error: "project_id is required" });
+      return;
+    }
+
+    // Находим все project_item_id которые уже в активных заказах на монтаж
+    // (статус не 'cancelled' и не 'completed')
+    const assignedItems = await db
+      .select({ project_item_id: montage_items.project_item_id })
+      .from(montage_items)
+      .innerJoin(montage_orders, eq(montage_items.montage_order_id, montage_orders.id))
+      .where(
+        and(
+          eq(montage_orders.project_id, project_id as string),
+          ne(montage_orders.status, 'cancelled'),
+          ne(montage_orders.status, 'completed'),
+          isNotNull(montage_items.project_item_id)
+        )
+      );
+
+    // Возвращаем массив ID
+    const assignedIds = assignedItems
+      .map(item => item.project_item_id)
+      .filter((id): id is string => id !== null);
+
+    res.json(assignedIds);
+  } catch (error) {
+    console.error("Error fetching assigned items:", error);
+    res.status(500).json({ error: "Failed to fetch assigned items" });
+  }
+});
 
 // GET /api/montage/:orderId/items - Get items for order
 router.get("/api/montage/:orderId/items", async (req, res) => {

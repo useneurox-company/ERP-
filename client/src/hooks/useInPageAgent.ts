@@ -1,145 +1,197 @@
 /**
- * useInPageAgent Hook
+ * useInPageAgent Hook v3.0 - Comet-style Visual Agent
  *
- * Агент работает ВНУТРИ текущего окна браузера (как Comet):
- * - Делает скриншоты через html2canvas
- * - Отправляет их на бекенд для анализа Claude
- * - Выполняет действия через DOM API
+ * Архитектура как у Comet:
+ * 1. Vision Mode - скриншоты + AI анализ (опционально)
+ * 2. SmartPageAnalyzer - DOM анализ с контекстом
+ * 3. ActionExecutor - выполнение с визуальным фидбеком
+ * 4. Floating Indicator - показывает что делает агент на странице
+ * 5. Step History - история со скриншотами для отображения в панели
  *
- * НЕ открывает отдельный браузер!
+ * Поддержка до 100 шагов с сохранением состояния
  */
 
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import html2canvas from "html2canvas";
 
-// Типы
+// ============= ТИПЫ =============
+
 export interface AgentAction {
-  type: "click" | "type" | "scroll" | "wait" | "navigate" | "complete";
+  type: "click" | "type" | "scroll" | "wait" | "navigate" | "complete" | "verify" | "observe" | "read" | "search";
   params?: Record<string, any>;
   timestamp: Date;
   result?: string;
+  verified?: boolean;
+  stepNumber?: number;
+  screenshot?: string; // Base64 миниатюра скриншота
+  thinking?: string;   // Что думал агент перед действием
+}
+
+export interface TaskStep {
+  id: number;
+  description: string;
+  expectedAction: string;
+  completed: boolean;
+  attempts: number;
+}
+
+export interface PageElement {
+  text: string;
+  type: 'button' | 'link' | 'input' | 'select' | 'checkbox' | 'other';
+  category: 'navigation' | 'action' | 'form' | 'info';
+  location: 'sidebar' | 'header' | 'main' | 'dialog' | 'footer';
+  selector: string;
+  x: number;
+  y: number;
+  enabled: boolean;
+  attributes?: Record<string, string>;
+}
+
+export interface PageState {
+  url: string;
+  route: string;
+  title: string;
+  hasDialog: boolean;
+  dialogTitle?: string;
+  visibleText: string;
+  elements: {
+    navigation: PageElement[];
+    actions: PageElement[];
+    forms: PageElement[];
+  };
+  viewport: { width: number; height: number };
+}
+
+export interface AgentMemory {
+  task: string;
+  plan: TaskStep[];
+  currentStep: number;
+  actions: AgentAction[];
+  pageHistory: string[];
+  failedAttempts: Map<string, number>;
+  startTime: number;
 }
 
 export interface AgentSession {
   id: string;
   task: string;
-  status: "idle" | "running" | "paused" | "completed" | "error";
+  status: "idle" | "planning" | "running" | "paused" | "completed" | "error";
   startedAt: Date;
   actions: AgentAction[];
+  currentStep?: TaskStep;
+  totalSteps?: number;
   error: string | null;
 }
 
 export interface UseInPageAgentReturn {
-  // Состояние
   session: AgentSession | null;
   screenshot: string | null;
   thinking: string | null;
   actions: AgentAction[];
   error: string | null;
   isRunning: boolean;
-
-  // Методы
+  currentStep: TaskStep | null;
+  totalSteps: number;
   startAgent: (task: string) => Promise<void>;
   stopAgent: () => void;
 }
 
-// Генерация ID сессии
+// ============= КОНСТАНТЫ =============
+
+const MAX_ITERATIONS = 100; // До 100 шагов
+const AGENT_STATE_KEY = 'emerald_agent_state'; // Должен совпадать с App.tsx и AssistantPanel.tsx
+const HUMAN_DELAY_MIN = 300;
+const HUMAN_DELAY_MAX = 800;
+const MAX_RETRIES_PER_STEP = 3;
+
+// ============= УТИЛИТЫ =============
+
 function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  return `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 }
 
-// Захват скриншота текущей страницы (без overlay)
-async function captureScreenshot(): Promise<string> {
-  // Временно скрываем overlay
-  const overlay = document.querySelector('[data-agent-overlay]');
-  if (overlay) {
-    (overlay as HTMLElement).style.display = 'none';
-  }
-
-  try {
-    const canvas = await html2canvas(document.body, {
-      useCORS: true,
-      allowTaint: true,
-      scale: 1,
-      logging: false,
-      // Игнорируем overlay
-      ignoreElements: (element) => {
-        return element.hasAttribute('data-agent-overlay');
-      }
-    });
-
-    return canvas.toDataURL('image/png');
-  } finally {
-    // Восстанавливаем overlay
-    if (overlay) {
-      (overlay as HTMLElement).style.display = '';
-    }
-  }
+// Человеческая задержка (случайная)
+function humanDelay(): Promise<void> {
+  const delay = HUMAN_DELAY_MIN + Math.random() * (HUMAN_DELAY_MAX - HUMAN_DELAY_MIN);
+  return new Promise(r => setTimeout(r, delay));
 }
 
-// Получить все интерактивные элементы на странице
-function getPageElements(): any {
-  const elements = {
-    buttons: [] as any[],
-    links: [] as any[],
-    inputs: [] as any[],
-    text: [] as any[]
-  };
+// Короткая задержка для реакции
+function shortDelay(ms: number = 200): Promise<void> {
+  return new Promise(r => setTimeout(r, ms));
+}
 
-  // Кнопки
-  document.querySelectorAll('button, [role="button"], input[type="submit"]').forEach((el, idx) => {
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      elements.buttons.push({
-        index: idx,
-        text: (el as HTMLElement).innerText?.trim() || (el as HTMLInputElement).value || '',
-        selector: getUniqueSelector(el),
-        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
-      });
-    }
-  });
+// ============= SMART PAGE ANALYZER =============
+
+function getElementLocation(el: Element): 'sidebar' | 'header' | 'main' | 'dialog' | 'footer' {
+  // Проверяем диалог
+  if (el.closest('[role="dialog"], [data-radix-dialog-content], .modal')) {
+    return 'dialog';
+  }
+  // Проверяем сайдбар
+  if (el.closest('aside, [data-sidebar], nav, [class*="sidebar"], [class*="Sidebar"]')) {
+    return 'sidebar';
+  }
+  // Проверяем хедер
+  if (el.closest('header, [class*="header"], [class*="Header"], [class*="topbar"], [class*="TopBar"]')) {
+    return 'header';
+  }
+  // Проверяем футер
+  if (el.closest('footer, [class*="footer"], [class*="Footer"]')) {
+    return 'footer';
+  }
+  return 'main';
+}
+
+function getElementCategory(el: Element, location: string): 'navigation' | 'action' | 'form' | 'info' {
+  const tagName = el.tagName.toLowerCase();
+
+  // Навигационные ссылки в сайдбаре
+  if (location === 'sidebar' && tagName === 'a') {
+    return 'navigation';
+  }
+
+  // Формы
+  if (['input', 'textarea', 'select'].includes(tagName) || el.getAttribute('role') === 'combobox') {
+    return 'form';
+  }
+
+  // Кнопки действий
+  if (tagName === 'button' || el.getAttribute('role') === 'button') {
+    return 'action';
+  }
 
   // Ссылки
-  document.querySelectorAll('a[href]').forEach((el, idx) => {
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      elements.links.push({
-        index: idx,
-        text: (el as HTMLElement).innerText?.trim() || '',
-        href: (el as HTMLAnchorElement).href,
-        selector: getUniqueSelector(el),
-        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
-      });
+  if (tagName === 'a') {
+    const href = el.getAttribute('href');
+    if (href && href.startsWith('/')) {
+      return 'navigation';
     }
-  });
+    return 'action';
+  }
 
-  // Поля ввода
-  document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]), textarea, select').forEach((el, idx) => {
-    const rect = el.getBoundingClientRect();
-    if (rect.width > 0 && rect.height > 0) {
-      elements.inputs.push({
-        index: idx,
-        type: (el as HTMLInputElement).type || 'text',
-        name: (el as HTMLInputElement).name || '',
-        placeholder: (el as HTMLInputElement).placeholder || '',
-        selector: getUniqueSelector(el),
-        rect: { x: rect.x, y: rect.y, width: rect.width, height: rect.height }
-      });
-    }
-  });
-
-  return elements;
+  return 'info';
 }
 
-// Получить уникальный селектор для элемента
 function getUniqueSelector(el: Element): string {
   if (el.id) return `#${el.id}`;
-  if ((el as HTMLElement).dataset?.testid) return `[data-testid="${(el as HTMLElement).dataset.testid}"]`;
+
+  const htmlEl = el as HTMLElement;
+  if (htmlEl.dataset?.testid) return `[data-testid="${htmlEl.dataset.testid}"]`;
 
   const name = (el as HTMLInputElement).name;
   if (name) return `[name="${name}"]`;
 
-  // Fallback to path
+  // Для кнопок и ссылок - по тексту
+  const text = htmlEl.innerText?.trim();
+  if (text && text.length < 50) {
+    const tagName = el.tagName.toLowerCase();
+    if (['button', 'a'].includes(tagName)) {
+      return `${tagName}:has-text("${text.substring(0, 30)}")`;
+    }
+  }
+
+  // Fallback: путь по DOM
   const path: string[] = [];
   let current: Element | null = el;
   while (current && current !== document.body) {
@@ -160,31 +212,168 @@ function getUniqueSelector(el: Element): string {
   return path.join(' > ');
 }
 
-// Показать визуальный индикатор клика
+function analyzePageState(): PageState {
+  const result: PageState = {
+    url: window.location.href,
+    route: window.location.pathname,
+    title: document.title,
+    hasDialog: false,
+    visibleText: '',
+    elements: {
+      navigation: [],
+      actions: [],
+      forms: []
+    },
+    viewport: {
+      width: window.innerWidth,
+      height: window.innerHeight
+    }
+  };
+
+  // Проверяем диалоги
+  const dialogs = document.querySelectorAll('[role="dialog"], [data-radix-dialog-content], .modal, [class*="Dialog"]:not([class*="trigger"])');
+  if (dialogs.length > 0) {
+    result.hasDialog = true;
+    const firstDialog = dialogs[0];
+    result.dialogTitle = firstDialog.querySelector('h1, h2, h3, [class*="title"], [class*="Title"]')?.textContent?.trim() || 'Диалог';
+  }
+
+  // Собираем видимый текст (компактно)
+  const mainContent = result.hasDialog
+    ? document.querySelector('[role="dialog"], [data-radix-dialog-content]') || document.body
+    : document.querySelector('main') || document.body;
+
+  const texts: string[] = [];
+  const walker = document.createTreeWalker(mainContent, NodeFilter.SHOW_TEXT, {
+    acceptNode: (node) => {
+      const parent = node.parentElement;
+      if (!parent) return NodeFilter.FILTER_REJECT;
+      const style = window.getComputedStyle(parent);
+      if (style.display === 'none' || style.visibility === 'hidden') return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    }
+  });
+
+  let node;
+  while (node = walker.nextNode()) {
+    const text = node.textContent?.trim();
+    if (text && text.length > 2) texts.push(text);
+  }
+  result.visibleText = texts.slice(0, 30).join(' | ').substring(0, 500);
+
+  // Собираем элементы с категоризацией
+  const processElement = (el: Element, type: PageElement['type']) => {
+    const rect = el.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0 || rect.top > window.innerHeight || rect.bottom < 0) {
+      return null;
+    }
+
+    const htmlEl = el as HTMLElement;
+    const location = getElementLocation(el);
+    const category = getElementCategory(el, location);
+
+    // Если диалог открыт, игнорируем элементы вне диалога
+    if (result.hasDialog && location !== 'dialog') {
+      return null;
+    }
+
+    const text = htmlEl.innerText?.trim() ||
+                 (el as HTMLInputElement).value ||
+                 htmlEl.getAttribute('aria-label') ||
+                 htmlEl.getAttribute('placeholder') ||
+                 '';
+
+    const element: PageElement = {
+      text: text.substring(0, 100),
+      type,
+      category,
+      location,
+      selector: getUniqueSelector(el),
+      x: Math.round(rect.x + rect.width / 2),
+      y: Math.round(rect.y + rect.height / 2),
+      enabled: !(el as HTMLButtonElement).disabled && htmlEl.getAttribute('aria-disabled') !== 'true'
+    };
+
+    // Дополнительные атрибуты для форм
+    if (type === 'input' || type === 'select') {
+      element.attributes = {
+        name: (el as HTMLInputElement).name || '',
+        type: (el as HTMLInputElement).type || '',
+        placeholder: (el as HTMLInputElement).placeholder || '',
+        required: String((el as HTMLInputElement).required || false)
+      };
+
+      // Ищем label
+      const label = document.querySelector(`label[for="${(el as HTMLInputElement).id}"]`);
+      if (label) {
+        element.attributes.label = label.textContent?.trim() || '';
+      }
+    }
+
+    return element;
+  };
+
+  // Кнопки
+  document.querySelectorAll('button, [role="button"], input[type="submit"]').forEach(el => {
+    const elem = processElement(el, 'button');
+    if (elem) {
+      if (elem.category === 'navigation') {
+        result.elements.navigation.push(elem);
+      } else {
+        result.elements.actions.push(elem);
+      }
+    }
+  });
+
+  // Ссылки
+  document.querySelectorAll('a[href]').forEach(el => {
+    const elem = processElement(el, 'link');
+    if (elem) {
+      if (elem.category === 'navigation') {
+        result.elements.navigation.push(elem);
+      } else {
+        result.elements.actions.push(elem);
+      }
+    }
+  });
+
+  // Поля ввода
+  document.querySelectorAll('input:not([type="hidden"]):not([type="submit"]), textarea, select, [role="combobox"]').forEach(el => {
+    const type = el.tagName.toLowerCase() === 'select' ? 'select' : 'input';
+    const elem = processElement(el, type);
+    if (elem) {
+      result.elements.forms.push(elem);
+    }
+  });
+
+  return result;
+}
+
+// ============= VISUAL INDICATORS =============
+
 function showClickIndicator(x: number, y: number) {
   const indicator = document.createElement('div');
   indicator.style.cssText = `
     position: fixed;
     left: ${x}px;
     top: ${y}px;
-    width: 30px;
-    height: 30px;
-    margin: -15px 0 0 -15px;
+    width: 40px;
+    height: 40px;
+    margin: -20px 0 0 -20px;
     border-radius: 50%;
-    background: rgba(255, 0, 0, 0.5);
-    border: 3px solid red;
+    background: rgba(59, 130, 246, 0.4);
+    border: 3px solid #3b82f6;
     pointer-events: none;
     z-index: 999999;
-    animation: pulse 0.5s ease-out;
+    animation: agentPulse 0.6s ease-out forwards;
   `;
 
-  // Добавляем стиль анимации если его нет
   if (!document.getElementById('agent-click-animation')) {
     const style = document.createElement('style');
     style.id = 'agent-click-animation';
     style.textContent = `
-      @keyframes pulse {
-        0% { transform: scale(0.5); opacity: 1; }
+      @keyframes agentPulse {
+        0% { transform: scale(0.3); opacity: 1; }
         100% { transform: scale(2); opacity: 0; }
       }
     `;
@@ -192,57 +381,378 @@ function showClickIndicator(x: number, y: number) {
   }
 
   document.body.appendChild(indicator);
-  setTimeout(() => indicator.remove(), 500);
+  setTimeout(() => indicator.remove(), 600);
 }
 
-// Выполнить действие на странице
-async function executeAction(action: AgentAction): Promise<string> {
+function showTypeIndicator(element: Element) {
+  const rect = element.getBoundingClientRect();
+  const indicator = document.createElement('div');
+  indicator.style.cssText = `
+    position: fixed;
+    left: ${rect.left - 3}px;
+    top: ${rect.top - 3}px;
+    width: ${rect.width + 6}px;
+    height: ${rect.height + 6}px;
+    border: 2px solid #10b981;
+    border-radius: 4px;
+    pointer-events: none;
+    z-index: 999999;
+    animation: agentTyping 0.3s ease-out forwards;
+  `;
+
+  if (!document.getElementById('agent-typing-animation')) {
+    const style = document.createElement('style');
+    style.id = 'agent-typing-animation';
+    style.textContent = `
+      @keyframes agentTyping {
+        0% { opacity: 0; }
+        50% { opacity: 1; }
+        100% { opacity: 0; }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  document.body.appendChild(indicator);
+  setTimeout(() => indicator.remove(), 300);
+}
+
+// ============= FLOATING ACTION INDICATOR (как у Comet) =============
+
+let floatingIndicator: HTMLDivElement | null = null;
+
+function showFloatingIndicator(text: string, type: 'click' | 'type' | 'navigate' | 'search' | 'read' | 'thinking' = 'thinking') {
+  // Удаляем предыдущий
+  hideFloatingIndicator();
+
+  const icons: Record<string, string> = {
+    click: '🖱️',
+    type: '⌨️',
+    navigate: '🔗',
+    search: '🔍',
+    read: '📖',
+    thinking: '💭'
+  };
+
+  floatingIndicator = document.createElement('div');
+  floatingIndicator.id = 'agent-floating-indicator';
+  floatingIndicator.style.cssText = `
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white;
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 999999;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideUp 0.3s ease-out;
+    backdrop-filter: blur(8px);
+  `;
+
+  // Добавляем стили анимации
+  if (!document.getElementById('agent-floating-animation')) {
+    const style = document.createElement('style');
+    style.id = 'agent-floating-animation';
+    style.textContent = `
+      @keyframes slideUp {
+        from { transform: translateX(-50%) translateY(20px); opacity: 0; }
+        to { transform: translateX(-50%) translateY(0); opacity: 1; }
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+      .agent-indicator-spinner {
+        width: 16px;
+        height: 16px;
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  floatingIndicator.innerHTML = `
+    <div class="agent-indicator-spinner"></div>
+    <span>${icons[type] || '✨'}</span>
+    <span>${text}</span>
+  `;
+
+  document.body.appendChild(floatingIndicator);
+}
+
+function hideFloatingIndicator() {
+  if (floatingIndicator) {
+    floatingIndicator.remove();
+    floatingIndicator = null;
+  }
+}
+
+function updateFloatingIndicator(text: string, type?: 'click' | 'type' | 'navigate' | 'search' | 'read' | 'thinking') {
+  if (floatingIndicator) {
+    const icons: Record<string, string> = {
+      click: '🖱️',
+      type: '⌨️',
+      navigate: '🔗',
+      search: '🔍',
+      read: '📖',
+      thinking: '💭'
+    };
+    const icon = type ? (icons[type] || '✨') : '';
+    floatingIndicator.innerHTML = `
+      <div class="agent-indicator-spinner"></div>
+      <span>${icon}</span>
+      <span>${text}</span>
+    `;
+  } else {
+    showFloatingIndicator(text, type);
+  }
+}
+
+// ============= SCREENSHOT CAPTURE =============
+
+async function captureScreenshot(): Promise<string | null> {
+  try {
+    // Скрываем floating indicator чтобы не попал на скриншот
+    const floatingEl = document.getElementById('agent-floating-indicator');
+    if (floatingEl) {
+      floatingEl.style.display = 'none';
+    }
+
+    // Получаем main content без sidebar и header
+    const mainContent = document.querySelector('main') || document.body;
+
+    const canvas = await html2canvas(mainContent as HTMLElement, {
+      scale: 0.25, // Маленькая миниатюра для чата
+      logging: false,
+      useCORS: true,
+      allowTaint: true,
+      backgroundColor: '#0f172a', // Тёмный фон
+      ignoreElements: (element) => {
+        // Игнорируем floating indicator и assistant panel
+        if (element.id === 'agent-floating-indicator') return true;
+        if (element.hasAttribute('data-testid') && element.getAttribute('data-testid') === 'assistant-panel') return true;
+        return false;
+      }
+    });
+
+    // Возвращаем floating indicator
+    if (floatingEl) {
+      floatingEl.style.display = 'flex';
+    }
+
+    return canvas.toDataURL('image/jpeg', 0.6);
+  } catch (err) {
+    console.warn('[Agent] Screenshot capture failed:', err);
+
+    // Fallback: создаём простую "карту" страницы
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = 200;
+      canvas.height = 150;
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        ctx.fillStyle = '#1e293b';
+        ctx.fillRect(0, 0, 200, 150);
+        ctx.fillStyle = '#334155';
+        ctx.fillRect(0, 0, 50, 150);
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(50, 0, 150, 20);
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(window.location.pathname, 60, 12);
+        return canvas.toDataURL('image/jpeg', 0.7);
+      }
+    } catch { /* ignore fallback errors */ }
+
+    return null;
+  }
+}
+
+// ============= ACTION EXECUTOR =============
+
+async function executeAction(action: AgentAction, pageState: PageState): Promise<{ success: boolean; result: string; verified: boolean }> {
+  let verified = false;
+
   switch (action.type) {
     case 'click': {
       let element: Element | null = null;
+      let clickX: number | undefined;
+      let clickY: number | undefined;
 
-      if (action.params?.text) {
-        // Поиск по тексту
-        const allElements = document.querySelectorAll('button, a, [role="button"], input[type="submit"], span, div');
-        for (const el of allElements) {
-          if ((el as HTMLElement).innerText?.includes(action.params.text)) {
+      const dialogsBefore = document.querySelectorAll('[role="dialog"], [data-radix-dialog-content]').length;
+      const urlBefore = window.location.pathname;
+
+      // Приоритет 1: координаты
+      if (typeof action.params?.x === 'number' && typeof action.params?.y === 'number') {
+        clickX = action.params.x;
+        clickY = action.params.y;
+        element = document.elementFromPoint(clickX, clickY);
+      }
+      // Приоритет 2: текст
+      else if (action.params?.text) {
+        const searchText = action.params.text.toLowerCase();
+
+        // Если диалог открыт, ищем только в диалоге
+        const searchContainer = pageState.hasDialog
+          ? document.querySelector('[role="dialog"], [data-radix-dialog-content]') || document.body
+          : document.body;
+
+        // Точное совпадение
+        const buttons = Array.from(searchContainer.querySelectorAll('button, [role="button"], input[type="submit"], a'));
+        for (const el of buttons) {
+          const text = (el as HTMLElement).innerText?.trim().toLowerCase();
+          if (text === searchText) {
             element = el;
+            const rect = el.getBoundingClientRect();
+            clickX = rect.x + rect.width / 2;
+            clickY = rect.y + rect.height / 2;
             break;
           }
         }
-      } else if (action.params?.selector) {
+
+        // Частичное совпадение
+        if (!element) {
+          for (const el of buttons) {
+            const text = (el as HTMLElement).innerText?.trim().toLowerCase();
+            if (text && text.includes(searchText)) {
+              element = el;
+              const rect = el.getBoundingClientRect();
+              clickX = rect.x + rect.width / 2;
+              clickY = rect.y + rect.height / 2;
+              break;
+            }
+          }
+        }
+      }
+      // Приоритет 3: селектор
+      else if (action.params?.selector) {
         element = document.querySelector(action.params.selector);
+        if (element) {
+          const rect = element.getBoundingClientRect();
+          clickX = rect.x + rect.width / 2;
+          clickY = rect.y + rect.height / 2;
+        }
       }
 
       if (!element) {
-        throw new Error(`Element not found: ${action.params?.text || action.params?.selector}`);
+        return { success: false, result: `Element not found: ${JSON.stringify(action.params)}`, verified: false };
       }
 
-      const rect = element.getBoundingClientRect();
-      showClickIndicator(rect.x + rect.width / 2, rect.y + rect.height / 2);
+      // Визуальный индикатор
+      if (clickX !== undefined && clickY !== undefined) {
+        showClickIndicator(clickX, clickY);
+      }
 
-      (element as HTMLElement).click();
-      await new Promise(r => setTimeout(r, 300));
-      return `Clicked: ${action.params?.text || action.params?.selector}`;
+      // Проверяем на навигационную ссылку
+      const linkElement = element.closest('a');
+      if (linkElement) {
+        const href = linkElement.getAttribute('href');
+        if (href && href.startsWith('/')) {
+          console.log(`[Agent] Navigating to: ${href}`);
+          window.location.assign(href);
+          await shortDelay(800);
+          return {
+            success: true,
+            result: `Navigated to ${href}`,
+            verified: window.location.pathname !== urlBefore
+          };
+        }
+      }
+
+      // Клик по элементу
+      const htmlElement = element as HTMLElement;
+      htmlElement.focus?.();
+      htmlElement.click();
+
+      await shortDelay(300);
+
+      // Верификация: появился диалог?
+      const dialogsAfter = document.querySelectorAll('[role="dialog"], [data-radix-dialog-content]').length;
+      if (dialogsAfter > dialogsBefore) {
+        return { success: true, result: `Clicked "${action.params?.text}" - dialog opened`, verified: true };
+      }
+
+      // Верификация: изменился URL?
+      if (window.location.pathname !== urlBefore) {
+        return { success: true, result: `Clicked "${action.params?.text}" - navigated`, verified: true };
+      }
+
+      // Дополнительные методы клика
+      element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true, view: window }));
+      element.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+      await shortDelay(50);
+      element.dispatchEvent(new MouseEvent('mouseup', { bubbles: true }));
+
+      await shortDelay(500);
+
+      // Финальная верификация
+      const dialogsFinal = document.querySelectorAll('[role="dialog"], [data-radix-dialog-content]').length;
+      verified = dialogsFinal > dialogsBefore || window.location.pathname !== urlBefore;
+
+      return {
+        success: true,
+        result: `Clicked: ${action.params?.text || action.params?.selector || 'element'}`,
+        verified
+      };
     }
 
     case 'type': {
-      const element = document.querySelector(action.params?.selector) as HTMLInputElement | HTMLTextAreaElement;
+      let element: HTMLInputElement | HTMLTextAreaElement | null = null;
+
+      // Поиск по разным критериям
+      if (action.params?.selector) {
+        element = document.querySelector(action.params.selector);
+      }
+      if (!element && action.params?.name) {
+        element = document.querySelector(`[name="${action.params.name}"]`);
+      }
+      if (!element && action.params?.placeholder) {
+        element = document.querySelector(`[placeholder*="${action.params.placeholder}"]`);
+      }
+      if (!element && action.params?.label) {
+        const labels = Array.from(document.querySelectorAll('label'));
+        for (const label of labels) {
+          if (label.textContent?.toLowerCase().includes(action.params.label.toLowerCase())) {
+            const forId = label.getAttribute('for');
+            if (forId) element = document.getElementById(forId) as HTMLInputElement;
+            else element = label.querySelector('input, textarea') as HTMLInputElement;
+            if (element) break;
+          }
+        }
+      }
+
       if (!element) {
-        throw new Error(`Input not found: ${action.params?.selector}`);
+        return { success: false, result: `Input not found: ${JSON.stringify(action.params)}`, verified: false };
       }
 
-      if (action.params?.clear) {
-        element.value = '';
-      }
+      showTypeIndicator(element);
 
-      // Симулируем ввод с фокусом
       element.focus();
       element.value = action.params?.text || '';
       element.dispatchEvent(new Event('input', { bubbles: true }));
       element.dispatchEvent(new Event('change', { bubbles: true }));
 
-      return `Typed: "${action.params?.text}"`;
+      // Верификация: значение установлено
+      verified = element.value === action.params?.text;
+
+      return {
+        success: true,
+        result: `Typed: "${action.params?.text}"`,
+        verified
+      };
     }
 
     case 'scroll': {
@@ -250,33 +760,99 @@ async function executeAction(action: AgentAction): Promise<string> {
         const element = document.querySelector(action.params.selector);
         element?.scrollIntoView({ behavior: 'smooth', block: 'center' });
       } else {
-        window.scrollBy({
-          top: action.params?.y || 300,
-          behavior: 'smooth'
-        });
+        window.scrollBy({ top: action.params?.y || 300, behavior: 'smooth' });
       }
-      await new Promise(r => setTimeout(r, 500));
-      return 'Scrolled';
+      await shortDelay(500);
+      return { success: true, result: 'Scrolled', verified: true };
     }
 
     case 'wait': {
       await new Promise(r => setTimeout(r, action.params?.ms || 1000));
-      return `Waited ${action.params?.ms || 1000}ms`;
+      return { success: true, result: `Waited ${action.params?.ms || 1000}ms`, verified: true };
     }
 
     case 'navigate': {
-      window.location.href = action.params?.url;
-      return `Navigating to ${action.params?.url}`;
+      const url = action.params?.url;
+      if (!url) {
+        return { success: false, result: 'Navigate action missing URL', verified: false };
+      }
+
+      const urlBefore = window.location.pathname;
+
+      if (url.startsWith('/')) {
+        window.location.assign(url);
+        await shortDelay(800);
+        return { success: true, result: `Navigated to ${url}`, verified: window.location.pathname !== urlBefore };
+      }
+
+      window.location.href = url;
+      return { success: true, result: `Navigating to ${url}`, verified: true };
+    }
+
+    case 'observe': {
+      // Агент "смотрит" на страницу без действий
+      await humanDelay();
+      return { success: true, result: 'Observed page state', verified: true };
+    }
+
+    case 'verify': {
+      // Проверяем условие
+      const condition = action.params?.condition;
+      if (condition === 'dialog_open') {
+        verified = document.querySelectorAll('[role="dialog"]').length > 0;
+        return { success: true, result: `Dialog ${verified ? 'is' : 'not'} open`, verified };
+      }
+      if (condition === 'url_contains') {
+        verified = window.location.pathname.includes(action.params?.value || '');
+        return { success: true, result: `URL ${verified ? 'contains' : 'does not contain'} ${action.params?.value}`, verified };
+      }
+      return { success: true, result: 'Verification complete', verified: true };
     }
 
     case 'complete': {
-      return 'Task completed';
+      return { success: true, result: 'Task completed', verified: true };
     }
 
     default:
-      throw new Error(`Unknown action type: ${action.type}`);
+      return { success: false, result: `Unknown action type: ${action.type}`, verified: false };
   }
 }
+
+// ============= STATE MANAGEMENT =============
+
+function saveAgentState(memory: AgentMemory) {
+  sessionStorage.setItem(AGENT_STATE_KEY, JSON.stringify({
+    ...memory,
+    failedAttempts: Array.from(memory.failedAttempts.entries()),
+    timestamp: Date.now()
+  }));
+}
+
+function loadAgentState(): AgentMemory | null {
+  try {
+    const saved = sessionStorage.getItem(AGENT_STATE_KEY);
+    if (!saved) return null;
+
+    const state = JSON.parse(saved);
+    if (Date.now() - state.timestamp > 10 * 60 * 1000) { // 10 минут timeout
+      sessionStorage.removeItem(AGENT_STATE_KEY);
+      return null;
+    }
+
+    return {
+      ...state,
+      failedAttempts: new Map(state.failedAttempts || [])
+    };
+  } catch {
+    return null;
+  }
+}
+
+function clearAgentState() {
+  sessionStorage.removeItem(AGENT_STATE_KEY);
+}
+
+// ============= MAIN HOOK =============
 
 export function useInPageAgent(): UseInPageAgentReturn {
   const [session, setSession] = useState<AgentSession | null>(null);
@@ -284,25 +860,81 @@ export function useInPageAgent(): UseInPageAgentReturn {
   const [thinking, setThinking] = useState<string | null>(null);
   const [actions, setActions] = useState<AgentAction[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [currentStep, setCurrentStep] = useState<TaskStep | null>(null);
+  const [totalSteps, setTotalSteps] = useState<number>(0);
 
   const stopRequestedRef = useRef(false);
-  const isRunning = session?.status === 'running';
+  const isRunning = session?.status === 'running' || session?.status === 'planning';
+  const hasResumedRef = useRef(false);
+  const memoryRef = useRef<AgentMemory | null>(null);
 
-  // Отправить скриншот на бекенд для анализа Claude
-  const analyzeWithClaude = async (
-    screenshotData: string,
-    task: string,
-    previousActions: AgentAction[],
-    pageElements: any
-  ): Promise<{ thinking: string; action: AgentAction }> => {
+  // Восстановление после навигации
+  useEffect(() => {
+    if (hasResumedRef.current) return;
+
+    const savedState = loadAgentState();
+    if (savedState) {
+      hasResumedRef.current = true;
+      console.log('[Agent] Resuming from saved state:', savedState.task);
+
+      memoryRef.current = savedState;
+
+      const resumedSession: AgentSession = {
+        id: `resumed_${Date.now()}`,
+        task: savedState.task,
+        status: 'running',
+        startedAt: new Date(savedState.startTime),
+        actions: savedState.actions,
+        error: null
+      };
+
+      setSession(resumedSession);
+      setActions(savedState.actions);
+      setTotalSteps(savedState.plan.length);
+      setCurrentStep(savedState.plan[savedState.currentStep] || null);
+
+      runAgentLoop(savedState).catch(err => {
+        console.error('[Agent] Resume error:', err);
+        setSession(prev => prev ? { ...prev, status: 'error', error: err.message } : null);
+      });
+    }
+  }, []);
+
+  // Анализ задачи через API
+  const analyzeWithAI = async (
+    pageState: PageState,
+    memory: AgentMemory
+  ): Promise<{ thinking: string; action: AgentAction; plan?: TaskStep[] }> => {
     const response = await fetch('/api/browser-agent/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        screenshot: screenshotData,
-        task,
-        previousActions,
-        pageElements
+        screenshot: null, // DOM-only mode
+        pageContext: {
+          url: pageState.url,
+          currentRoute: pageState.route,
+          title: pageState.title,
+          visibleText: pageState.visibleText,
+          viewportSize: pageState.viewport
+        },
+        task: memory.task,
+        previousActions: memory.actions.slice(-10), // Последние 10 действий
+        pageElements: {
+          // Структурированные элементы для модели
+          navigation: pageState.elements.navigation.slice(0, 15),
+          actions: pageState.elements.actions.slice(0, 15),
+          forms: pageState.elements.forms.slice(0, 10),
+          dialogs: pageState.hasDialog ? [{ isOpen: true, title: pageState.dialogTitle }] : []
+        },
+        // Дополнительный контекст
+        agentContext: {
+          currentStep: memory.currentStep,
+          totalSteps: memory.plan.length,
+          stepDescription: memory.plan[memory.currentStep]?.description || '',
+          pagesVisited: memory.pageHistory.slice(-5),
+          hasDialog: pageState.hasDialog,
+          dialogTitle: pageState.dialogTitle
+        }
       })
     });
 
@@ -314,69 +946,281 @@ export function useInPageAgent(): UseInPageAgentReturn {
     return response.json();
   };
 
-  // Основной цикл агента
-  const runAgentLoop = async (task: string, sessionId: string) => {
-    let iterations = 0;
-    const MAX_ITERATIONS = 30;
+  // Определяет тип задачи
+  const analyzeTaskType = (task: string) => {
+    const taskLower = task.toLowerCase();
+    const isNavigate = /открой|открыть|перейди|перейти|go to|navigate|показ/i.test(taskLower);
+    const isCreate = /создай|создать|добавь|добавить|новый|new|create|add/i.test(taskLower);
 
-    while (!stopRequestedRef.current && iterations < MAX_ITERATIONS) {
-      iterations++;
+    let targetPage = '';
+    if (/проект/i.test(taskLower)) targetPage = 'projects';
+    else if (/клиент/i.test(taskLower)) targetPage = 'clients';
+    else if (/поставщик/i.test(taskLower)) targetPage = 'suppliers';
+    else if (/закупк/i.test(taskLower)) targetPage = 'procurement';
+    else if (/монтаж/i.test(taskLower)) targetPage = 'montage';
+    else if (/настройк/i.test(taskLower)) targetPage = 'settings';
+    else if (/финанс/i.test(taskLower)) targetPage = 'finance';
+    else if (/склад/i.test(taskLower)) targetPage = 'warehouse';
+
+    return { isNavigate, isCreate, targetPage };
+  };
+
+  // Основной цикл агента
+  const runAgentLoop = async (initialMemory: AgentMemory) => {
+    const memory = initialMemory;
+    memoryRef.current = memory;
+
+    let iteration = memory.actions.length;
+    let consecutiveErrors = 0;
+    let lastActionKey = '';
+    let sameActionCount = 0;
+
+    // Определяем тип задачи для auto-completion
+    const taskType = analyzeTaskType(memory.task);
+    console.log('[Agent] Task type:', taskType);
+
+    setThinking('Анализирую задачу...');
+    showFloatingIndicator('Анализирую задачу...', 'thinking');
+
+    while (!stopRequestedRef.current && iteration < MAX_ITERATIONS) {
+      iteration++;
 
       try {
-        // 1. Делаем скриншот текущей страницы
-        const screenshotData = await captureScreenshot();
-        setScreenshot(screenshotData);
+        // 1. Человеческая пауза перед анализом
+        await humanDelay();
 
-        // 2. Получаем элементы страницы
-        const pageElements = getPageElements();
+        // 2. Показываем что анализируем
+        updateFloatingIndicator(`Шаг ${iteration}: Анализирую страницу...`, 'read');
 
-        // 3. Отправляем на анализ Claude
-        const currentActions = actions;
-        const analysis = await analyzeWithClaude(
-          screenshotData,
-          task,
-          currentActions,
-          pageElements
-        );
+        // 3. Анализируем страницу
+        const pageState = analyzePageState();
 
-        setThinking(analysis.thinking);
+        // Добавляем в историю
+        if (!memory.pageHistory.includes(pageState.route)) {
+          memory.pageHistory.push(pageState.route);
+        }
 
-        // 4. Выполняем действие
-        const action = {
-          ...analysis.action,
-          timestamp: new Date()
-        };
+        // AUTO-COMPLETION: Для навигационных задач - завершаем автоматически
+        if (taskType.isNavigate && taskType.targetPage && pageState.route.includes(taskType.targetPage)) {
+          console.log(`[Agent] AUTO-COMPLETE: Navigation task done. Target "${taskType.targetPage}" reached at "${pageState.route}"`);
+          setThinking(`Готово! Мы на странице ${pageState.route}`);
+          updateFloatingIndicator('Задача выполнена!', 'navigate');
 
-        setActions(prev => [...prev, action]);
+          const completeAction: AgentAction = {
+            type: 'complete',
+            params: {},
+            timestamp: new Date(),
+            result: `Navigated to ${pageState.route}`,
+            verified: true,
+            stepNumber: iteration,
+            thinking: `Задача навигации выполнена: мы на странице ${pageState.route}`
+          };
 
-        if (action.type === 'complete') {
+          memory.actions.push(completeAction);
+          setActions(prev => [...prev, completeAction]);
+
+          await shortDelay(500);
+          hideFloatingIndicator();
           setSession(prev => prev ? { ...prev, status: 'completed' } : null);
+          clearAgentState();
           break;
         }
 
-        const result = await executeAction(action);
-        action.result = result;
+        // 4. Показываем что думаем
+        updateFloatingIndicator('Думаю...', 'thinking');
 
-        // 5. Ждём после действия
-        await new Promise(r => setTimeout(r, 1000));
+        // 5. Получаем следующее действие от AI
+        const analysis = await analyzeWithAI(pageState, memory);
+
+        setThinking(analysis.thinking);
+        updateFloatingIndicator(analysis.thinking?.substring(0, 50) + '...', 'thinking');
+
+        // 4. Проверяем на зацикливание (строже - 2 повтора вместо 3)
+        const currentActionKey = `${analysis.action.type}:${analysis.action.params?.text || analysis.action.params?.selector || ''}:${pageState.route}`;
+
+        if (currentActionKey === lastActionKey) {
+          sameActionCount++;
+          console.log(`[Agent] Same action detected: ${sameActionCount} times - ${currentActionKey}`);
+
+          if (sameActionCount >= 2) {
+            // Если диалог открыт - может быть модель не видит кнопку
+            if (pageState.hasDialog) {
+              setThinking('Диалог открыт. Ищу кнопку подтверждения...');
+              // Попробуем найти кнопку "Создать" или "Сохранить" в диалоге
+              const confirmButton = document.querySelector('[role="dialog"] button:not([aria-label*="close"])');
+              if (confirmButton) {
+                const rect = confirmButton.getBoundingClientRect();
+                analysis.action = {
+                  type: 'click',
+                  params: {
+                    text: (confirmButton as HTMLElement).innerText?.trim() || 'Подтвердить',
+                    x: rect.x + rect.width / 2,
+                    y: rect.y + rect.height / 2
+                  },
+                  timestamp: new Date()
+                };
+                sameActionCount = 0;
+              }
+            } else {
+              console.log('[Agent] Stuck after 2 same actions, completing');
+              setThinking('Задача завершена - не могу продолжить без новых действий');
+              hideFloatingIndicator();
+
+              const completeAction: AgentAction = {
+                type: 'complete',
+                params: {},
+                timestamp: new Date(),
+                result: 'Auto-completed due to loop detection',
+                verified: true,
+                stepNumber: iteration,
+                thinking: 'Обнаружено зацикливание - задача завершена автоматически'
+              };
+              memory.actions.push(completeAction);
+              setActions(prev => [...prev, completeAction]);
+
+              setSession(prev => prev ? { ...prev, status: 'completed' } : null);
+              clearAgentState();
+              break;
+            }
+          }
+        } else {
+          sameActionCount = 0;
+          lastActionKey = currentActionKey;
+        }
+
+        // 6. Создаём действие с thinking и скриншотом
+        const screenshot = await captureScreenshot();
+        const action: AgentAction = {
+          ...analysis.action,
+          timestamp: new Date(),
+          stepNumber: iteration,
+          thinking: analysis.thinking,
+          screenshot: screenshot || undefined
+        };
+
+        // Показываем индикатор действия
+        const actionText = action.type === 'click'
+          ? `Clicking: ${action.params?.text || action.params?.selector || 'element'}`
+          : action.type === 'type'
+          ? `Typing: "${action.params?.text?.substring(0, 20)}..."`
+          : action.type === 'navigate'
+          ? `Navigating to: ${action.params?.url}`
+          : action.type === 'complete'
+          ? 'Task completed!'
+          : `Action: ${action.type}`;
+
+        updateFloatingIndicator(actionText, action.type as any);
+
+        // Сохраняем состояние перед выполнением
+        memory.actions.push(action);
+        setActions(prev => [...prev, action]);
+        saveAgentState(memory);
+
+        // 7. Проверяем завершение
+        if (action.type === 'complete') {
+          hideFloatingIndicator();
+          setSession(prev => prev ? { ...prev, status: 'completed' } : null);
+          clearAgentState();
+          break;
+        }
+
+        // 8. Выполняем действие
+        const execResult = await executeAction(action, pageState);
+        action.result = execResult.result;
+        action.verified = execResult.verified;
+
+        console.log(`[Agent] Action ${iteration}: ${action.type} -> ${execResult.result} (verified: ${execResult.verified})`);
+
+        if (execResult.success) {
+          consecutiveErrors = 0;
+
+          // Переходим к следующему шагу если текущий выполнен
+          if (execResult.verified && memory.currentStep < memory.plan.length - 1) {
+            memory.plan[memory.currentStep].completed = true;
+            memory.currentStep++;
+            setCurrentStep(memory.plan[memory.currentStep]);
+          }
+        } else {
+          consecutiveErrors++;
+
+          const attemptKey = `${memory.currentStep}:${action.type}:${action.params?.text || ''}`;
+          const attempts = (memory.failedAttempts.get(attemptKey) || 0) + 1;
+          memory.failedAttempts.set(attemptKey, attempts);
+
+          if (attempts >= MAX_RETRIES_PER_STEP) {
+            console.log(`[Agent] Step ${memory.currentStep} failed after ${MAX_RETRIES_PER_STEP} attempts`);
+            // Пробуем следующий шаг
+            if (memory.currentStep < memory.plan.length - 1) {
+              memory.currentStep++;
+              setCurrentStep(memory.plan[memory.currentStep]);
+            }
+          }
+        }
+
+        // 9. Проверяем на слишком много ошибок
+        if (consecutiveErrors >= 5) {
+          hideFloatingIndicator();
+          setThinking('Слишком много ошибок. Останавливаюсь.');
+          setSession(prev => prev ? { ...prev, status: 'error', error: 'Too many consecutive errors' } : null);
+          break;
+        }
+
+        // 10. Пауза перед следующей итерацией
+        await shortDelay(300);
 
       } catch (err) {
-        console.error('[InPageAgent] Error:', err);
+        console.error('[Agent] Error:', err);
+        consecutiveErrors++;
         setError(err instanceof Error ? err.message : 'Unknown error');
+        updateFloatingIndicator(`Ошибка: ${err instanceof Error ? err.message : 'Unknown'}`, 'thinking');
 
-        // Пауза перед retry
-        await new Promise(r => setTimeout(r, 2000));
+        if (consecutiveErrors >= 5) {
+          hideFloatingIndicator();
+          setSession(prev => prev ? { ...prev, status: 'error', error: 'Too many errors' } : null);
+          break;
+        }
+
+        await shortDelay(1000);
       }
     }
 
-    if (iterations >= MAX_ITERATIONS) {
-      setSession(prev => prev ? { ...prev, status: 'error', error: 'Max iterations reached' } : null);
+    // Скрываем индикатор при завершении
+    hideFloatingIndicator();
+
+    if (iteration >= MAX_ITERATIONS) {
+      setThinking('Достигнут лимит итераций');
+      setSession(prev => prev ? { ...prev, status: 'completed' } : null);
     }
+
+    clearAgentState();
   };
 
   // Запуск агента
   const startAgent = useCallback(async (task: string) => {
+    clearAgentState();
+    hasResumedRef.current = false;
+    stopRequestedRef.current = false;
+
     const sessionId = generateSessionId();
+
+    // Инициализируем память
+    const memory: AgentMemory = {
+      task,
+      plan: [{
+        id: 0,
+        description: task,
+        expectedAction: 'complete',
+        completed: false,
+        attempts: 0
+      }],
+      currentStep: 0,
+      actions: [],
+      pageHistory: [window.location.pathname],
+      failedAttempts: new Map(),
+      startTime: Date.now()
+    };
+
+    memoryRef.current = memory;
 
     const newSession: AgentSession = {
       id: sessionId,
@@ -390,13 +1234,13 @@ export function useInPageAgent(): UseInPageAgentReturn {
     setSession(newSession);
     setActions([]);
     setScreenshot(null);
-    setThinking(null);
+    setThinking('Начинаю выполнение задачи...');
     setError(null);
-    stopRequestedRef.current = false;
+    setCurrentStep(memory.plan[0]);
+    setTotalSteps(memory.plan.length);
 
-    // Запускаем цикл агента
-    runAgentLoop(task, sessionId).catch(err => {
-      console.error('[InPageAgent] Loop error:', err);
+    runAgentLoop(memory).catch(err => {
+      console.error('[Agent] Loop error:', err);
       setSession(prev => prev ? { ...prev, status: 'error', error: err.message } : null);
     });
   }, []);
@@ -404,7 +1248,10 @@ export function useInPageAgent(): UseInPageAgentReturn {
   // Остановка агента
   const stopAgent = useCallback(() => {
     stopRequestedRef.current = true;
+    clearAgentState();
+    hideFloatingIndicator();
     setSession(prev => prev ? { ...prev, status: 'paused' } : null);
+    setThinking('Остановлено пользователем');
   }, []);
 
   return {
@@ -414,6 +1261,8 @@ export function useInPageAgent(): UseInPageAgentReturn {
     actions,
     error,
     isRunning,
+    currentStep,
+    totalSteps,
     startAgent,
     stopAgent
   };

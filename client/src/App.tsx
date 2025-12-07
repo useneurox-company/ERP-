@@ -59,10 +59,27 @@ function Router() {
   );
 }
 
+// Ключ для хранения состояния агента (должен совпадать с useInPageAgent.ts)
+const AGENT_STATE_KEY = 'emerald_agent_state';
+
 function AppContent() {
   const [location] = useLocation();
   const [userRole, setUserRole] = useState<any>(null);
-  const [assistantOpen, setAssistantOpen] = useState(false);
+  // Проверяем сохранённое состояние агента при инициализации
+  const [assistantOpen, setAssistantOpen] = useState(() => {
+    try {
+      const agentState = sessionStorage.getItem(AGENT_STATE_KEY);
+      if (agentState) {
+        const state = JSON.parse(agentState);
+        // Если состояние не старше 5 минут - агент работал, открываем чат
+        if (Date.now() - state.timestamp < 5 * 60 * 1000) {
+          console.log('[App] Agent state found, opening assistant panel');
+          return true;
+        }
+      }
+    } catch { /* ignore */ }
+    return false;
+  });
   const [assistantMinimized, setAssistantMinimized] = useState(false);
 
   useEffect(() => {
