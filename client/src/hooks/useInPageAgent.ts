@@ -12,7 +12,6 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import html2canvas from "html2canvas";
 
 // ============= ТИПЫ =============
 
@@ -525,119 +524,130 @@ function updateFloatingIndicator(text: string, type?: 'click' | 'type' | 'naviga
 
 // ============= SCREENSHOT CAPTURE =============
 
-// Конвертирует современные CSS color функции в стандартные
-function sanitizeCssColors(element: HTMLElement) {
-  const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);
-  let node: Node | null = walker.currentNode;
-
-  while (node) {
-    if (node instanceof HTMLElement) {
-      const style = node.style;
-      // Заменяем проблемные color функции на fallback цвета
-      for (let i = 0; i < style.length; i++) {
-        const prop = style[i];
-        const value = style.getPropertyValue(prop);
-        if (value.includes('color(') || value.includes('oklch(') || value.includes('lab(')) {
-          // Заменяем на простой цвет
-          if (prop.includes('background')) {
-            style.setProperty(prop, '#1e293b', 'important');
-          } else if (prop.includes('color') || prop.includes('border')) {
-            style.setProperty(prop, '#e2e8f0', 'important');
-          }
-        }
-      }
-    }
-    node = walker.nextNode();
-  }
-}
-
+// Создаём информативную DOM-карту страницы (без html2canvas - он не поддерживает modern CSS)
 async function captureScreenshot(): Promise<string | null> {
   try {
-    // Скрываем floating indicator чтобы не попал на скриншот
-    const floatingEl = document.getElementById('agent-floating-indicator');
-    if (floatingEl) {
-      floatingEl.style.display = 'none';
-    }
+    const canvas = document.createElement('canvas');
+    canvas.width = 320;
+    canvas.height = 220;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
 
-    // Получаем main content без sidebar и header
-    const mainContent = document.querySelector('main') || document.body;
+    // Фон
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, 320, 220);
 
-    const canvas = await html2canvas(mainContent as HTMLElement, {
-      scale: 0.25, // Маленькая миниатюра для чата
-      logging: false,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#0f172a', // Тёмный фон
-      ignoreElements: (element) => {
-        // Игнорируем floating indicator и assistant panel
-        if (element.id === 'agent-floating-indicator') return true;
-        if (element.hasAttribute('data-testid') && element.getAttribute('data-testid') === 'assistant-panel') return true;
-        return false;
-      },
-      onclone: (clonedDoc) => {
-        // Исправляем проблемные CSS цвета в клоне
-        try {
-          sanitizeCssColors(clonedDoc.body);
-        } catch { /* ignore sanitization errors */ }
+    // Сайдбар
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(0, 0, 50, 220);
+
+    // Хедер
+    ctx.fillStyle = '#1e293b';
+    ctx.fillRect(50, 0, 270, 28);
+
+    // URL в хедере
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '10px sans-serif';
+    const path = window.location.pathname;
+    ctx.fillText(path.length > 35 ? path.substring(0, 35) + '...' : path, 55, 18);
+
+    // Контент
+    ctx.fillStyle = '#334155';
+    ctx.fillRect(55, 33, 260, 182);
+
+    // Проверяем есть ли диалог
+    const dialog = document.querySelector('[role="dialog"], [data-radix-dialog-content]');
+    if (dialog) {
+      // Overlay
+      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+      ctx.fillRect(50, 28, 270, 192);
+
+      // Диалог
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.roundRect(90, 55, 180, 130, 8);
+      ctx.fill();
+
+      // Граница диалога
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 1;
+      ctx.stroke();
+
+      // Заголовок диалога
+      const dialogTitle = dialog.querySelector('h1, h2, h3, [class*="title"], [class*="Title"]')?.textContent?.trim() || 'Диалог';
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(dialogTitle.substring(0, 25), 100, 75);
+
+      // Количество полей в диалоге
+      const inputs = dialog.querySelectorAll('input, textarea, select');
+      const buttons = dialog.querySelectorAll('button');
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(`Полей: ${inputs.length} | Кнопок: ${buttons.length}`, 100, 95);
+
+      // Кнопки диалога
+      let btnY = 110;
+      buttons.forEach((btn, i) => {
+        if (i < 3) {
+          const text = (btn as HTMLElement).innerText?.trim().substring(0, 20) || 'Кнопка';
+          ctx.fillStyle = '#475569';
+          ctx.fillRect(100, btnY, 120, 18);
+          ctx.fillStyle = '#e2e8f0';
+          ctx.font = '9px sans-serif';
+          ctx.fillText(text, 105, btnY + 13);
+          btnY += 22;
+        }
+      });
+    } else {
+      // Показываем основные элементы страницы
+      const mainContent = document.querySelector('main') || document.body;
+
+      // Заголовок страницы
+      const pageTitle = document.querySelector('h1, h2, [class*="title"]')?.textContent?.trim() || 'Страница';
+      ctx.fillStyle = '#f1f5f9';
+      ctx.font = 'bold 11px sans-serif';
+      ctx.fillText(pageTitle.substring(0, 35), 60, 50);
+
+      // Кнопки на странице
+      const buttons = mainContent.querySelectorAll('button:not([disabled])');
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '9px sans-serif';
+      ctx.fillText(`Кнопок: ${buttons.length}`, 60, 70);
+
+      // Отображаем первые кнопки
+      let btnY = 85;
+      let btnCount = 0;
+      buttons.forEach((btn) => {
+        const text = (btn as HTMLElement).innerText?.trim();
+        if (text && text.length > 0 && text.length < 30 && btnCount < 5) {
+          ctx.fillStyle = '#10b981';
+          ctx.fillRect(60, btnY, Math.min(text.length * 6 + 10, 200), 16);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '9px sans-serif';
+          ctx.fillText(text.substring(0, 30), 65, btnY + 12);
+          btnY += 20;
+          btnCount++;
+        }
+      });
+
+      // Формы
+      const inputs = mainContent.querySelectorAll('input:not([type="hidden"]), textarea');
+      if (inputs.length > 0) {
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '9px sans-serif';
+        ctx.fillText(`Полей ввода: ${inputs.length}`, 60, btnY + 15);
       }
-    });
-
-    // Возвращаем floating indicator
-    if (floatingEl) {
-      floatingEl.style.display = 'flex';
     }
 
-    return canvas.toDataURL('image/jpeg', 0.6);
+    // Метка что это DOM Preview
+    ctx.fillStyle = '#3b82f6';
+    ctx.font = '8px sans-serif';
+    ctx.fillText('DOM Preview', 255, 215);
+
+    return canvas.toDataURL('image/png', 0.9);
   } catch (err) {
     console.warn('[Agent] Screenshot capture failed:', err);
-
-    // Fallback: создаём информативную "карту" страницы с текущим состоянием
-    try {
-      const canvas = document.createElement('canvas');
-      canvas.width = 300;
-      canvas.height = 200;
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        // Фон
-        ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 0, 300, 200);
-
-        // Сайдбар
-        ctx.fillStyle = '#334155';
-        ctx.fillRect(0, 0, 60, 200);
-
-        // Хедер
-        ctx.fillStyle = '#475569';
-        ctx.fillRect(60, 0, 240, 30);
-
-        // Проверяем есть ли диалог
-        const hasDialog = document.querySelector('[role="dialog"]');
-        if (hasDialog) {
-          // Рисуем диалог
-          ctx.fillStyle = 'rgba(0,0,0,0.5)';
-          ctx.fillRect(60, 30, 240, 170);
-          ctx.fillStyle = '#334155';
-          ctx.roundRect(100, 60, 160, 100, 8);
-          ctx.fill();
-          ctx.fillStyle = '#f1f5f9';
-          ctx.font = 'bold 12px sans-serif';
-          ctx.fillText('Dialog Open', 130, 100);
-        }
-
-        // URL
-        ctx.fillStyle = '#94a3b8';
-        ctx.font = '11px sans-serif';
-        ctx.fillText(window.location.pathname, 70, 18);
-
-        // Индикатор что это fallback
-        ctx.fillStyle = '#f59e0b';
-        ctx.font = '9px sans-serif';
-        ctx.fillText('DOM Preview', 220, 190);
-
-        return canvas.toDataURL('image/jpeg', 0.8);
-      }
-    } catch { /* ignore fallback errors */ }
-
     return null;
   }
 }
@@ -700,11 +710,61 @@ async function executeAction(action: AgentAction, pageState: PageState): Promise
       }
       // Приоритет 3: селектор
       else if (action.params?.selector) {
-        element = document.querySelector(action.params.selector);
-        if (element) {
-          const rect = element.getBoundingClientRect();
-          clickX = rect.x + rect.width / 2;
-          clickY = rect.y + rect.height / 2;
+        try {
+          element = document.querySelector(action.params.selector);
+          if (element) {
+            const rect = element.getBoundingClientRect();
+            clickX = rect.x + rect.width / 2;
+            clickY = rect.y + rect.height / 2;
+          }
+        } catch (selectorError) {
+          console.warn(`[Agent] Invalid selector: ${action.params.selector}`, selectorError);
+        }
+      }
+
+      // Если элемент не найден - пробуем умный поиск
+      if (!element) {
+        const searchText = action.params?.text?.toLowerCase() || '';
+        const mainContent = document.querySelector('main') || document.body;
+        const allButtons = Array.from(mainContent.querySelectorAll('button, [role="button"], a[href]'));
+
+        // Ищем кнопку "+" для добавления
+        if (searchText.includes('+') || searchText.includes('добав') || searchText.includes('новый') || searchText.includes('создать') || searchText.includes('new') || searchText.includes('add')) {
+          for (const btn of allButtons) {
+            const text = (btn as HTMLElement).innerText?.trim();
+            const ariaLabel = btn.getAttribute('aria-label')?.toLowerCase() || '';
+            // Ищем кнопку с "+" или иконкой добавления
+            if (text === '+' || text === '＋' || ariaLabel.includes('добав') || ariaLabel.includes('add') || ariaLabel.includes('new')) {
+              element = btn;
+              const rect = btn.getBoundingClientRect();
+              clickX = rect.x + rect.width / 2;
+              clickY = rect.y + rect.height / 2;
+              console.log(`[Agent] Found add button: "${text || ariaLabel}"`);
+              break;
+            }
+          }
+        }
+
+        // Ищем по SVG иконке (Plus icon)
+        if (!element) {
+          const svgButtons = Array.from(mainContent.querySelectorAll('button svg, [role="button"] svg'));
+          for (const svg of svgButtons) {
+            const paths = Array.from(svg.querySelectorAll('path, line'));
+            const isPlus = paths.some((p: Element) => {
+              const d = p.getAttribute('d') || '';
+              return d.includes('M12 5v14') || d.includes('M5 12h14'); // Lucide plus icon
+            });
+            if (isPlus) {
+              element = svg.closest('button, [role="button"]');
+              if (element) {
+                const rect = element.getBoundingClientRect();
+                clickX = rect.x + rect.width / 2;
+                clickY = rect.y + rect.height / 2;
+                console.log('[Agent] Found button with Plus icon');
+                break;
+              }
+            }
+          }
         }
       }
 
