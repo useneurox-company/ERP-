@@ -70,6 +70,8 @@ export interface AgentMemory {
   pageHistory: string[];
   failedAttempts: Map<string, number>;
   startTime: number;
+  filledFields: Set<string>; // Отслеживание заполненных полей
+  dialogActionsCount: number; // Счётчик действий в диалоге
 }
 
 export interface AgentSession {
@@ -523,6 +525,32 @@ function updateFloatingIndicator(text: string, type?: 'click' | 'type' | 'naviga
 
 // ============= SCREENSHOT CAPTURE =============
 
+// Конвертирует современные CSS color функции в стандартные
+function sanitizeCssColors(element: HTMLElement) {
+  const walker = document.createTreeWalker(element, NodeFilter.SHOW_ELEMENT);
+  let node: Node | null = walker.currentNode;
+
+  while (node) {
+    if (node instanceof HTMLElement) {
+      const style = node.style;
+      // Заменяем проблемные color функции на fallback цвета
+      for (let i = 0; i < style.length; i++) {
+        const prop = style[i];
+        const value = style.getPropertyValue(prop);
+        if (value.includes('color(') || value.includes('oklch(') || value.includes('lab(')) {
+          // Заменяем на простой цвет
+          if (prop.includes('background')) {
+            style.setProperty(prop, '#1e293b', 'important');
+          } else if (prop.includes('color') || prop.includes('border')) {
+            style.setProperty(prop, '#e2e8f0', 'important');
+          }
+        }
+      }
+    }
+    node = walker.nextNode();
+  }
+}
+
 async function captureScreenshot(): Promise<string | null> {
   try {
     // Скрываем floating indicator чтобы не попал на скриншот
@@ -545,6 +573,12 @@ async function captureScreenshot(): Promise<string | null> {
         if (element.id === 'agent-floating-indicator') return true;
         if (element.hasAttribute('data-testid') && element.getAttribute('data-testid') === 'assistant-panel') return true;
         return false;
+      },
+      onclone: (clonedDoc) => {
+        // Исправляем проблемные CSS цвета в клоне
+        try {
+          sanitizeCssColors(clonedDoc.body);
+        } catch { /* ignore sanitization errors */ }
       }
     });
 
@@ -557,23 +591,50 @@ async function captureScreenshot(): Promise<string | null> {
   } catch (err) {
     console.warn('[Agent] Screenshot capture failed:', err);
 
-    // Fallback: создаём простую "карту" страницы
+    // Fallback: создаём информативную "карту" страницы с текущим состоянием
     try {
       const canvas = document.createElement('canvas');
-      canvas.width = 200;
-      canvas.height = 150;
+      canvas.width = 300;
+      canvas.height = 200;
       const ctx = canvas.getContext('2d');
       if (ctx) {
+        // Фон
         ctx.fillStyle = '#1e293b';
-        ctx.fillRect(0, 0, 200, 150);
+        ctx.fillRect(0, 0, 300, 200);
+
+        // Сайдбар
         ctx.fillStyle = '#334155';
-        ctx.fillRect(0, 0, 50, 150);
+        ctx.fillRect(0, 0, 60, 200);
+
+        // Хедер
         ctx.fillStyle = '#475569';
-        ctx.fillRect(50, 0, 150, 20);
+        ctx.fillRect(60, 0, 240, 30);
+
+        // Проверяем есть ли диалог
+        const hasDialog = document.querySelector('[role="dialog"]');
+        if (hasDialog) {
+          // Рисуем диалог
+          ctx.fillStyle = 'rgba(0,0,0,0.5)';
+          ctx.fillRect(60, 30, 240, 170);
+          ctx.fillStyle = '#334155';
+          ctx.roundRect(100, 60, 160, 100, 8);
+          ctx.fill();
+          ctx.fillStyle = '#f1f5f9';
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText('Dialog Open', 130, 100);
+        }
+
+        // URL
         ctx.fillStyle = '#94a3b8';
-        ctx.font = '10px sans-serif';
-        ctx.fillText(window.location.pathname, 60, 12);
-        return canvas.toDataURL('image/jpeg', 0.7);
+        ctx.font = '11px sans-serif';
+        ctx.fillText(window.location.pathname, 70, 18);
+
+        // Индикатор что это fallback
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '9px sans-serif';
+        ctx.fillText('DOM Preview', 220, 190);
+
+        return canvas.toDataURL('image/jpeg', 0.8);
       }
     } catch { /* ignore fallback errors */ }
 
@@ -824,6 +885,7 @@ function saveAgentState(memory: AgentMemory) {
   sessionStorage.setItem(AGENT_STATE_KEY, JSON.stringify({
     ...memory,
     failedAttempts: Array.from(memory.failedAttempts.entries()),
+    filledFields: Array.from(memory.filledFields),
     timestamp: Date.now()
   }));
 }
@@ -841,7 +903,9 @@ function loadAgentState(): AgentMemory | null {
 
     return {
       ...state,
-      failedAttempts: new Map(state.failedAttempts || [])
+      failedAttempts: new Map(state.failedAttempts || []),
+      filledFields: new Set(state.filledFields || []),
+      dialogActionsCount: state.dialogActionsCount || 0
     };
   } catch {
     return null;
@@ -1001,7 +1065,7 @@ export function useInPageAgent(): UseInPageAgentReturn {
         }
 
         // AUTO-COMPLETION: Для навигационных задач - завершаем автоматически
-        if (taskType.isNavigate && taskType.targetPage && pageState.route.includes(taskType.targetPage)) {
+        if (taskType.isNavigate && !taskType.isCreate && taskType.targetPage && pageState.route.includes(taskType.targetPage)) {
           console.log(`[Agent] AUTO-COMPLETE: Navigation task done. Target "${taskType.targetPage}" reached at "${pageState.route}"`);
           setThinking(`Готово! Мы на странице ${pageState.route}`);
           updateFloatingIndicator('Задача выполнена!', 'navigate');
@@ -1026,6 +1090,67 @@ export function useInPageAgent(): UseInPageAgentReturn {
           break;
         }
 
+        // Отслеживаем действия в диалоге
+        if (pageState.hasDialog) {
+          memory.dialogActionsCount++;
+          console.log(`[Agent] Dialog action #${memory.dialogActionsCount}`);
+        } else {
+          memory.dialogActionsCount = 0;
+          memory.filledFields.clear(); // Очищаем при выходе из диалога
+        }
+
+        // AUTO-SUBMIT: После нескольких действий в диалоге - ищем кнопку подтверждения
+        if (pageState.hasDialog && memory.dialogActionsCount >= 3) {
+          console.log(`[Agent] Dialog has ${memory.dialogActionsCount} actions, looking for submit button...`);
+
+          // Ищем кнопку создания/сохранения
+          const dialogEl = document.querySelector('[role="dialog"], [data-radix-dialog-content]');
+          if (dialogEl) {
+            const buttons = Array.from(dialogEl.querySelectorAll('button'));
+            const submitButton = buttons.find(btn => {
+              const text = btn.innerText?.trim().toLowerCase() || '';
+              return text.includes('создать') || text.includes('сохранить') ||
+                     text.includes('добавить') || text.includes('create') ||
+                     text.includes('save') || text.includes('submit');
+            });
+
+            if (submitButton && !(submitButton as HTMLButtonElement).disabled) {
+              console.log(`[Agent] Found submit button: "${submitButton.innerText?.trim()}"`);
+              setThinking(`Нажимаю кнопку "${submitButton.innerText?.trim()}"...`);
+              updateFloatingIndicator(`Нажимаю: ${submitButton.innerText?.trim()}`, 'click');
+
+              const rect = submitButton.getBoundingClientRect();
+              showClickIndicator(rect.x + rect.width / 2, rect.y + rect.height / 2);
+
+              (submitButton as HTMLElement).click();
+              await shortDelay(500);
+
+              // Проверяем закрылся ли диалог
+              const dialogStillOpen = document.querySelector('[role="dialog"], [data-radix-dialog-content]');
+              if (!dialogStillOpen) {
+                console.log('[Agent] Dialog closed after submit - task completed!');
+
+                const completeAction: AgentAction = {
+                  type: 'complete',
+                  params: {},
+                  timestamp: new Date(),
+                  result: 'Form submitted successfully',
+                  verified: true,
+                  stepNumber: iteration,
+                  thinking: 'Форма отправлена, диалог закрыт'
+                };
+                memory.actions.push(completeAction);
+                setActions(prev => [...prev, completeAction]);
+
+                hideFloatingIndicator();
+                setSession(prev => prev ? { ...prev, status: 'completed' } : null);
+                clearAgentState();
+                break;
+              }
+            }
+          }
+        }
+
         // 4. Показываем что думаем
         updateFloatingIndicator('Думаю...', 'thinking');
 
@@ -1035,32 +1160,37 @@ export function useInPageAgent(): UseInPageAgentReturn {
         setThinking(analysis.thinking);
         updateFloatingIndicator(analysis.thinking?.substring(0, 50) + '...', 'thinking');
 
-        // 4. Проверяем на зацикливание (строже - 2 повтора вместо 3)
+        // Проверяем на зацикливание
         const currentActionKey = `${analysis.action.type}:${analysis.action.params?.text || analysis.action.params?.selector || ''}:${pageState.route}`;
+
+        // Если это действие type и поле уже заполнено - пропускаем
+        if (analysis.action.type === 'type') {
+          const fieldKey = analysis.action.params?.selector || analysis.action.params?.name || analysis.action.params?.placeholder || '';
+          if (fieldKey && memory.filledFields.has(fieldKey)) {
+            console.log(`[Agent] Field "${fieldKey}" already filled, skipping...`);
+            sameActionCount++;
+            if (sameActionCount >= 2) {
+              // Пробуем нажать кнопку submit
+              memory.dialogActionsCount = 10; // Форсируем auto-submit на следующей итерации
+            }
+            continue;
+          }
+          // Отмечаем поле как заполненное
+          if (fieldKey) {
+            memory.filledFields.add(fieldKey);
+          }
+        }
 
         if (currentActionKey === lastActionKey) {
           sameActionCount++;
           console.log(`[Agent] Same action detected: ${sameActionCount} times - ${currentActionKey}`);
 
           if (sameActionCount >= 2) {
-            // Если диалог открыт - может быть модель не видит кнопку
+            // Если диалог открыт - форсируем auto-submit
             if (pageState.hasDialog) {
-              setThinking('Диалог открыт. Ищу кнопку подтверждения...');
-              // Попробуем найти кнопку "Создать" или "Сохранить" в диалоге
-              const confirmButton = document.querySelector('[role="dialog"] button:not([aria-label*="close"])');
-              if (confirmButton) {
-                const rect = confirmButton.getBoundingClientRect();
-                analysis.action = {
-                  type: 'click',
-                  params: {
-                    text: (confirmButton as HTMLElement).innerText?.trim() || 'Подтвердить',
-                    x: rect.x + rect.width / 2,
-                    y: rect.y + rect.height / 2
-                  },
-                  timestamp: new Date()
-                };
-                sameActionCount = 0;
-              }
+              console.log('[Agent] Stuck in dialog, forcing auto-submit...');
+              memory.dialogActionsCount = 10;
+              continue;
             } else {
               console.log('[Agent] Stuck after 2 same actions, completing');
               setThinking('Задача завершена - не могу продолжить без новых действий');
@@ -1217,7 +1347,9 @@ export function useInPageAgent(): UseInPageAgentReturn {
       actions: [],
       pageHistory: [window.location.pathname],
       failedAttempts: new Map(),
-      startTime: Date.now()
+      startTime: Date.now(),
+      filledFields: new Set(),
+      dialogActionsCount: 0
     };
 
     memoryRef.current = memory;
