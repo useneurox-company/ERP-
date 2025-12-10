@@ -32,6 +32,7 @@ export interface Document {
   previewUrl?: string;
   downloadUrl?: string;
   folder?: string;
+  isFinancial?: boolean;
 }
 
 interface DocumentGridProps {
@@ -40,6 +41,8 @@ interface DocumentGridProps {
   onDocumentView?: (doc: Document) => void;
   onDocumentDownload?: (doc: Document) => void;
   onDocumentDelete?: (doc: Document) => void;
+  onToggleFinancial?: (doc: Document) => void;
+  canEditFinancial?: boolean;
   onUpload?: () => void;
   title?: string;
   emptyMessage?: string;
@@ -55,6 +58,8 @@ export function DocumentGrid({
   onDocumentView,
   onDocumentDownload,
   onDocumentDelete,
+  onToggleFinancial,
+  canEditFinancial = false,
   onUpload,
   title = "Документы",
   emptyMessage = "Нет документов",
@@ -217,6 +222,8 @@ export function DocumentGrid({
                 onView={() => onDocumentView?.(doc)}
                 onDownload={() => onDocumentDownload?.(doc)}
                 onDelete={() => onDocumentDelete?.(doc)}
+                onToggleFinancial={canEditFinancial ? () => onToggleFinancial?.(doc) : undefined}
+                isFinancial={doc.isFinancial}
               />
             ))}
           </div>

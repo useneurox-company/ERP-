@@ -12,7 +12,8 @@
  */
 
 import { useState, useCallback, useRef, useEffect } from "react";
-import html2canvas from 'html2canvas';
+import { domToPng } from 'modern-screenshot';
+// modern-screenshot - better CSS support than html2canvas
 
 // ============= ТИПЫ =============
 
@@ -144,6 +145,57 @@ function humanDelay(): Promise<void> {
 // Короткая задержка для реакции
 function shortDelay(ms: number = 200): Promise<void> {
   return new Promise(r => setTimeout(r, ms));
+}
+
+/**
+ * Проверяет валидность CSS селектора
+ * Radix UI генерирует невалидные ID типа :ro:-form-item, :r1:-form-item
+ */
+function isValidSelector(selector: string): boolean {
+  if (!selector) return false;
+
+  // Паттерны невалидных Radix UI ID
+  const invalidPatterns = [
+    /^#:r[0-9a-z]+:/i,      // #:ro:, #:r1:, etc
+    /^#-/,                   // ID начинающийся с дефиса
+    /^#[0-9]/,              // ID начинающийся с цифры
+    /^\[\s*\]/,             // Пустые атрибуты []
+  ];
+
+  for (const pattern of invalidPatterns) {
+    if (pattern.test(selector)) {
+      console.warn(`[Agent] Invalid selector detected: ${selector}`);
+      return false;
+    }
+  }
+
+  // Пробуем валидировать через DOM API
+  try {
+    document.querySelector(selector);
+    return true;
+  } catch (e) {
+    console.warn(`[Agent] Selector validation failed: ${selector}`, e);
+    return false;
+  }
+}
+
+/**
+ * Очищает/исправляет селектор или возвращает null если невозможно
+ */
+function sanitizeSelector(selector: string): string | null {
+  if (!selector) return null;
+
+  // Если это текстовый селектор - пропускаем
+  if (selector.includes(':has-text(')) {
+    return selector;
+  }
+
+  // Проверяем валидность
+  if (!isValidSelector(selector)) {
+    return null; // Используем fallback метод поиска
+  }
+
+  return selector;
 }
 
 // ============= SMART PAGE ANALYZER =============
@@ -548,7 +600,10 @@ function updateFloatingIndicator(text: string, type?: 'click' | 'type' | 'naviga
 
 // ============= SCREENSHOT CAPTURE =============
 
-// Захватываем реальный скриншот страницы с помощью html2canvas
+/**
+ * Capture screenshot using modern-screenshot library
+ * Better CSS support than html2canvas - handles color() and other modern CSS
+ */
 async function captureScreenshot(): Promise<string | null> {
   try {
     // Скрываем floating indicator перед скриншотом
@@ -559,50 +614,43 @@ async function captureScreenshot(): Promise<string | null> {
     const dialog = document.querySelector('[role="dialog"], [data-radix-dialog-content]') as HTMLElement;
     const targetElement = dialog || document.body;
 
-    // Настройки html2canvas для обработки modern CSS
-    const canvas = await html2canvas(targetElement, {
+    console.log('[Agent] Taking screenshot with modern-screenshot...');
+
+    // modern-screenshot с настройками
+    const dataUrl = await domToPng(targetElement, {
       scale: 0.5, // Уменьшаем для компактности
-      useCORS: true,
-      allowTaint: true,
-      logging: false,
       backgroundColor: '#0f172a',
       width: dialog ? dialog.offsetWidth : Math.min(window.innerWidth, 1200),
       height: dialog ? dialog.offsetHeight : Math.min(window.innerHeight, 800),
-      // Игнорируем элементы с проблемными стилями
-      ignoreElements: (element) => {
-        // Пропускаем элементы которые могут вызвать ошибки
-        if (element.id === 'agent-floating-indicator') return true;
-        if (element.id === 'agent-click-animation') return true;
-        if (element.classList?.contains('agent-indicator-spinner')) return true;
-        return false;
+      style: {
+        // Фиксируем позиционирование для корректного захвата
+        transform: 'none',
+        transformOrigin: 'top left'
       },
-      onclone: (clonedDoc) => {
-        // Исправляем проблемные CSS-свойства в клонированном документе
-        const allElements = clonedDoc.querySelectorAll('*');
-        allElements.forEach((el) => {
-          const htmlEl = el as HTMLElement;
-          const style = htmlEl.style;
-          // Удаляем проблемные color() функции
-          if (style.color && style.color.includes('color(')) {
-            style.color = '#ffffff';
-          }
-          if (style.backgroundColor && style.backgroundColor.includes('color(')) {
-            style.backgroundColor = '#1e293b';
-          }
-        });
+      filter: (node: Node) => {
+        // Пропускаем элементы агента
+        if (node instanceof HTMLElement) {
+          if (node.id === 'agent-floating-indicator') return false;
+          if (node.id === 'agent-click-animation') return false;
+          if (node.classList?.contains('agent-indicator-spinner')) return false;
+        }
+        return true;
       }
     });
 
     // Возвращаем indicator
     if (indicator) indicator.style.display = 'flex';
 
-    // Конвертируем в base64
-    const dataUrl = canvas.toDataURL('image/png', 0.8);
-    console.log('[Agent] Screenshot captured:', dataUrl.length, 'bytes');
-    return dataUrl;
+    if (dataUrl) {
+      console.log('[Agent] Screenshot captured:', dataUrl.length, 'bytes');
+      return dataUrl;
+    }
+
+    console.warn('[Agent] modern-screenshot returned empty');
+    return createFallbackScreenshot();
 
   } catch (err) {
-    console.warn('[Agent] html2canvas failed, using fallback:', err);
+    console.warn('[Agent] modern-screenshot failed, using fallback:', err);
 
     // Возвращаем indicator
     const indicator = document.getElementById('agent-floating-indicator');
@@ -778,17 +826,38 @@ async function executeAction(action: AgentAction, pageState: PageState): Promise
           }
         }
       }
-      // Приоритет 3: селектор
+      // Приоритет 3: селектор (с валидацией для Radix UI)
       else if (action.params?.selector) {
-        try {
-          element = document.querySelector(action.params.selector);
-          if (element) {
-            const rect = element.getBoundingClientRect();
-            clickX = rect.x + rect.width / 2;
-            clickY = rect.y + rect.height / 2;
+        const safeSelector = sanitizeSelector(action.params.selector);
+        if (safeSelector) {
+          try {
+            element = document.querySelector(safeSelector);
+            if (element) {
+              const rect = element.getBoundingClientRect();
+              clickX = rect.x + rect.width / 2;
+              clickY = rect.y + rect.height / 2;
+            }
+          } catch (selectorError) {
+            console.warn(`[Agent] Selector error: ${safeSelector}`, selectorError);
           }
-        } catch (selectorError) {
-          console.warn(`[Agent] Invalid selector: ${action.params.selector}`, selectorError);
+        } else {
+          console.warn(`[Agent] Skipping invalid Radix UI selector: ${action.params.selector}`);
+          // Fallback: попробуем найти по тексту если есть
+          if (action.params?.text) {
+            const searchText = action.params.text.toLowerCase();
+            const buttons = Array.from(document.querySelectorAll('button, [role="button"], a'));
+            for (const btn of buttons) {
+              const text = (btn as HTMLElement).innerText?.trim().toLowerCase();
+              if (text && text.includes(searchText)) {
+                element = btn;
+                const rect = btn.getBoundingClientRect();
+                clickX = rect.x + rect.width / 2;
+                clickY = rect.y + rect.height / 2;
+                console.log(`[Agent] Fallback: found element by text "${searchText}"`);
+                break;
+              }
+            }
+          }
         }
       }
 
@@ -952,9 +1021,12 @@ async function executeAction(action: AgentAction, pageState: PageState): Promise
     case 'type': {
       let element: HTMLInputElement | HTMLTextAreaElement | null = null;
 
-      // Поиск по разным критериям
+      // Поиск по разным критериям С ВАЛИДАЦИЕЙ селектора
       if (action.params?.selector) {
-        element = document.querySelector(action.params.selector);
+        const safeSelector = sanitizeSelector(action.params.selector);
+        if (safeSelector) {
+          element = document.querySelector(safeSelector);
+        }
       }
       if (!element && action.params?.name) {
         element = document.querySelector(`[name="${action.params.name}"]`);
@@ -1357,16 +1429,24 @@ export function useInPageAgent(): UseInPageAgentReturn {
     }
   }, []);
 
-  // Анализ задачи через API
+  // Анализ задачи через API (с поддержкой скриншота)
   const analyzeWithAI = async (
     pageState: PageState,
-    memory: AgentMemory
+    memory: AgentMemory,
+    screenshot: string | null = null  // Теперь принимаем скриншот
   ): Promise<{ thinking: string; action: AgentAction; plan?: TaskStep[] }> => {
+    // Извлекаем base64 данные из data URL
+    let screenshotBase64: string | null = null;
+    if (screenshot && screenshot.startsWith('data:image')) {
+      const base64Match = screenshot.match(/base64,(.+)/);
+      screenshotBase64 = base64Match ? base64Match[1] : null;
+    }
+
     const response = await fetch('/api/browser-agent/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        screenshot: null, // DOM-only mode
+        screenshot: screenshotBase64, // Передаём скриншот для Vision mode
         pageContext: {
           url: pageState.url,
           currentRoute: pageState.route,
@@ -1439,7 +1519,8 @@ export function useInPageAgent(): UseInPageAgentReturn {
     console.log('[Agent] Task type:', taskType);
 
     // Проверяем есть ли выученный путь для похожей задачи
-    const learnedPath = findLearnedPath(memory.task);
+    // ОТКЛЮЧЕНО: learnedPath матчит по ключевым словам и применяет путь от ДРУГОЙ задачи
+    const learnedPath: LearnedPath | null = null; // findLearnedPath(memory.task);
     let learnedPathIndex = 0;
 
     if (learnedPath) {
@@ -1560,10 +1641,25 @@ export function useInPageAgent(): UseInPageAgentReturn {
           }
         }
 
-        // 4. Показываем что думаем
+        // 4. ДЕЛАЕМ СКРИНШОТ ДО АНАЛИЗА - агент должен видеть экран!
+        updateFloatingIndicator('Делаю скриншот...', 'read');
+        const currentScreenshot = await captureScreenshot();
+
+        // Обновляем state для отображения в панели
+        if (currentScreenshot) {
+          setScreenshot(currentScreenshot);
+          console.log(`[Agent] Screenshot captured: ${currentScreenshot.length} bytes`);
+        } else {
+          console.warn('[Agent] Screenshot failed, using DOM-only mode');
+        }
+
+        // Ждём небольшую задержку для стабилизации
+        await shortDelay(300);
+
+        // 5. Показываем что думаем
         updateFloatingIndicator('Думаю...', 'thinking');
 
-        // 5. Получаем следующее действие - сначала проверяем learned path
+        // 6. Получаем следующее действие - сначала проверяем learned path
         let analysis: { thinking: string; action: AgentAction; plan?: TaskStep[] };
 
         if (learnedPath && learnedPathIndex < learnedPath.actions.length) {
@@ -1580,8 +1676,8 @@ export function useInPageAgent(): UseInPageAgentReturn {
           learnedPathIndex++;
           console.log(`[Agent] Using learned action ${learnedPathIndex}: ${learnedAction.type}`);
         } else {
-          // Получаем следующее действие от AI
-          analysis = await analyzeWithAI(pageState, memory);
+          // Получаем следующее действие от AI СО СКРИНШОТОМ
+          analysis = await analyzeWithAI(pageState, memory, currentScreenshot);
         }
 
         setThinking(analysis.thinking);
@@ -1645,14 +1741,13 @@ export function useInPageAgent(): UseInPageAgentReturn {
           lastActionKey = currentActionKey;
         }
 
-        // 6. Создаём действие с thinking и скриншотом
-        const screenshot = await captureScreenshot();
+        // 7. Создаём действие с thinking и РАНЕЕ захваченным скриншотом
         const action: AgentAction = {
           ...analysis.action,
           timestamp: new Date(),
           stepNumber: iteration,
           thinking: analysis.thinking,
-          screenshot: screenshot || undefined
+          screenshot: currentScreenshot || undefined
         };
 
         // Показываем индикатор действия

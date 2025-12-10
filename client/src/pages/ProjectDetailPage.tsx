@@ -969,9 +969,13 @@ export default function ProjectDetailPage() {
           <div className="flex items-center justify-between gap-4 px-4 py-2 border-b">
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <div className="flex items-baseline gap-2 min-w-0">
-                <h1 className="text-lg font-semibold truncate" data-testid="text-project-name">
-                  {project.name}
-                </h1>
+                <InlineEditField
+                  value={project.name}
+                  onSave={(value) => updateProjectField.mutate({ name: value })}
+                  displayClassName="text-lg font-semibold truncate"
+                  inputClassName="text-lg font-semibold"
+                  placeholder="Название проекта"
+                />
                 <InlineEditField
                   label=""
                   value={project.project_number}
@@ -1319,7 +1323,22 @@ export default function ProjectDetailPage() {
             </TabsContent>
 
             <TabsContent value="documents" className="mt-6" data-testid="content-documents">
-              <ProjectDocumentsRepository projectId={id!} />
+              {/* Фильтр по позиции */}
+              {selectedItemId && (
+                <div className="mb-4 flex items-center gap-2 p-3 bg-muted rounded-lg">
+                  <span className="text-sm">
+                    Документы позиции: <strong>{items.find(i => i.id === selectedItemId)?.name}</strong>
+                  </span>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setSelectedItemId(null)}
+                  >
+                    Показать все документы
+                  </Button>
+                </div>
+              )}
+              <ProjectDocumentsRepository projectId={id!} selectedItemId={selectedItemId} />
             </TabsContent>
 
             <TabsContent value="processes" className="mt-6" data-testid="content-processes">

@@ -365,6 +365,97 @@ async function takeScreenshot(url, options = {}) {
   }
 }
 
+/**
+ * Take screenshot with cookies - for authenticated pages
+ * Puppeteer ALWAYS works with any CSS (no html2canvas issues)
+ */
+async function takeScreenshotWithAuth(url, options = {}) {
+  const {
+    width = 1920,
+    height = 1080,
+    fullPage = false,
+    format = 'png',
+    quality = 80,
+    cookies = [],        // Array of cookie objects
+    localStorage = {},   // localStorage key-value pairs
+    sessionStorage = {}  // sessionStorage key-value pairs
+  } = options;
+
+  const browserInstance = await getBrowser();
+  const page = await browserInstance.newPage();
+
+  try {
+    await setupPage(page);
+    await page.setViewport({ width, height });
+
+    // First navigate to the domain to set cookies/storage
+    const urlObj = new URL(url);
+    const domain = urlObj.hostname;
+
+    // Set cookies if provided
+    if (cookies && cookies.length > 0) {
+      const cookiesWithDomain = cookies.map(cookie => ({
+        ...cookie,
+        domain: cookie.domain || domain,
+        path: cookie.path || '/'
+      }));
+      await page.setCookie(...cookiesWithDomain);
+      console.log(`[Browser] Set ${cookiesWithDomain.length} cookies for ${domain}`);
+    }
+
+    // Navigate to the page
+    await page.goto(url, { waitUntil: 'networkidle0', timeout: 60000 });
+
+    // Set localStorage if provided
+    if (Object.keys(localStorage).length > 0) {
+      await page.evaluate((storageData) => {
+        for (const [key, value] of Object.entries(storageData)) {
+          window.localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        }
+      }, localStorage);
+      console.log(`[Browser] Set ${Object.keys(localStorage).length} localStorage items`);
+    }
+
+    // Set sessionStorage if provided
+    if (Object.keys(sessionStorage).length > 0) {
+      await page.evaluate((storageData) => {
+        for (const [key, value] of Object.entries(storageData)) {
+          window.sessionStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+        }
+      }, sessionStorage);
+      console.log(`[Browser] Set ${Object.keys(sessionStorage).length} sessionStorage items`);
+    }
+
+    // If storage was set, reload the page to apply auth
+    if (Object.keys(localStorage).length > 0 || Object.keys(sessionStorage).length > 0) {
+      await page.reload({ waitUntil: 'networkidle0', timeout: 60000 });
+    }
+
+    // Wait for dynamic content to render
+    await sleep(500);
+
+    const screenshotOptions = {
+      type: format,
+      fullPage,
+      encoding: 'base64'  // Return base64 for easier transfer
+    };
+
+    if (format === 'jpeg' || format === 'webp') {
+      screenshotOptions.quality = quality;
+    }
+
+    const screenshot = await page.screenshot(screenshotOptions);
+    return {
+      screenshot,
+      format,
+      width,
+      height
+    };
+  } finally {
+    await page.close();
+  }
+}
+
 async function getPageHtml(url, options = {}) {
   const { timeout = 60000, waitFor = null } = options;
 
@@ -397,6 +488,7 @@ async function closeBrowser() {
 
 module.exports = {
   takeScreenshot,
+  takeScreenshotWithAuth,
   getPageHtml,
   closeBrowser,
   getBrowser,

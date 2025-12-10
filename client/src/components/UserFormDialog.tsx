@@ -33,6 +33,7 @@ interface UserFormData {
   phone?: string;
   role_id?: string;
   is_active: boolean;
+  can_view_financial: boolean;
 }
 
 interface UserFormDialogProps {
@@ -47,7 +48,7 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
   const queryClient = useQueryClient();
   const [selectedRoleId, setSelectedRoleId] = useState<string | undefined>(user?.role_id || undefined);
 
-  const { register, handleSubmit, formState: { errors }, reset, setValue } = useForm<UserFormData>({
+  const { register, handleSubmit, formState: { errors }, reset, setValue, watch } = useForm<UserFormData>({
     defaultValues: {
       username: user?.username || "",
       email: user?.email || "",
@@ -55,8 +56,11 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
       phone: user?.phone || "",
       role_id: user?.role_id || undefined,
       is_active: user?.is_active ?? true,
+      can_view_financial: user?.can_view_financial ?? false,
     }
   });
+
+  const canViewFinancial = watch("can_view_financial");
 
   // Load roles
   const { data: roles = [] } = useQuery<Role[]>({
@@ -72,6 +76,7 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
         phone: user.phone || "",
         role_id: user.role_id || undefined,
         is_active: user.is_active ?? true,
+        can_view_financial: user.can_view_financial ?? false,
       });
       setSelectedRoleId(user.role_id || undefined);
     } else {
@@ -82,6 +87,7 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
         phone: "",
         role_id: undefined,
         is_active: true,
+        can_view_financial: false,
       });
       setSelectedRoleId(undefined);
     }
@@ -140,6 +146,7 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
         email: data.email,
         full_name: data.full_name,
         phone: data.phone,
+        can_view_financial: data.can_view_financial,
       };
 
       // Only include password if it's provided
@@ -302,19 +309,35 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
           </div>
 
           {mode === "edit" && (
-            <div className="flex items-center justify-between space-x-2">
-              <Label htmlFor="is_active" className="flex flex-col space-y-1">
-                <span>Активный пользователь</span>
-                <span className="font-normal text-sm text-muted-foreground">
-                  Неактивные пользователи не могут входить в систему
-                </span>
-              </Label>
-              <Switch
-                id="is_active"
-                defaultChecked={user?.is_active ?? true}
-                onCheckedChange={(checked) => setValue("is_active", checked)}
-              />
-            </div>
+            <>
+              <div className="flex items-center justify-between space-x-2">
+                <Label htmlFor="is_active" className="flex flex-col space-y-1">
+                  <span>Активный пользователь</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Неактивные пользователи не могут входить в систему
+                  </span>
+                </Label>
+                <Switch
+                  id="is_active"
+                  defaultChecked={user?.is_active ?? true}
+                  onCheckedChange={(checked) => setValue("is_active", checked)}
+                />
+              </div>
+
+              <div className="flex items-center justify-between space-x-2">
+                <Label htmlFor="can_view_financial" className="flex flex-col space-y-1">
+                  <span>Видеть фин документы</span>
+                  <span className="font-normal text-sm text-muted-foreground">
+                    Доступ к финансовым документам (счета, КП, договора)
+                  </span>
+                </Label>
+                <Switch
+                  id="can_view_financial"
+                  checked={canViewFinancial}
+                  onCheckedChange={(checked) => setValue("can_view_financial", checked)}
+                />
+              </div>
+            </>
           )}
 
           {mode === "edit" && user && (

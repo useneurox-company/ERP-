@@ -52,6 +52,7 @@ export const users = pgTable('users', {
   role_id: text('role_id').references(() => roles.id),
   phone: text('phone'),
   is_active: boolean('is_active').default(true).notNull(),
+  can_view_financial: boolean('can_view_financial').default(false).notNull(), // Доступ к финансовым документам
   created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });
@@ -216,12 +217,14 @@ export const deal_documents = pgTable('deal_documents', {
   customer_name: text('customer_name'),
   customer_phone: text('customer_phone'),
   customer_address: text('customer_address'),
+  is_financial: integer('is_financial', { mode: 'boolean' }).default(0),
   created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });
 
 export const insertDealDocumentSchema = createInsertSchema(deal_documents).omit({ id: true, created_at: true, updated_at: true }).extend({
   is_signed: z.union([z.boolean(), z.number()]).transform(val => typeof val === 'boolean' ? (val ? 1 : 0) : val).optional(),
+  is_financial: z.union([z.boolean(), z.number()]).transform(val => typeof val === 'boolean' ? (val ? 1 : 0) : val).optional(),
 });
 export type InsertDealDocument = z.infer<typeof insertDealDocumentSchema>;
 export type DealDocument = typeof deal_documents.$inferSelect;
@@ -231,12 +234,14 @@ export const deal_attachments = pgTable('deal_attachments', {
   id: text('id').$defaultFn(() => genId()).primaryKey(),
   deal_id: text('deal_id').references(() => deals.id, { onDelete: 'cascade' }).notNull(),
   document_id: text('document_id').references(() => deal_documents.id, { onDelete: 'cascade' }),
+  item_id: text('item_id'),  // Привязка к позиции проекта (project_items.id)
   file_name: text('file_name').notNull(),
   file_path: text('file_path').notNull(),
   file_size: integer('file_size'),
   mime_type: text('mime_type'),
   thumbnail_url: text('thumbnail_url'),
   uploaded_by: text('uploaded_by').references(() => users.id),
+  is_financial: boolean('is_financial').default(false).notNull(), // Финансовый документ (скрыт от обычных пользователей)
   created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
 });
 

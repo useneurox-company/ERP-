@@ -111,11 +111,8 @@ router.post("/api/browser-agent/analyze", async (req, res) => {
 
     const isOnTargetPage = targetPage && currentRoute.includes(targetPage.replace('/', ''));
 
-    // Выбор модели - используем более умные модели для сложных задач
-    // GPT-4o-mini слишком слабая для многошаговых задач
-    const model = screenshot
-      ? 'google/gemini-2.0-flash-001'  // Vision mode: Gemini Flash ($0.075/1M)
-      : 'anthropic/claude-3.5-haiku';   // DOM mode: Claude Haiku ($0.25/1M) - умнее чем GPT-4o-mini
+    // Выбор модели - Haiku для скорости
+    const model = 'anthropic/claude-3.5-haiku';
 
     // Формируем промпт
     let systemPrompt: string;
@@ -127,7 +124,7 @@ router.post("/api/browser-agent/analyze", async (req, res) => {
       messages = [{
         role: 'user',
         content: [
-          { type: 'image_url', image_url: { url: `data:image/jpeg;base64,${screenshot}` } },
+          { type: 'image_url', image_url: { url: `data:image/png;base64,${screenshot}` } },
           { type: 'text', text: systemPrompt }
         ]
       }];
@@ -620,11 +617,10 @@ router.get("/api/browser-agent/health", (req, res) => {
   res.json({
     status: "ok",
     service: "browser-agent",
-    version: "2.0",
-    mode: "dom-first",
+    version: "3.0-opus",
+    mode: "vision-first",  // Теперь используем скриншоты!
     models: {
-      vision: "google/gemini-2.0-flash-001",
-      dom: "anthropic/claude-3.5-haiku"  // Умнее чем GPT-4o-mini
+      primary: "anthropic/claude-opus-4"  // Claude Opus 4.5 - самая умная модель
     },
     hasOpenRouterKey: !!key,
     keyPrefix: key?.substring(0, 20) + '...'

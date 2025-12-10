@@ -73,6 +73,9 @@ export class UsersRepository {
     if (data.password) {
       updateData.password = await bcrypt.hash(data.password, 10);
     }
+    if (data.can_view_financial !== undefined) {
+      updateData.can_view_financial = data.can_view_financial;
+    }
 
     // Use Drizzle ORM update for cross-database compatibility
     await db.update(users)

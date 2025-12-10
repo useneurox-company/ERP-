@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,9 +7,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Upload, X, Image as ImageIcon, Video, Mic, File, Loader2, Camera, Play, Pause, MessageCircle, ChevronDown, ChevronUp, Send } from "lucide-react";
+import { Upload, X, Image as ImageIcon, Video, Mic, File, Loader2, Camera, Play, Pause, MessageCircle, ChevronDown, ChevronUp, Send, ZoomIn } from "lucide-react";
 import type { StageDocument } from "@shared/schema";
 import { saveMediaBlob, getMediaBlob, deleteMediaBlob } from "@/lib/mediaStorage";
+import { useLightbox } from "@/contexts/LightboxContext";
 
 interface StageMediaGalleryProps {
   stageId: string;
@@ -29,6 +30,7 @@ export function StageMediaGallery({
   readOnly = false
 }: StageMediaGalleryProps) {
   const { toast } = useToast();
+  const { openLightbox } = useLightbox();
   const [isDragging, setIsDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -388,12 +390,30 @@ export function StageMediaGallery({
                 <div className="flex flex-col items-center gap-2">
                   {/* Медиа файлы или иконка */}
                   {mediaType === 'photo' && mediaURLs[doc.id] ? (
-                    <div className="w-full aspect-square bg-accent rounded-md overflow-hidden">
+                    <div
+                      className="w-full aspect-square bg-accent rounded-md overflow-hidden cursor-pointer relative group/photo"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        // Собираем все фото галереи для навигации
+                        const photoImages = documents
+                          .filter(d => mediaURLs[d.id])
+                          .map(d => ({
+                            url: mediaURLs[d.id],
+                            title: d.file_name || undefined
+                          }));
+                        const currentIdx = documents.findIndex(d => d.id === doc.id);
+                        openLightbox(photoImages, currentIdx >= 0 ? currentIdx : 0);
+                      }}
+                    >
                       <img
                         src={mediaURLs[doc.id]}
                         alt={doc.file_name}
                         className="w-full h-full object-cover"
                       />
+                      {/* Иконка увеличения при наведении */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/photo:opacity-100 transition-opacity flex items-center justify-center">
+                        <ZoomIn className="w-8 h-8 text-white" />
+                      </div>
                     </div>
                   ) : mediaType === 'video' && mediaURLs[doc.id] ? (
                     <div className="w-full aspect-square bg-accent rounded-md overflow-hidden">

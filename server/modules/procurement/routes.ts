@@ -1,8 +1,42 @@
 import { Router } from "express";
 import { procurementService } from "./service";
 import { parseExcelWithAI } from "./openrouter";
+import { procurementRepository } from "./repository";
+import { reservationsRepository } from "../warehouse/reservations.repository";
 import multer from "multer";
 import * as XLSX from "xlsx";
+
+// Вспомогательная функция для автоматического резервирования
+async function autoReserveItem(
+  itemId: string,
+  warehouseItemId: string | null,
+  userId: string | null
+): Promise<void> {
+  if (!warehouseItemId) return;
+
+  // Получаем item для comparison_id и quantity
+  const item = await procurementRepository.getItemById(itemId);
+  if (!item) return;
+
+  // Получаем comparison для project_id
+  const comparison = await procurementRepository.getComparisonById(item.comparison_id);
+  if (!comparison?.project_id) return;
+
+  try {
+    await reservationsRepository.createReservation({
+      item_id: warehouseItemId,
+      project_id: comparison.project_id,
+      quantity: item.excel_quantity,
+      reserved_by: userId,
+      reason: `Снабжение: ${item.excel_name}`,
+      status: 'pending'
+    });
+    console.log(`[Procurement] Auto-reserved ${item.excel_quantity} of ${warehouseItemId} for project ${comparison.project_id}`);
+  } catch (err: any) {
+    // Не прерываем основной процесс если резервирование не удалось
+    console.warn(`[Procurement] Auto-reservation failed for item ${itemId}:`, err.message);
+  }
+}
 
 const router = Router();
 
@@ -192,11 +226,17 @@ router.put("/api/procurement/items/:itemId/alternative", async (req, res) => {
   try {
     const { itemId } = req.params;
     const { alternative_id } = req.body;
+    const userId = req.headers['x-user-id'] as string || null;
 
     const item = await procurementService.selectAlternative(itemId, alternative_id || null);
     if (!item) {
       res.status(404).json({ error: "Позиция не найдена" });
       return;
+    }
+
+    // Автоматическое резервирование выбранной альтернативы
+    if (alternative_id) {
+      await autoReserveItem(itemId, alternative_id, userId);
     }
 
     res.json(item);
@@ -210,12 +250,16 @@ router.put("/api/procurement/items/:itemId/alternative", async (req, res) => {
 router.put("/api/procurement/items/:itemId/confirm", async (req, res) => {
   try {
     const { itemId } = req.params;
+    const userId = req.headers['x-user-id'] as string || null;
 
     const item = await procurementService.confirmMatch(itemId);
     if (!item) {
       res.status(404).json({ error: "Позиция не найдена" });
       return;
     }
+
+    // Автоматическое резервирование материала
+    await autoReserveItem(itemId, item.warehouse_item_id, userId);
 
     res.json(item);
   } catch (error: any) {

@@ -36,7 +36,8 @@ import { router as suppliersRouter } from "./modules/suppliers/routes";
 import { router as clientsRouter } from "./modules/clients/routes";
 import { router as installersRouter } from "./modules/installers/routes";
 import { router as montageRouter } from "./modules/montage/routes";
-import { router as browserAgentRouter } from "./modules/browser-agent";
+// Browser Agent временно отключен
+// import { router as browserAgentRouter } from "./modules/browser-agent";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Apply global middleware for all API routes
@@ -93,7 +94,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(clientsRouter);
   app.use(installersRouter);
   app.use(montageRouter);
-  app.use(browserAgentRouter);
+  // Browser Agent временно отключен
+  // app.use(browserAgentRouter);
 
   const httpServer = createServer(app);
 

@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLightbox } from "@/contexts/LightboxContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,6 +22,8 @@ import {
   FileVideo,
   FileAudio,
   ImageOff,
+  Lock,
+  Check,
 } from "lucide-react";
 import { format, isValid } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -46,6 +49,8 @@ interface DocumentCardProps {
   onView?: () => void;
   onDownload?: () => void;
   onDelete?: () => void;
+  onToggleFinancial?: () => void;
+  isFinancial?: boolean;
   className?: string;
 }
 
@@ -279,9 +284,27 @@ export function DocumentCard({
   onView,
   onDownload,
   onDelete,
+  onToggleFinancial,
+  isFinancial,
   className,
 }: DocumentCardProps) {
   const displayDate = updatedAt || createdAt;
+  const { openLightbox } = useLightbox();
+
+  // Проверяем, является ли файл изображением
+  const isImage = ["png", "jpg", "jpeg", "gif", "svg", "bmp", "webp"].includes(type.toLowerCase());
+
+  // Обработчик клика для просмотра - открываем lightbox для изображений
+  const handleView = useCallback(() => {
+    console.log('[DocumentCard] handleView:', { isImage, type, downloadUrl, name });
+    if (isImage && downloadUrl) {
+      console.log('[DocumentCard] Opening lightbox with:', downloadUrl);
+      openLightbox([{ url: downloadUrl, title: name }], 0);
+    } else if (onView) {
+      console.log('[DocumentCard] Calling onView');
+      onView();
+    }
+  }, [isImage, type, downloadUrl, name, openLightbox, onView]);
 
   return (
     <Card
@@ -289,7 +312,7 @@ export function DocumentCard({
         "group relative overflow-hidden hover:shadow-lg transition-all duration-200 cursor-pointer",
         className
       )}
-      onClick={onView}
+      onClick={handleView}
     >
       {/* Превью область */}
       <div className="aspect-[4/3] relative bg-muted overflow-hidden">
@@ -301,15 +324,22 @@ export function DocumentCard({
           id={id}
         />
 
+        {/* Иконка финансового документа */}
+        {isFinancial && (
+          <div className="absolute top-2 left-2 bg-amber-500 text-white p-1 rounded z-10" title="Финансовый документ">
+            <Lock className="h-3 w-3" />
+          </div>
+        )}
+
         {/* Оверлей с действиями при наведении */}
         <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-          {onView && (
+          {(onView || isImage) && (
             <Button
               size="sm"
               variant="secondary"
               onClick={(e) => {
                 e.stopPropagation();
-                onView();
+                handleView();
               }}
             >
               <Eye className="h-4 w-4 mr-1" />
@@ -328,44 +358,37 @@ export function DocumentCard({
               <Download className="h-4 w-4" />
             </Button>
           )}
-        </div>
-
-        {/* Меню действий */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute top-2 right-2 h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-gray-800/90"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            {onView && (
-              <DropdownMenuItem onClick={onView}>
-                <Eye className="h-4 w-4 mr-2" />
-                Просмотреть
-              </DropdownMenuItem>
-            )}
-            {onDownload && (
-              <DropdownMenuItem onClick={onDownload}>
-                <Download className="h-4 w-4 mr-2" />
-                Скачать
-              </DropdownMenuItem>
-            )}
-            {onDelete && (
-              <DropdownMenuItem
-                onClick={onDelete}
-                className="text-red-600 dark:text-red-400"
+          {/* Меню действий */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={(e) => e.stopPropagation()}
               >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Удалить
-              </DropdownMenuItem>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              {onToggleFinancial && (
+                <DropdownMenuItem onClick={(e) => { e.stopPropagation(); onToggleFinancial(); }}>
+                  <Lock className="h-4 w-4 mr-2" />
+                  Фин. документ
+                  {isFinancial && <Check className="h-4 w-4 ml-auto text-green-600" />}
+                </DropdownMenuItem>
+              )}
+              {onDelete && (
+                <DropdownMenuItem
+                  onClick={(e) => { e.stopPropagation(); onDelete(); }}
+                  className="text-red-600 dark:text-red-400"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Удалить
+                </DropdownMenuItem>
+              )}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       {/* Информация о файле */}

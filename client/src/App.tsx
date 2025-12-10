@@ -4,6 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { LightboxProvider } from "@/contexts/LightboxContext";
 import { AppSidebar } from "@/components/AppSidebar";
 import { TopBar } from "@/components/TopBar";
 import { AssistantPanel } from "@/components/AssistantPanel";
@@ -198,9 +199,11 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <SidebarProvider defaultOpen={true} style={style as React.CSSProperties}>
-          <AppContent />
-        </SidebarProvider>
+        <LightboxProvider>
+          <SidebarProvider defaultOpen={true} style={style as React.CSSProperties}>
+            <AppContent />
+          </SidebarProvider>
+        </LightboxProvider>
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

@@ -384,36 +384,30 @@ export default function Sales() {
                 <Settings className="h-4 w-4 mr-2" />
                 Управление этапами
               </Button>
-              {currentUser?.can_edit_deals && (
-                <Button
-                  variant="outline"
-                  onClick={() => setSelectionMode(true)}
-                  data-testid="button-enable-selection"
-                >
-                  <CheckSquare className="h-4 w-4 mr-2" />
-                  <span className="hidden md:inline">Выбрать</span>
-                </Button>
-              )}
-              {currentUser?.can_create_deals && (
-                <>
-                  <Button 
-                    size="icon"
-                    onClick={() => setIsCreateDialogOpen(true)} 
-                    className="md:hidden"
-                    data-testid="button-create-deal"
-                  >
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                  <Button 
-                    onClick={() => setIsCreateDialogOpen(true)} 
-                    className="hidden md:flex"
-                    data-testid="button-create-deal-desktop"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Новая сделка
-                  </Button>
-                </>
-              )}
+              <Button
+                variant="outline"
+                onClick={() => setSelectionMode(true)}
+                data-testid="button-enable-selection"
+              >
+                <CheckSquare className="h-4 w-4 mr-2" />
+                <span className="hidden md:inline">Выбрать</span>
+              </Button>
+              <Button
+                size="icon"
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="md:hidden"
+                data-testid="button-create-deal"
+              >
+                <Plus className="h-4 w-4" />
+              </Button>
+              <Button
+                onClick={() => setIsCreateDialogOpen(true)}
+                className="hidden md:flex"
+                data-testid="button-create-deal-desktop"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Новая сделка
+              </Button>
             </>
           )}
           {selectionMode && (
@@ -439,28 +433,22 @@ export default function Sales() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
-                  {currentUser?.can_edit_deals && (
-                    <DropdownMenuItem
-                      onClick={() => setBulkStageDialogOpen(true)}
-                      data-testid="menu-item-change-stage"
-                    >
-                      <ArrowRight className="mr-2 h-4 w-4" />
-                      Изменить этап
-                    </DropdownMenuItem>
-                  )}
-                  {currentUser?.can_delete_deals && (
-                    <>
-                      {currentUser?.can_edit_deals && <DropdownMenuSeparator />}
-                      <DropdownMenuItem
-                        onClick={handleBulkDelete}
-                        className="text-destructive"
-                        data-testid="menu-item-delete"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" />
-                        Удалить
-                      </DropdownMenuItem>
-                    </>
-                  )}
+                  <DropdownMenuItem
+                    onClick={() => setBulkStageDialogOpen(true)}
+                    data-testid="menu-item-change-stage"
+                  >
+                    <ArrowRight className="mr-2 h-4 w-4" />
+                    Изменить этап
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={handleBulkDelete}
+                    className="text-destructive"
+                    data-testid="menu-item-delete"
+                  >
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Удалить
+                  </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
               <Button

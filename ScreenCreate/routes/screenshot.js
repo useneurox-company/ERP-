@@ -1,5 +1,5 @@
 const express = require('express');
-const { takeScreenshot } = require('../services/browser');
+const { takeScreenshot, takeScreenshotWithAuth } = require('../services/browser');
 
 const router = express.Router();
 
@@ -42,6 +42,71 @@ router.get('/', async (req, res) => {
   } catch (error) {
     console.error('Screenshot error:', error.message);
     res.status(500).json({ error: 'Failed to take screenshot', message: error.message });
+  }
+});
+
+/**
+ * POST /screenshot/auth - Take screenshot with authentication data
+ * Body: {
+ *   url: string,
+ *   width?: number,
+ *   height?: number,
+ *   fullPage?: boolean,
+ *   format?: 'png' | 'jpeg' | 'webp',
+ *   quality?: number,
+ *   cookies?: Array<{name: string, value: string, domain?: string}>,
+ *   localStorage?: Record<string, any>,
+ *   sessionStorage?: Record<string, any>
+ * }
+ *
+ * Returns: { screenshot: base64, format: string, width: number, height: number }
+ */
+router.post('/auth', async (req, res) => {
+  try {
+    const {
+      url,
+      width = 1920,
+      height = 1080,
+      fullPage = false,
+      format = 'png',
+      quality = 80,
+      cookies = [],
+      localStorage = {},
+      sessionStorage = {}
+    } = req.body;
+
+    if (!url) {
+      return res.status(400).json({ error: 'URL is required' });
+    }
+
+    console.log(`[Screenshot] Taking auth screenshot of ${url}`);
+    console.log(`[Screenshot] Cookies: ${cookies.length}, localStorage keys: ${Object.keys(localStorage).length}`);
+
+    const result = await takeScreenshotWithAuth(url, {
+      width: parseInt(width) || 1920,
+      height: parseInt(height) || 1080,
+      fullPage: fullPage === true || fullPage === 'true',
+      format: ['png', 'jpeg', 'webp'].includes(format) ? format : 'png',
+      quality: Math.min(100, Math.max(1, parseInt(quality) || 80)),
+      cookies,
+      localStorage,
+      sessionStorage
+    });
+
+    res.json({
+      success: true,
+      screenshot: result.screenshot,
+      format: result.format,
+      width: result.width,
+      height: result.height
+    });
+  } catch (error) {
+    console.error('[Screenshot] Auth screenshot error:', error.message);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to take screenshot',
+      message: error.message
+    });
   }
 });
 

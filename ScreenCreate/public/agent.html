@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Browser Agent - Computer Use Style</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+      color: #fff;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 30px;
+      font-size: 2rem;
+      background: linear-gradient(90deg, #00d4ff, #00ff88);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .controls {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    input, button {
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    input {
+      flex: 1;
+      min-width: 300px;
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    input::placeholder {
+      color: rgba(255,255,255,0.5);
+    }
+    button {
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    button:hover {
+      transform: translateY(-2px);
+    }
+    .btn-start {
+      background: linear-gradient(135deg, #00d4ff, #00ff88);
+      color: #1a1a2e;
+    }
+    .btn-stop {
+      background: #ff4757;
+      color: #fff;
+    }
+    .btn-status {
+      background: #ffa502;
+      color: #1a1a2e;
+    }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1fr 400px;
+      gap: 20px;
+    }
+    .screenshot-panel {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .screenshot-panel h2 {
+      margin-bottom: 15px;
+      color: #00d4ff;
+    }
+    #screenshot {
+      width: 100%;
+      border-radius: 8px;
+      border: 2px solid rgba(255,255,255,0.1);
+      background: #000;
+      min-height: 400px;
+    }
+    .info-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+    .info-card {
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      padding: 15px;
+    }
+    .info-card h3 {
+      color: #00ff88;
+      margin-bottom: 10px;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .status {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #ff4757;
+    }
+    .status-dot.running {
+      background: #00ff88;
+      animation: pulse 1s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    .thinking-text {
+      background: rgba(0,212,255,0.1);
+      border-left: 3px solid #00d4ff;
+      padding: 10px;
+      border-radius: 0 8px 8px 0;
+      font-style: italic;
+    }
+    .actions-list {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+    .action-item {
+      background: rgba(255,255,255,0.05);
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-family: monospace;
+      font-size: 13px;
+    }
+    .action-item .type {
+      color: #ffa502;
+      font-weight: bold;
+    }
+    .action-item .result {
+      color: #00ff88;
+      font-size: 12px;
+      margin-top: 5px;
+    }
+    .step-counter {
+      font-size: 24px;
+      font-weight: bold;
+      color: #00d4ff;
+    }
+    .error {
+      background: rgba(255,71,87,0.2);
+      border-left: 3px solid #ff4757;
+      padding: 10px;
+      border-radius: 0 8px 8px 0;
+      color: #ff4757;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>AI Browser Agent</h1>
+
+    <div class="controls">
+      <input type="text" id="task" placeholder="Введите задачу... (например: Открой проекты и создай новый проект Тест)" />
+      <input type="text" id="url" placeholder="URL (default: http://localhost:5000)" style="min-width: 200px; flex: 0.3;" />
+      <button class="btn-start" onclick="startAgent()">Start Agent</button>
+      <button class="btn-stop" onclick="stopAgent()">Stop</button>
+      <button class="btn-status" onclick="refreshStatus()">Refresh</button>
+    </div>
+
+    <div class="main-grid">
+      <div class="screenshot-panel">
+        <h2>Live Screenshot</h2>
+        <img id="screenshot" alt="Browser Screenshot" />
+      </div>
+
+      <div class="info-panel">
+        <div class="info-card">
+          <h3>Status</h3>
+          <div class="status">
+            <div class="status-dot" id="statusDot"></div>
+            <span id="statusText">Idle</span>
+          </div>
+          <div style="margin-top: 10px;">
+            Step: <span class="step-counter" id="stepCounter">0</span> / <span id="maxSteps">30</span>
+          </div>
+        </div>
+
+        <div class="info-card">
+          <h3>Task</h3>
+          <div id="taskDisplay">No task</div>
+        </div>
+
+        <div class="info-card">
+          <h3>Thinking</h3>
+          <div class="thinking-text" id="thinkingText">Waiting...</div>
+        </div>
+
+        <div class="info-card" id="errorCard" style="display: none;">
+          <h3>Error</h3>
+          <div class="error" id="errorText"></div>
+        </div>
+
+        <div class="info-card">
+          <h3>Actions History</h3>
+          <div class="actions-list" id="actionsList"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = 'http://localhost:3500/agent';
+    let pollInterval = null;
+
+    async function startAgent() {
+      const task = document.getElementById('task').value.trim();
+      const url = document.getElementById('url').value.trim() || 'http://localhost:5000';
+
+      if (!task) {
+        alert('Please enter a task');
+        return;
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/start`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ task, url, visible: true })
+        });
+
+        const data = await response.json();
+        console.log('Start response:', data);
+
+        if (data.error) {
+          alert('Error: ' + data.error);
+          return;
+        }
+
+        if (data.screenshot) {
+          document.getElementById('screenshot').src = data.screenshot;
+        }
+
+        // Start polling for status
+        startPolling();
+
+      } catch (error) {
+        console.error('Start error:', error);
+        alert('Failed to start agent: ' + error.message);
+      }
+    }
+
+    async function stopAgent() {
+      try {
+        const response = await fetch(`${API_BASE}/stop`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' }
+        });
+
+        const data = await response.json();
+        console.log('Stop response:', data);
+
+        stopPolling();
+        refreshStatus();
+
+      } catch (error) {
+        console.error('Stop error:', error);
+      }
+    }
+
+    async function refreshStatus() {
+      try {
+        const response = await fetch(`${API_BASE}/status`);
+        const data = await response.json();
+        console.log('Status:', data);
+
+        // Update UI
+        const statusDot = document.getElementById('statusDot');
+        const statusText = document.getElementById('statusText');
+        statusDot.className = 'status-dot' + (data.running ? ' running' : '');
+        statusText.textContent = data.running ? 'Running' : 'Idle';
+
+        document.getElementById('stepCounter').textContent = data.step || 0;
+        document.getElementById('maxSteps').textContent = data.maxSteps || 30;
+        document.getElementById('taskDisplay').textContent = data.task || 'No task';
+        document.getElementById('thinkingText').textContent = data.thinking || 'Waiting...';
+
+        // Error
+        const errorCard = document.getElementById('errorCard');
+        if (data.error) {
+          errorCard.style.display = 'block';
+          document.getElementById('errorText').textContent = data.error;
+        } else {
+          errorCard.style.display = 'none';
+        }
+
+        // Screenshot
+        if (data.screenshot) {
+          document.getElementById('screenshot').src = data.screenshot;
+        }
+
+        // Stop polling if not running
+        if (!data.running && pollInterval) {
+          stopPolling();
+        }
+
+      } catch (error) {
+        console.error('Status error:', error);
+      }
+    }
+
+    async function refreshActions() {
+      try {
+        const response = await fetch(`${API_BASE}/actions`);
+        const data = await response.json();
+
+        const actionsList = document.getElementById('actionsList');
+        actionsList.innerHTML = data.actions.map((action, i) => `
+          <div class="action-item">
+            <span class="type">${i+1}. ${action.type}</span>
+            ${action.params ? `: ${JSON.stringify(action.params)}` : ''}
+            ${action.result ? `<div class="result">${action.result}</div>` : ''}
+          </div>
+        `).join('');
+
+      } catch (error) {
+        console.error('Actions error:', error);
+      }
+    }
+
+    function startPolling() {
+      stopPolling();
+      pollInterval = setInterval(() => {
+        refreshStatus();
+        refreshActions();
+      }, 2000);
+    }
+
+    function stopPolling() {
+      if (pollInterval) {
+        clearInterval(pollInterval);
+        pollInterval = null;
+      }
+    }
+
+    // Initial status check
+    refreshStatus();
+  </script>
+</body>
+</html>

@@ -46,7 +46,8 @@ import {
   Building2,
   Clock,
   Truck,
-  PackageCheck
+  PackageCheck,
+  Lock
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -569,6 +570,7 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
                                       {item.warehouse_item.name}
                                     </span>
                                     <Check className="w-3 h-3 text-green-500 shrink-0" title="Подтверждено" />
+                                    <Lock className="w-3 h-3 text-amber-500 shrink-0" title="Зарезервировано" />
                                   </div>
                                 ) : item.status === 'alternative_selected' && item.alternative_item ? (
                                   // Выбрана альтернатива
@@ -578,6 +580,7 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
                                       {item.alternative_item.name}
                                     </span>
                                     <Check className="w-3 h-3 text-blue-500 shrink-0" />
+                                    <Lock className="w-3 h-3 text-amber-500 shrink-0" title="Зарезервировано" />
                                   </div>
                                 ) : (item.warehouse_item || (item.ai_suggestions_parsed && item.ai_suggestions_parsed.length > 0)) ? (
                                   // Неточное совпадение ИЛИ есть альтернативы - предлагаем выбрать

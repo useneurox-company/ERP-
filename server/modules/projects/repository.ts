@@ -897,9 +897,26 @@ export class ProjectsRepository {
   /**
    * Получает все документы проекта с группировкой по этапам и подсветкой недавних
    */
-  async getProjectDocumentsGrouped(projectId: string) {
+  async getProjectDocumentsGrouped(projectId: string, userId?: string) {
     const project = await this.getProjectById(projectId);
+
+    // Проверяем право на просмотр финансовых документов
+    let canViewFinancial = false;
+    if (userId) {
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+      if (user) {
+        // Admin всегда видит всё
+        canViewFinancial = user.username.toLowerCase() === 'admin' || user.can_view_financial === true;
+      }
+    }
     const stages = await this.getProjectStages(projectId);
+
+    // Получаем все позиции проекта для связи item_id -> item_name
+    const items = await db.select()
+      .from(project_items)
+      .where(eq(project_items.project_id, projectId));
+
+    const itemsMap = new Map(items.map(item => [item.id, item.name]));
 
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     const recentDocIds: string[] = [];
@@ -1012,6 +1029,8 @@ export class ProjectsRepository {
         stage_name: stage.name,
         stage_type: stage.stage_type_id,
         stage_status: stage.status,
+        item_id: stage.item_id || null,
+        item_name: stage.item_id ? itemsMap.get(stage.item_id) || null : null,
         documents: allFiles,
         document_count: allFiles.length,
       };
@@ -1090,6 +1109,8 @@ export class ProjectsRepository {
                 stage_name: `Документы позиции: ${item.name}`,
                 stage_type: 'item',
                 stage_status: 'active',
+                item_id: item.id,
+                item_name: item.name,
                 documents: taskFiles,
                 document_count: taskFiles.length,
               });
@@ -1153,6 +1174,8 @@ export class ProjectsRepository {
             stage_name: 'Документы задач проекта',
             stage_type: 'project-tasks',
             stage_status: 'active',
+            item_id: null,
+            item_name: null,
             documents: taskFiles,
             document_count: taskFiles.length,
           });
@@ -1164,48 +1187,217 @@ export class ProjectsRepository {
 
     // Получаем документы сделки, если проект связан со сделкой
     let dealDocumentsStage = null;
+    let financialDocumentsStage = null;  // Отдельный stage для фин документов
+    let attachmentStages: any[] = [];  // Массив для stages вложений по позициям
+
     if (project?.deal_id) {
+      // Получаем документы сделки (КП, договоры, счета)
       const dealDocs = await salesRepository.getDealDocuments(project.deal_id);
 
       if (dealDocs.length > 0) {
-        // Преобразуем документы сделки в формат документов этапа
-        const dealFiles = dealDocs.map(doc => ({
-          id: doc.id,
-          name: doc.name,
-          type: 'document' as const,
-          file_path: doc.file_url,
-          size: null,
-          uploaded_by: null,
-          created_at: doc.created_at,
-          user_name: null,
-          user_full_name: null,
-          source: 'deal' as const,
-          deal_document_type: doc.document_type, // 'quote', 'contract', 'invoice'
-          thumbnail_url: null,
-        }));
+        // Разделяем на финансовые и обычные документы на основе флага is_financial из БД
+        const financialDocs = dealDocs.filter(doc => doc.is_financial === true || doc.is_financial === 1);
+        const regularDocs = dealDocs.filter(doc => doc.is_financial !== true && doc.is_financial !== 1);
 
-        // Проверяем недавно загруженные документы сделки
-        dealFiles.forEach(file => {
-          if (file.created_at && new Date(file.created_at) > twentyFourHoursAgo) {
-            recentDocIds.push(file.id);
+        // Финансовые документы - в отдельный stage (только если есть права)
+        if (financialDocs.length > 0 && canViewFinancial) {
+          const financialFiles = financialDocs.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: 'document' as const,
+            file_path: doc.file_url,
+            size: null,
+            uploaded_by: null,
+            created_at: doc.created_at,
+            user_name: null,
+            user_full_name: null,
+            source: 'deal' as const,
+            deal_document_type: doc.document_type,
+            thumbnail_url: null,
+            is_financial: doc.is_financial === true || doc.is_financial === 1,
+          }));
+
+          // Проверяем недавно загруженные
+          financialFiles.forEach(file => {
+            if (file.created_at && new Date(file.created_at) > twentyFourHoursAgo) {
+              recentDocIds.push(file.id);
+            }
+          });
+
+          financialDocumentsStage = {
+            stage_id: 'financial-documents',
+            stage_name: 'Фин документы',
+            stage_type: 'financial',
+            stage_status: 'active',
+            item_id: null,
+            item_name: null,
+            documents: financialFiles,
+            document_count: financialFiles.length,
+            is_restricted: true,  // Флаг для UI - показывает что доступ ограничен
+          };
+        }
+
+        // Обычные документы сделки
+        if (regularDocs.length > 0) {
+          const dealFiles = regularDocs.map(doc => ({
+            id: doc.id,
+            name: doc.name,
+            type: 'document' as const,
+            file_path: doc.file_url,
+            size: null,
+            uploaded_by: null,
+            created_at: doc.created_at,
+            user_name: null,
+            user_full_name: null,
+            source: 'deal' as const,
+            deal_document_type: doc.document_type,
+            thumbnail_url: null,
+            is_financial: doc.is_financial === true || doc.is_financial === 1,
+          }));
+
+          dealFiles.forEach(file => {
+            if (file.created_at && new Date(file.created_at) > twentyFourHoursAgo) {
+              recentDocIds.push(file.id);
+            }
+          });
+
+          dealDocumentsStage = {
+            stage_id: 'deal-documents',
+            stage_name: 'Документы сделки',
+            stage_type: 'deal',
+            stage_status: 'active',
+            item_id: null,
+            item_name: null,
+            documents: dealFiles,
+            document_count: dealFiles.length,
+          };
+        }
+      }
+
+      // Получаем вложения сделки (загруженные файлы)
+      const dealAttachments = await salesRepository.getDealAttachments(project.deal_id);
+      console.log(`[Documents] Found ${dealAttachments.length} deal attachments for deal ${project.deal_id}`);
+
+      if (dealAttachments.length > 0) {
+        // Получаем позиции проекта для названий
+        const projectItems = await this.getProjectItems(projectId);
+        const itemsMap = new Map(projectItems.map(item => [item.id, item.name]));
+
+        // Разделяем на финансовые и обычные вложения
+        const financialAttachments = dealAttachments.filter(att => att.is_financial === true);
+        const regularAttachments = dealAttachments.filter(att => att.is_financial !== true);
+
+        // Финансовые вложения добавляем к financialDocumentsStage (только если есть права)
+        if (financialAttachments.length > 0 && canViewFinancial) {
+          const financialFiles = financialAttachments.map(att => ({
+            id: att.id,
+            name: att.file_name,
+            type: att.mime_type || 'document',
+            file_path: att.file_path,
+            size: att.file_size,
+            uploaded_by: att.uploaded_by,
+            created_at: att.created_at,
+            user_name: null,
+            user_full_name: null,
+            source: 'deal' as const,
+            deal_document_type: 'attachment',
+            thumbnail_url: null,
+            is_financial: true,
+          }));
+
+          financialFiles.forEach(file => {
+            if (file.created_at && new Date(file.created_at) > twentyFourHoursAgo) {
+              recentDocIds.push(file.id);
+            }
+          });
+
+          // Добавляем к существующему financialDocumentsStage или создаём новый
+          if (financialDocumentsStage) {
+            financialDocumentsStage.documents.push(...financialFiles);
+            financialDocumentsStage.document_count += financialFiles.length;
+          } else {
+            financialDocumentsStage = {
+              stage_id: 'financial-documents',
+              stage_name: 'Фин документы',
+              stage_type: 'financial',
+              stage_status: 'active',
+              item_id: null,
+              item_name: null,
+              documents: financialFiles,
+              document_count: financialFiles.length,
+              is_restricted: true,
+            };
           }
-        });
+        }
 
-        dealDocumentsStage = {
-          stage_id: 'deal-documents',
-          stage_name: 'Документы сделки',
-          stage_type: 'deal',
-          stage_status: 'active',
-          documents: dealFiles,
-          document_count: dealFiles.length,
-        };
+        // Группируем обычные вложения по item_id
+        const attachmentsByItem = new Map<string | null, typeof regularAttachments>();
+        for (const att of regularAttachments) {
+          const key = att.item_id || null;
+          if (!attachmentsByItem.has(key)) {
+            attachmentsByItem.set(key, []);
+          }
+          attachmentsByItem.get(key)!.push(att);
+        }
+
+        // Создаём stages для каждой группы (присваиваем внешней переменной)
+        for (const [itemId, atts] of attachmentsByItem.entries()) {
+          const attachmentFiles = atts.map(att => ({
+            id: att.id,
+            name: att.file_name,
+            type: att.mime_type || 'document',
+            file_path: att.file_path,
+            size: att.file_size,
+            uploaded_by: att.uploaded_by,
+            created_at: att.created_at,
+            user_name: null,
+            user_full_name: null,
+            source: 'deal' as const,
+            deal_document_type: 'attachment',
+            thumbnail_url: null,
+            is_financial: false,
+          }));
+
+          // Проверяем недавно загруженные вложения
+          attachmentFiles.forEach(file => {
+            if (file.created_at && new Date(file.created_at) > twentyFourHoursAgo) {
+              recentDocIds.push(file.id);
+            }
+          });
+
+          const itemName = itemId ? itemsMap.get(itemId) || null : null;
+          const stageName = itemName ? `${itemName} / Загруженные файлы` : 'Загруженные файлы';
+
+          attachmentStages.push({
+            stage_id: itemId ? `deal-attachments-${itemId}` : 'deal-attachments',
+            stage_name: stageName,
+            stage_type: 'deal-attachments',
+            stage_status: 'active',
+            item_id: itemId,
+            item_name: itemName,
+            documents: attachmentFiles,
+            document_count: attachmentFiles.length,
+          });
+        }
+
+        // Сортируем: сначала stages с позицией, потом общие
+        if (attachmentStages.length > 1) {
+          attachmentStages.sort((a, b) => {
+            if (a.item_id === null && b.item_id !== null) return 1;
+            if (a.item_id !== null && b.item_id === null) return -1;
+            return 0;
+          });
+        }
       }
     }
 
-    // Объединяем документы сделки и документы этапов
-    const allStages = dealDocumentsStage
-      ? [dealDocumentsStage, ...stagesWithDocuments]
-      : stagesWithDocuments;
+    // Объединяем: фин документы (первыми), загруженные файлы, документы сделки, документы этапов
+    const allStages = [
+      ...(financialDocumentsStage ? [financialDocumentsStage] : []),  // Фин документы первыми (если есть права)
+      ...attachmentStages,  // Все stages с вложениями (сгруппированные по item_id)
+      ...(dealDocumentsStage ? [dealDocumentsStage] : []),
+      ...stagesWithDocuments
+    ];
 
     return {
       stages: allStages,

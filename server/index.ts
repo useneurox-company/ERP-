@@ -3,7 +3,8 @@ import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import { registerRoutes } from "./routes";
 import { join } from "path";
-import { browserAgentWebSocket } from "./modules/browser-agent";
+// Browser Agent временно отключен
+// import { browserAgentWebSocket } from "./modules/browser-agent";
 
 const app = express();
 
@@ -89,8 +90,8 @@ if (isProduction) {
 (async () => {
   const server = await registerRoutes(app);
 
-  // Initialize Browser Agent WebSocket
-  browserAgentWebSocket.initialize(server);
+  // Browser Agent WebSocket временно отключен
+  // browserAgentWebSocket.initialize(server);
 
   // Serve AI-generated images from .local/generated directory
   const generatedDir = join(process.cwd(), ".local", "generated");

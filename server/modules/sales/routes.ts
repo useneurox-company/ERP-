@@ -58,13 +58,34 @@ router.get("/api/deals", async (req, res) => {
 
     // Filter deals based on user permissions
     if (userId) {
-      // Check both "sales" and "deals" modules for backwards compatibility
-      const canViewAll = await permissionsService.canViewAll(userId, "sales") ||
-                         await permissionsService.canViewAll(userId, "deals");
+      // Check if user exists, if not - use Admin (same logic as permission middleware)
+      const { db } = await import("../../db");
+      const { users } = await import("@shared/schema");
+      const { eq } = await import("drizzle-orm");
 
-      // If user cannot view all deals, filter to show only their deals
-      if (!canViewAll) {
-        deals = deals.filter(deal => deal.manager_id === userId);
+      let effectiveUserId = userId;
+      const [user] = await db.select().from(users).where(eq(users.id, userId));
+
+      if (!user) {
+        // Fallback to Admin if user not found
+        const [adminUser] = await db.select().from(users).where(eq(users.username, 'Admin'));
+        if (adminUser) {
+          effectiveUserId = adminUser.id;
+        }
+      }
+
+      // Admin always sees all deals
+      const isAdmin = user?.username?.toLowerCase() === 'admin' || effectiveUserId !== userId;
+
+      if (!isAdmin) {
+        // Check both "sales" and "deals" modules for backwards compatibility
+        const canViewAll = await permissionsService.canViewAll(effectiveUserId, "sales") ||
+                           await permissionsService.canViewAll(effectiveUserId, "deals");
+
+        // If user cannot view all deals, filter to show only their deals
+        if (!canViewAll) {
+          deals = deals.filter(deal => deal.manager_id === effectiveUserId);
+        }
       }
     }
 
@@ -97,7 +118,9 @@ router.get("/api/deals/:id", async (req, res) => {
 router.post("/api/deals", checkPermission("can_create_deals"), async (req, res) => {
   try {
     console.log("Received deal data:", JSON.stringify(req.body, null, 2));
-    const userId = req.headers["x-user-id"] as string;
+    // Use currentUser from middleware (may be Admin fallback if original user not found)
+    const currentUser = (req as any).currentUser;
+    const userId = currentUser?.id || req.headers["x-user-id"] as string;
 
     const validationResult = insertDealSchema.safeParse(req.body);
 
@@ -111,14 +134,19 @@ router.post("/api/deals", checkPermission("can_create_deals"), async (req, res) 
     console.log("Validated deal data:", JSON.stringify(validationResult.data, null, 2));
     const newDeal = await salesRepository.createDeal(validationResult.data);
 
-    // Log activity
-    await activityLogsRepository.logActivity({
-      entity_type: "deal",
-      entity_id: newDeal.id,
-      action_type: "created",
-      user_id: userId,
-      description: `Создана сделка "${newDeal.client_name}"`,
-    });
+    // Log activity with validated user ID
+    try {
+      await activityLogsRepository.logActivity({
+        entity_type: "deal",
+        entity_id: newDeal.id,
+        action_type: "created",
+        user_id: userId,
+        description: `Создана сделка "${newDeal.client_name}"`,
+      });
+    } catch (logError) {
+      console.warn("Failed to log deal creation activity:", logError);
+      // Don't fail the request if logging fails
+    }
 
     res.status(201).json(newDeal);
   } catch (error) {
@@ -131,7 +159,9 @@ router.post("/api/deals", checkPermission("can_create_deals"), async (req, res) 
 router.put("/api/deals/:id", checkPermission("can_edit_deals"), async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] as string;
+    // Use currentUser from middleware (may be Admin fallback if original user not found)
+    const currentUser = (req as any).currentUser;
+    const userId = currentUser?.id || req.headers["x-user-id"] as string;
 
     // Get old deal data for comparison
     const oldDeal = await salesRepository.getDealById(id);
@@ -193,16 +223,21 @@ router.put("/api/deals/:id", checkPermission("can_edit_deals"), async (req, res)
           description = `Изменено описание сделки`;
         }
 
-        await activityLogsRepository.logActivity({
-          entity_type: "deal",
-          entity_id: id,
-          action_type: "updated",
-          user_id: userId,
-          field_changed: field,
-          old_value: String(oldValue || ""),
-          new_value: String(newValue || ""),
-          description,
-        });
+        try {
+          await activityLogsRepository.logActivity({
+            entity_type: "deal",
+            entity_id: id,
+            action_type: "updated",
+            user_id: userId,
+            field_changed: field,
+            old_value: String(oldValue || ""),
+            new_value: String(newValue || ""),
+            description,
+          });
+        } catch (logError) {
+          console.warn("Failed to log deal update activity:", logError);
+          // Don't fail the request if logging fails
+        }
       }
     }
 
@@ -217,7 +252,9 @@ router.put("/api/deals/:id", checkPermission("can_edit_deals"), async (req, res)
 router.delete("/api/deals/:id", checkPermission("can_delete_deals"), async (req, res) => {
   try {
     const { id } = req.params;
-    const userId = req.headers["x-user-id"] as string;
+    // Use currentUser from middleware (may be Admin fallback if original user not found)
+    const currentUser = (req as any).currentUser;
+    const userId = currentUser?.id || req.headers["x-user-id"] as string;
 
     // Get deal info before deleting for logging
     const deal = await salesRepository.getDealById(id);
@@ -231,13 +268,18 @@ router.delete("/api/deals/:id", checkPermission("can_delete_deals"), async (req,
 
     // Log activity (this will remain in the database even after deal is deleted)
     if (deal) {
-      await activityLogsRepository.logActivity({
-        entity_type: "deal",
-        entity_id: id,
-        action_type: "deleted",
-        user_id: userId,
-        description: `Удалена сделка "${deal.client_name}"`,
-      });
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "deal",
+          entity_id: id,
+          action_type: "deleted",
+          user_id: userId,
+          description: `Удалена сделка "${deal.client_name}"`,
+        });
+      } catch (logError) {
+        console.warn("Failed to log deal deletion activity:", logError);
+        // Don't fail the request if logging fails
+      }
     }
 
     res.status(204).send();
@@ -816,11 +858,18 @@ router.put("/api/deals/:dealId/documents/:docId", async (req, res) => {
   }
 });
 
-// DELETE /api/deals/:dealId/documents/:docId - удалить документ
+// DELETE /api/deals/:dealId/documents/:docId - удалить документ (только для админов)
 router.delete("/api/deals/:dealId/documents/:docId", async (req, res) => {
   try {
     const { dealId, docId } = req.params;
     const userId = req.headers["x-user-id"] as string;
+    const userRoleEncoded = req.headers["x-user-role"] as string;
+    const userRole = userRoleEncoded ? decodeURIComponent(userRoleEncoded) : '';
+
+    // Проверяем права администратора
+    if (userRole !== 'admin' && userRole !== 'Администратор') {
+      return res.status(403).json({ error: "Только администратор может удалять документы" });
+    }
 
     // Get document info before deleting
     const document = await salesRepository.getDealDocument(docId);
@@ -963,6 +1012,50 @@ router.post("/api/deals/:dealId/documents/:docId/clone", async (req, res) => {
   }
 });
 
+// ========== Deal Attachments Endpoints ==========
+
+// POST /api/deals/:dealId/attachments - загрузить вложение напрямую к сделке (без привязки к документу)
+router.post("/api/deals/:dealId/attachments", async (req, res) => {
+  try {
+    const { dealId } = req.params;
+    const userId = req.headers["x-user-id"] as string;
+    const { file_name, file_path, file_size, mime_type, item_id } = req.body;
+
+    console.log("Creating deal attachment:", { dealId, userId, file_name, file_path, file_size, mime_type, item_id });
+
+    // Создаём attachment без document_id (напрямую к сделке)
+    // НЕ передаём uploaded_by чтобы избежать FK constraint error
+    const attachment = await salesRepository.createDocumentAttachment({
+      deal_id: dealId,
+      file_name,
+      file_path,
+      file_size,
+      mime_type,
+      item_id: item_id || null,  // Привязка к позиции проекта
+    });
+
+    console.log("Attachment created:", attachment);
+
+    // Log activity (без user_id если не известен)
+    try {
+      await activityLogsRepository.logActivity({
+        entity_type: "deal",
+        entity_id: dealId,
+        action_type: "created",
+        user_id: userId === 'admin_user_id' ? userId : undefined,
+        description: `Добавлен документ к сделке: ${file_name}`,
+      });
+    } catch (logError) {
+      console.warn("Could not log activity:", logError);
+    }
+
+    res.status(201).json(attachment);
+  } catch (error) {
+    console.error("Error creating deal attachment:", error);
+    res.status(500).json({ error: "Failed to create attachment", details: error.message });
+  }
+});
+
 // ========== Document Attachments Endpoints ==========
 
 // GET /api/deals/:dealId/documents/:docId/attachments - получить все вложения документа
@@ -1010,11 +1103,18 @@ router.post("/api/deals/:dealId/documents/:docId/attachments", async (req, res) 
   }
 });
 
-// DELETE /api/deals/:dealId/documents/:docId/attachments/:attachmentId - удалить вложение
+// DELETE /api/deals/:dealId/documents/:docId/attachments/:attachmentId - удалить вложение (только для админов)
 router.delete("/api/deals/:dealId/documents/:docId/attachments/:attachmentId", async (req, res) => {
   try {
     const { dealId, attachmentId } = req.params;
     const userId = req.headers["x-user-id"] as string;
+    const userRoleEncoded = req.headers["x-user-role"] as string;
+    const userRole = userRoleEncoded ? decodeURIComponent(userRoleEncoded) : '';
+
+    // Проверяем права администратора
+    if (userRole !== 'admin' && userRole !== 'Администратор') {
+      return res.status(403).json({ error: "Только администратор может удалять вложения" });
+    }
 
     // Get attachment info before deleting
     const attachment = await salesRepository.getAttachmentById(attachmentId);

@@ -7,8 +7,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Loader2, X, Image as ImageIcon } from "lucide-react";
+import { Send, Loader2, X, Image as ImageIcon, ZoomIn } from "lucide-react";
 import { EmojiPickerPopover } from "./EmojiPickerPopover";
+import { useLightbox } from "@/contexts/LightboxContext";
 
 interface ProjectMessage {
   id: string;
@@ -46,8 +47,20 @@ function formatMessageDate(dateValue: string | Date | { seconds?: number } | nul
 }
 
 // Helper to render message with images (thumbnails that expand on click)
-function renderMessageContent(message: string) {
+function renderMessageContent(message: string, openLightbox: (images: Array<{url: string; title?: string}>, index?: number) => void) {
   const parts = message.split(/(\[img\][^\[]+\[\/img\])/g);
+
+  // Собираем все изображения из сообщения для навигации в lightbox
+  const allImages: Array<{url: string; title?: string}> = [];
+  parts.forEach((part) => {
+    const imgMatch = part.match(/\[img\]([^\[]+)\[\/img\]/);
+    if (imgMatch) {
+      const imgUrl = imgMatch[1].startsWith('/objects/') ? imgMatch[1] : `/objects/${imgMatch[1]}`;
+      allImages.push({ url: imgUrl, title: 'Изображение' });
+    }
+  });
+
+  let imageIndex = 0;
 
   return parts.map((part, index) => {
     const imgMatch = part.match(/\[img\]([^\[]+)\[\/img\]/);
@@ -56,15 +69,20 @@ function renderMessageContent(message: string) {
       // Формируем корректный URL для endpoint /objects/:objectPath
       const imgUrl = imgMatch[1].startsWith('/objects/') ? imgMatch[1] : `/objects/${imgMatch[1]}`;
       const fullUrl = imgUrl;
+      const currentImageIndex = imageIndex++;
       return (
-        <img
-          key={index}
-          src={fullUrl}
-          alt="Изображение"
-          className="max-h-16 rounded border cursor-pointer hover:opacity-80 hover:shadow-md transition-all inline-block"
-          title="Нажмите для увеличения"
-          onClick={() => window.open(fullUrl, '_blank')}
-        />
+        <span key={index} className="relative inline-block group/chatimg">
+          <img
+            src={fullUrl}
+            alt="Изображение"
+            className="max-h-16 rounded border cursor-pointer hover:opacity-80 hover:shadow-md transition-all inline-block"
+            title="Нажмите для увеличения"
+            onClick={() => openLightbox(allImages, currentImageIndex)}
+          />
+          <span className="absolute inset-0 bg-black/30 opacity-0 group-hover/chatimg:opacity-100 transition-opacity flex items-center justify-center rounded pointer-events-none">
+            <ZoomIn className="w-4 h-4 text-white" />
+          </span>
+        </span>
       );
     }
     return part ? <span key={index}>{part}</span> : null;
@@ -77,6 +95,7 @@ interface ProjectChatProps {
 
 export function ProjectChat({ projectId }: ProjectChatProps) {
   const { toast } = useToast();
+  const { openLightbox } = useLightbox();
   const [newMessage, setNewMessage] = useState("");
   const [pastedImage, setPastedImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -298,7 +317,7 @@ export function ProjectChat({ projectId }: ProjectChatProps) {
                             {formatMessageDate(msg.created_at)}
                           </span>
                         </div>
-                        <div className="text-sm whitespace-pre-wrap break-words">{renderMessageContent(msg.message)}</div>
+                        <div className="text-sm whitespace-pre-wrap break-words">{renderMessageContent(msg.message, openLightbox)}</div>
                       </div>
                     </div>
                   </CardContent>

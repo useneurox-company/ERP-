@@ -331,6 +331,15 @@ export class SalesRepository {
   async deleteAttachment(id: string): Promise<void> {
     await db.delete(deal_attachments).where(eq(deal_attachments.id, id));
   }
+
+  // Получить все вложения сделки (включая те, что без привязки к документу)
+  async getDealAttachments(dealId: string): Promise<DealAttachment[]> {
+    return await db
+      .select()
+      .from(deal_attachments)
+      .where(eq(deal_attachments.deal_id, dealId))
+      .orderBy(desc(deal_attachments.created_at));
+  }
 }
 
 export const salesRepository = new SalesRepository();

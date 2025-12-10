@@ -45,6 +45,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { StageDetailView } from "./StageDetailView";
+import { ProjectDocumentsRepository } from "./ProjectDocumentsRepository";
 
 interface ProjectDetailSheetProps {
   project: Project | null;
@@ -58,6 +59,7 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
   const [selectedStage, setSelectedStage] = useState<ProjectStage | null>(null);
   const [stageDetailOpen, setStageDetailOpen] = useState(false);
   const [documentsDialogOpen, setDocumentsDialogOpen] = useState(false);
+  const [selectedDocItemId, setSelectedDocItemId] = useState<string | null>(null);
   const { toast } = useToast();
 
   const { data: users = [] } = useQuery<User[]>({
@@ -81,11 +83,6 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
   const { data: dependencies = [], isLoading: dependenciesLoading } = useQuery<StageDependency[]>({
     queryKey: ["/api/projects", project?.id, "dependencies"],
     enabled: !!project?.id,
-  });
-
-  const { data: allDocuments = [] } = useQuery<any[]>({
-    queryKey: ["/api/projects", project?.id, "documents"],
-    enabled: !!project?.id && documentsDialogOpen,
   });
 
   const form = useForm({
@@ -546,6 +543,19 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
                                 </span>
                               )}
                             </div>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-6 px-2 text-xs mt-1"
+                              onClick={() => {
+                                setSelectedDocItemId(item.id);
+                                setDocumentsDialogOpen(true);
+                              }}
+                              data-testid={`button-item-documents-${itemIndex}`}
+                            >
+                              <FileText className="w-3 h-3 mr-1" />
+                              Документы
+                            </Button>
                           </div>
 
                           {/* Этапы справа */}
@@ -704,42 +714,41 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
         </SheetContent>
       </Sheet>
 
-      <Sheet open={documentsDialogOpen} onOpenChange={setDocumentsDialogOpen}>
-        <SheetContent className="w-full sm:max-w-2xl overflow-y-auto">
+      <Sheet open={documentsDialogOpen} onOpenChange={(open) => {
+        setDocumentsDialogOpen(open);
+        if (!open) setSelectedDocItemId(null);
+      }}>
+        <SheetContent className="w-full sm:max-w-4xl overflow-y-auto">
           <SheetHeader>
-            <SheetTitle>Документы проекта</SheetTitle>
+            <SheetTitle>
+              {selectedDocItemId
+                ? `Документы позиции: ${items.find(i => i.id === selectedDocItemId)?.name || ''}`
+                : 'Все документы проекта'
+              }
+            </SheetTitle>
             <SheetDescription>
-              Все документы по этапам проекта
+              {selectedDocItemId
+                ? 'Документы по выбранной позиции'
+                : 'Все документы проекта, сгруппированные по позициям'
+              }
             </SheetDescription>
+            {selectedDocItemId && (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-2 w-fit"
+                onClick={() => setSelectedDocItemId(null)}
+              >
+                Показать все документы
+              </Button>
+            )}
           </SheetHeader>
-          <div className="mt-6 space-y-4">
-            {allDocuments.length === 0 ? (
-              <p className="text-sm text-muted-foreground text-center">Нет документов</p>
-            ) : (
-              <>
-                {stages.map((stage) => {
-                  const stageDocs = allDocuments.filter(doc => doc.project_stage_id === stage.id);
-                  if (stageDocs.length === 0) return null;
-                  
-                  return (
-                    <Card key={stage.id}>
-                      <CardHeader>
-                        <CardTitle className="text-sm font-medium">{stage.name}</CardTitle>
-                      </CardHeader>
-                      <CardContent className="space-y-2">
-                        {stageDocs.map((doc) => (
-                          <div key={doc.id} className="flex items-center justify-between p-2 border rounded-md">
-                            <div className="flex items-center gap-2">
-                              <FileText className="w-4 h-4 text-muted-foreground" />
-                              <span className="text-sm">{doc.name}</span>
-                            </div>
-                          </div>
-                        ))}
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </>
+          <div className="mt-6">
+            {project && (
+              <ProjectDocumentsRepository
+                projectId={project.id}
+                selectedItemId={selectedDocItemId}
+              />
             )}
           </div>
         </SheetContent>

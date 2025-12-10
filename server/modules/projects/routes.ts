@@ -322,17 +322,23 @@ router.delete("/api/projects/:id", async (req, res) => {
       return;
     }
 
-    // Логируем активность удаления
-    await activityLogsRepository.logActivity({
-      entity_type: "project",
-      entity_id: id,
-      action_type: "deleted",
-      user_id: req.body.user_id || (req.headers["x-user-id"] as string) || null,
-      field_changed: null,
-      old_value: project.name,
-      new_value: null,
-      description: `Удалён проект "${project.name}"`,
-    });
+    // Логируем активность удаления (не блокируем удаление если логирование падает)
+    try {
+      // Используем null для user_id чтобы избежать FK constraint errors
+      // Пользователь может уже не существовать в базе
+      await activityLogsRepository.logActivity({
+        entity_type: "project",
+        entity_id: id,
+        action_type: "deleted",
+        user_id: null,
+        field_changed: null,
+        old_value: project.name,
+        new_value: null,
+        description: `Удалён проект "${project.name}"`,
+      });
+    } catch (logError) {
+      console.warn("Failed to log project deletion activity:", logError);
+    }
 
     res.status(204).send();
   } catch (error) {
@@ -1506,7 +1512,8 @@ router.get("/api/projects/:projectId/documents", async (req, res) => {
 router.get("/api/projects/:projectId/documents/grouped", async (req, res) => {
   try {
     const { projectId } = req.params;
-    const documentsGrouped = await projectsRepository.getProjectDocumentsGrouped(projectId);
+    const userId = req.headers["x-user-id"] as string || undefined;
+    const documentsGrouped = await projectsRepository.getProjectDocumentsGrouped(projectId, userId);
     res.json(documentsGrouped);
   } catch (error) {
     console.error("Error fetching grouped project documents:", error);
