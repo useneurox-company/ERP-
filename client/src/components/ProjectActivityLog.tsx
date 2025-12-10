@@ -13,7 +13,12 @@ import {
   Clock,
   Loader2,
   Hammer,
-  XCircle
+  XCircle,
+  ClipboardList,
+  ClipboardCheck,
+  FileX,
+  Send,
+  Plus
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { ru } from "date-fns/locale";
@@ -46,28 +51,40 @@ const getActionIcon = (actionType: string) => {
 
   switch (actionType) {
     case "created":
-      return <Activity className={iconClass} />;
+      return <Plus className={`${iconClass} text-green-500`} />;
     case "updated":
     case "stage_updated":
       return <Edit className={iconClass} />;
     case "deleted":
-      return <Trash2 className={iconClass} />;
+      return <Trash2 className={`${iconClass} text-red-500`} />;
     case "stage_started":
     case "started":
-      return <Play className={iconClass} />;
+      return <Play className={`${iconClass} text-blue-500`} />;
     case "stage_completed":
     case "completed":
-      return <CheckCircle className={iconClass} />;
+      return <CheckCircle className={`${iconClass} text-green-500`} />;
     case "document_uploaded":
-      return <FileText className={iconClass} />;
+      return <FileText className={`${iconClass} text-blue-500`} />;
+    case "document_deleted":
+      return <FileX className={`${iconClass} text-red-500`} />;
     case "deadline_changed":
-      return <Clock className={iconClass} />;
+      return <Clock className={`${iconClass} text-orange-500`} />;
     case "item_ready_for_montage":
       return <Hammer className={`${iconClass} text-green-500`} />;
     case "item_not_ready_for_montage":
       return <XCircle className={`${iconClass} text-gray-500`} />;
     case "montage_created":
-      return <Hammer className={iconClass} />;
+      return <Hammer className={`${iconClass} text-blue-500`} />;
+    case "montage_item_added":
+      return <Hammer className={`${iconClass} text-purple-500`} />;
+    case "task_created":
+      return <ClipboardList className={`${iconClass} text-blue-500`} />;
+    case "task_submitted":
+      return <Send className={`${iconClass} text-yellow-500`} />;
+    case "task_completed":
+      return <ClipboardCheck className={`${iconClass} text-green-500`} />;
+    case "task_rejected":
+      return <XCircle className={`${iconClass} text-red-500`} />;
     default:
       return <Activity className={iconClass} />;
   }

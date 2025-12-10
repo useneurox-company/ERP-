@@ -124,5 +124,51 @@ export const attachmentsRepository = {
     }
 
     return undefined;
+  },
+
+  // Обновить флаг is_financial для вложения
+  async updateAttachmentFinancial(id: string, isFinancial: boolean): Promise<DealAttachment | undefined> {
+    const [updated] = await db.update(deal_attachments)
+      .set({ is_financial: isFinancial })
+      .where(eq(deal_attachments.id, id))
+      .returning();
+    return updated;
+  },
+
+  // Обновить флаг is_financial для deal_document (КП, договоры, счета)
+  async updateDealDocumentFinancial(id: string, isFinancial: boolean): Promise<boolean> {
+    const result = await db.update(deal_documents)
+      .set({ is_financial: isFinancial ? 1 : 0 })
+      .where(eq(deal_documents.id, id))
+      .returning();
+    return result.length > 0;
+  },
+
+  // Универсальное удаление документа из любой таблицы
+  async deleteAnyAttachment(id: string, source: UniversalAttachment['source']): Promise<boolean> {
+    let result: any[] = [];
+
+    switch (source) {
+      case 'deal':
+        result = await db.delete(deal_attachments).where(eq(deal_attachments.id, id)).returning();
+        break;
+      case 'deal_document':
+        result = await db.delete(deal_documents).where(eq(deal_documents.id, id)).returning();
+        break;
+      case 'stage':
+        result = await db.delete(stage_documents).where(eq(stage_documents.id, id)).returning();
+        break;
+      case 'task':
+        result = await db.delete(task_attachments).where(eq(task_attachments.id, id)).returning();
+        break;
+      case 'document':
+        result = await db.delete(documents).where(eq(documents.id, id)).returning();
+        break;
+      case 'supplier_document':
+        result = await db.delete(project_supplier_documents).where(eq(project_supplier_documents.id, id)).returning();
+        break;
+    }
+
+    return result.length > 0;
   }
 };

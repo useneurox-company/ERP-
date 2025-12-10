@@ -118,8 +118,18 @@ router.get("/api/attachments/preview/:id", async (req, res) => {
     const { exists, filePath: realFilePath } = await localFileStorage.getFile(attachment.file_path);
 
     if (!exists) {
-      console.log(`[Preview] File not found on disk: ${realFilePath}`);
-      return res.status(404).json({ error: "File not found on disk" });
+      console.log(`[Preview] File not found on disk: ${realFilePath}, returning placeholder`);
+      // Возвращаем SVG заглушку вместо 404
+      const placeholderSvg = `<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+        <rect width="200" height="200" fill="#f3f4f6"/>
+        <text x="100" y="90" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="14">Файл</text>
+        <text x="100" y="110" text-anchor="middle" fill="#9ca3af" font-family="Arial" font-size="14">недоступен</text>
+        <path d="M85 130 L100 145 L115 130" stroke="#9ca3af" stroke-width="2" fill="none"/>
+        <rect x="90" y="145" width="20" height="15" stroke="#9ca3af" stroke-width="2" fill="none"/>
+      </svg>`;
+      res.setHeader('Content-Type', 'image/svg+xml');
+      res.setHeader('Cache-Control', 'public, max-age=3600');
+      return res.send(placeholderSvg);
     }
 
     console.log(`[Preview] Real file path: ${realFilePath}`);
@@ -396,5 +406,183 @@ router.delete("/api/deals/:dealId/attachments/:id", async (req, res) => {
   } catch (error) {
     console.error("Error deleting deal attachment:", error);
     res.status(500).json({ error: "Failed to delete attachment" });
+  }
+});
+
+// DELETE /api/attachments/:id - универсальное удаление документа (только для админов)
+router.delete("/api/attachments/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.headers["x-user-id"] as string;
+    const userRoleEncoded = req.headers["x-user-role"] as string;
+
+    // Декодируем роль (приходит URL-encoded)
+    const userRole = userRoleEncoded ? decodeURIComponent(userRoleEncoded) : '';
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Проверяем права администратора
+    if (userRole !== 'admin' && userRole !== 'Администратор') {
+      console.log(`[Delete] Access denied for role: "${userRole}"`);
+      return res.status(403).json({ error: "Только администратор может удалять документы" });
+    }
+
+    // Ищем документ универсально во всех таблицах
+    const attachment = await attachmentsRepository.getAnyAttachmentById(id);
+
+    if (!attachment) {
+      return res.status(404).json({ error: "Документ не найден" });
+    }
+
+    console.log(`[Delete] Deleting attachment: ${attachment.file_name} from ${attachment.source}`);
+
+    // Получаем project_id ДО удаления документа
+    let projectId: string | null = null;
+
+    if (attachment.source === 'stage') {
+      try {
+        const { stage_documents, project_stages } = await import("@shared/schema");
+        const { db } = await import("../../db");
+        const { eq } = await import("drizzle-orm");
+
+        // Получаем stage_id из stage_documents
+        const [stageDoc] = await db.select({ stage_id: stage_documents.stage_id })
+          .from(stage_documents)
+          .where(eq(stage_documents.id, id));
+
+        if (stageDoc?.stage_id) {
+          // Получаем project_id из этапа
+          const [stage] = await db.select({ project_id: project_stages.project_id })
+            .from(project_stages)
+            .where(eq(project_stages.id, stageDoc.stage_id));
+
+          projectId = stage?.project_id || null;
+        }
+      } catch (err) {
+        console.error("[Delete] Error getting project_id for stage document:", err);
+      }
+    } else if (attachment.source === 'document') {
+      try {
+        const { documents } = await import("@shared/schema");
+        const { db } = await import("../../db");
+        const { eq } = await import("drizzle-orm");
+
+        const [doc] = await db.select({ project_id: documents.project_id })
+          .from(documents)
+          .where(eq(documents.id, id));
+
+        projectId = doc?.project_id || null;
+      } catch (err) {
+        console.error("[Delete] Error getting project_id for document:", err);
+      }
+    }
+
+    // Удаляем из соответствующей таблицы
+    const deleted = await attachmentsRepository.deleteAnyAttachment(id, attachment.source);
+
+    if (!deleted) {
+      return res.status(500).json({ error: "Не удалось удалить документ" });
+    }
+
+    // Логируем удаление документа для проекта
+    if (projectId) {
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: projectId,
+          action_type: "document_deleted",
+          user_id: userId,
+          description: `Удален документ: ${attachment.file_name}`,
+        });
+      } catch (logError) {
+        console.error("[Delete] Error logging document deletion:", logError);
+      }
+    }
+
+    // Пытаемся удалить физический файл
+    try {
+      await localFileStorage.deleteFile(attachment.file_path);
+      console.log(`[Delete] Physical file deleted: ${attachment.file_path}`);
+    } catch (error) {
+      console.warn("[Delete] Failed to delete physical file:", error);
+      // Продолжаем даже если файл не удалился
+    }
+
+    console.log(`[Delete] Successfully deleted: ${attachment.file_name}`);
+    res.status(204).send();
+  } catch (error) {
+    console.error("Error deleting attachment:", error);
+    res.status(500).json({ error: "Failed to delete attachment" });
+  }
+});
+
+// PATCH /api/attachments/:id/financial - переключить флаг финансового документа
+router.patch("/api/attachments/:id/financial", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { is_financial } = req.body;
+    const userId = req.headers["x-user-id"] as string;
+
+    if (!userId) {
+      return res.status(401).json({ error: "User not authenticated" });
+    }
+
+    // Сначала ищем документ универсально
+    const anyAttachment = await attachmentsRepository.getAnyAttachmentById(id);
+
+    if (!anyAttachment) {
+      return res.status(404).json({ error: "Документ не найден" });
+    }
+
+    // Проверяем что это deal attachment или deal_document (они поддерживают is_financial)
+    if (anyAttachment.source !== 'deal' && anyAttachment.source !== 'deal_document') {
+      return res.status(400).json({ error: "Функция доступна только для вложений и документов сделок" });
+    }
+
+    let dealId: string | null = null;
+    let fileName = anyAttachment.file_name;
+
+    if (anyAttachment.source === 'deal') {
+      // Обновляем флаг is_financial для deal_attachments
+      const attachment = await attachmentsRepository.getDealAttachmentById(id);
+      if (!attachment) {
+        return res.status(404).json({ error: "Вложение не найдено" });
+      }
+      dealId = attachment.deal_id;
+
+      const updated = await attachmentsRepository.updateAttachmentFinancial(id, is_financial === true);
+      if (!updated) {
+        return res.status(500).json({ error: "Не удалось обновить документ" });
+      }
+    } else {
+      // Обновляем флаг is_financial для deal_documents
+      const success = await attachmentsRepository.updateDealDocumentFinancial(id, is_financial === true);
+      if (!success) {
+        return res.status(500).json({ error: "Не удалось обновить документ" });
+      }
+    }
+
+    // Логируем активность (если есть deal_id)
+    if (dealId) {
+      await activityLogsRepository.logActivity({
+        entity_type: "deal",
+        entity_id: dealId,
+        action_type: "updated",
+        user_id: userId,
+        field_changed: "is_financial",
+        old_value: "false",
+        new_value: String(is_financial === true),
+        description: is_financial
+          ? `Документ "${fileName}" помечен как финансовый`
+          : `Документ "${fileName}" убран из финансовых`,
+      });
+    }
+
+    res.json({ success: true, is_financial: is_financial === true });
+  } catch (error) {
+    console.error("Error updating attachment financial flag:", error);
+    res.status(500).json({ error: "Failed to update attachment" });
   }
 });

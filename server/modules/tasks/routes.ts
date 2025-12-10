@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { tasksRepository } from "./repository";
+import { tasksRepository, activityLogsRepository } from "./repository";
 import { insertTaskSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import multer from "multer";
@@ -92,6 +92,22 @@ router.post("/api/tasks", async (req, res) => {
     console.log("[Tasks] Validation passed, creating task...");
     const task = await tasksRepository.createTask(validation.data);
     console.log("[Tasks] Task created successfully:", task?.id);
+
+    // Log activity for project-related tasks
+    if (task && task.related_entity_type === 'project' && task.related_entity_id) {
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: task.related_entity_id,
+          action_type: "task_created",
+          user_id: task.created_by || null,
+          description: `Создана задача "${task.title}"`,
+        });
+      } catch (logError) {
+        console.error("[Tasks] Error logging task creation activity:", logError);
+      }
+    }
+
     res.status(201).json(task);
   } catch (error) {
     console.error("[Tasks] Error creating task:", error);
@@ -137,6 +153,22 @@ router.post("/api/tasks/:id/submit", async (req, res) => {
     }
 
     const task = await tasksRepository.submitTaskForReview(id, userId);
+
+    // Log activity for project-related tasks
+    if (task && task.related_entity_type === 'project' && task.related_entity_id) {
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: task.related_entity_id,
+          action_type: "task_submitted",
+          user_id: userId,
+          description: `Задача "${task.title}" отправлена на проверку`,
+        });
+      } catch (logError) {
+        console.error("[Tasks] Error logging task submission activity:", logError);
+      }
+    }
+
     res.json(task);
   } catch (error) {
     console.error("[Tasks] Error submitting task for review:", error);
@@ -156,6 +188,22 @@ router.post("/api/tasks/:id/approve", async (req, res) => {
     }
 
     const task = await tasksRepository.approveTask(id, reviewerId);
+
+    // Log activity for project-related tasks
+    if (task && task.related_entity_type === 'project' && task.related_entity_id) {
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: task.related_entity_id,
+          action_type: "task_completed",
+          user_id: reviewerId,
+          description: `Задача "${task.title}" выполнена`,
+        });
+      } catch (logError) {
+        console.error("[Tasks] Error logging task approval activity:", logError);
+      }
+    }
+
     res.json(task);
   } catch (error) {
     console.error("[Tasks] Error approving task:", error);
@@ -180,6 +228,22 @@ router.post("/api/tasks/:id/reject", async (req, res) => {
     }
 
     const task = await tasksRepository.rejectTask(id, reviewerId, reason);
+
+    // Log activity for project-related tasks
+    if (task && task.related_entity_type === 'project' && task.related_entity_id) {
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: task.related_entity_id,
+          action_type: "task_rejected",
+          user_id: reviewerId,
+          description: `Задача "${task.title}" отклонена: ${reason}`,
+        });
+      } catch (logError) {
+        console.error("[Tasks] Error logging task rejection activity:", logError);
+      }
+    }
+
     res.json(task);
   } catch (error) {
     console.error("[Tasks] Error rejecting task:", error);

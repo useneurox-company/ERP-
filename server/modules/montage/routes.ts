@@ -4,6 +4,7 @@ import { insertMontageOrderSchema, insertMontageItemSchema, insertMontageStatusS
 import { fromZodError } from "zod-validation-error";
 import { db } from "../../db";
 import { eq, asc, and, ne, inArray, isNotNull } from "drizzle-orm";
+import { activityLogsRepository } from "../tasks/repository";
 
 export const router = Router();
 
@@ -357,6 +358,22 @@ router.post("/api/montage", async (req, res) => {
       await montageRepository.setOrderInstallers(newOrder.id, installer_ids);
     }
 
+    // Log activity for project
+    if (newOrder.project_id) {
+      const userId = req.headers["x-user-id"] as string;
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: newOrder.project_id,
+          action_type: "montage_created",
+          user_id: userId || null,
+          description: `Создан заказ на монтаж "${newOrder.name || ''}"`,
+        });
+      } catch (logError) {
+        console.error("Error logging montage creation activity:", logError);
+      }
+    }
+
     // Get full order with installers
     const fullOrder = await montageRepository.getOrderById(newOrder.id);
     res.status(201).json(fullOrder);
@@ -485,6 +502,24 @@ router.post("/api/montage/:orderId/items", async (req, res) => {
     }
 
     const newItem = await montageRepository.addItemToOrder(validationResult.data);
+
+    // Log activity for project
+    const order = await montageRepository.getOrderById(orderId);
+    if (order?.project_id) {
+      const userId = req.headers["x-user-id"] as string;
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: order.project_id,
+          action_type: "montage_item_added",
+          user_id: userId || null,
+          description: `Добавлена позиция в заказ на монтаж "${order.name || ''}"`,
+        });
+      } catch (logError) {
+        console.error("Error logging montage item addition activity:", logError);
+      }
+    }
+
     res.status(201).json(newItem);
   } catch (error) {
     console.error("Error adding montage item:", error);
