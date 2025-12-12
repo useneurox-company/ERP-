@@ -144,6 +144,7 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
   const { data: comparisons = [], isLoading: loadingComparisons } = useQuery<Comparison[]>({
     queryKey: [`/api/procurement/stage/${stageId}`],
     enabled: !!stageId,
+    refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
 
   // Получить детали текущего сравнения
@@ -153,11 +154,13 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
   }>({
     queryKey: [`/api/procurement/${currentComparisonId}`],
     enabled: !!currentComparisonId,
+    refetchInterval: 5000, // Real-time: обновление каждые 5 секунд
   });
 
   // Получить список поставщиков
   const { data: suppliers = [] } = useQuery<Supplier[]>({
     queryKey: ['/api/suppliers'],
+    refetchInterval: 30000, // Real-time: обновление каждые 30 секунд
   });
 
   // Мутация загрузки файла

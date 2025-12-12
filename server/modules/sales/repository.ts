@@ -2,7 +2,7 @@ import { db } from "../../db";
 import { eq, asc, desc, sql, inArray } from "drizzle-orm";
 import Database from 'better-sqlite3';
 import type { Deal, InsertDeal, DealStage, InsertDealStage, DealMessage, InsertDealMessage, DealDocument, InsertDealDocument, DealAttachment, InsertDealAttachment } from "@shared/schema";
-import { deals, dealStages, deal_messages, deal_documents, deal_attachments, users, projects } from "@shared/schema";
+import { deals, dealStages, deal_messages, deal_documents, deal_attachments, users, projects, company_settings } from "@shared/schema";
 
 export class SalesRepository {
   async getAllDeals(): Promise<any[]> {
@@ -43,21 +43,24 @@ export class SalesRepository {
   }
 
   async getNextOrderNumber(): Promise<string> {
-    // Generate continuous order number starting from 269
-    // Get all deals
+    // Получаем настройку начального номера из company_settings
+    const settings = await db.select().from(company_settings).limit(1);
+    const offset = settings[0]?.deal_number_offset || 269;
+
+    // Получаем все номера сделок
     const allDeals = await db.select({ order_number: deals.order_number }).from(deals);
 
-    // Extract all numeric order numbers
+    // Извлекаем числовые номера
     const allNumbers = allDeals
       .map(d => d.order_number)
       .filter(n => n && !isNaN(parseInt(n)))
       .map(n => parseInt(n!))
       .filter(n => !isNaN(n));
 
-    // Find maximum number, ensure it's at least 268 so first number will be 269
+    // Находим максимум, учитывая offset
     const maxNumber = allNumbers.length > 0
-      ? Math.max(...allNumbers, 268)
-      : 268;
+      ? Math.max(...allNumbers, offset - 1)
+      : offset - 1;
 
     return String(maxNumber + 1);
   }

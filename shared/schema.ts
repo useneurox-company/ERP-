@@ -286,6 +286,7 @@ export const project_items = pgTable('project_items', {
   order: integer('order').notNull(),
   image_url: text('image_url'),
   ready_for_montage: boolean('ready_for_montage').default(false).notNull(), // Готово к монтажу
+  status: text('status').default('new'), // Статус позиции (new, soglasov, chertezhi, zapusk, stolyarka, etc.)
   created_at: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
   updated_at: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
@@ -816,6 +817,7 @@ export const company_settings = pgTable('company_settings', {
   inn: text('inn'),
   address: text('address'),
   phone: text('phone'),
+  deal_number_offset: integer('deal_number_offset').default(269), // Начальный номер сделок
   created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
 });

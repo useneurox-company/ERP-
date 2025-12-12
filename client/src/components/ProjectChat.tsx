@@ -127,6 +127,7 @@ export function ProjectChat({ projectId }: ProjectChatProps) {
       return response;
     },
     enabled: !!projectId,
+    refetchInterval: 3000, // Real-time: обновление каждые 3 секунды
   });
 
   const createMessageMutation = useMutation({

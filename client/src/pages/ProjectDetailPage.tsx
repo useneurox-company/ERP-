@@ -10,6 +10,8 @@ import { Separator } from "@/components/ui/separator";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ITEM_STATUSES, getStatusConfig, getCardBorderStyle } from "@/lib/itemStatuses";
 import {
   ArrowLeft, Plus, Edit, Trash2, Calendar, FileText, Layers,
   AlertCircle, GripVertical, MessageSquare, Play, ImageIcon, File, User as UserIcon, Package, Paperclip, Clock, Hammer, Check, Users
@@ -386,6 +388,9 @@ export default function ProjectDetailPage() {
   const [taskAssigneeFilter, setTaskAssigneeFilter] = useState<string>('all');
   const [taskDeadlineFilter, setTaskDeadlineFilter] = useState<'all' | 'overdue' | 'today' | 'week'>('all');
 
+  // Lightbox для увеличения фото позиций
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
+
   // Блокировка доступа для замерщиков
   useEffect(() => {
     const userRoleStr = localStorage.getItem("userRole");
@@ -529,6 +534,31 @@ export default function ProjectDetailPage() {
     },
     onError: () => {
       toast({ title: "Ошибка", description: "Не удалось изменить статус готовности", variant: "destructive" });
+    },
+  });
+
+  // Update item status mutation
+  const updateItemStatusMutation = useMutation({
+    mutationFn: async ({ itemId, status }: { itemId: string; status: string }) => {
+      const res = await fetch(`/api/project-items/${itemId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!res.ok) throw new Error('Failed to update item status');
+      return res.json();
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', id, 'items'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/projects', id, 'events'] });
+      const statusConfig = getStatusConfig(data.status);
+      toast({
+        title: "Статус обновлён",
+        description: `"${data.name}" → ${statusConfig.label}`,
+      });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось изменить статус", variant: "destructive" });
     },
   });
 
@@ -1159,28 +1189,39 @@ export default function ProjectDetailPage() {
               </div>
             ) : (
               <div className="space-y-2 max-h-[600px] overflow-y-auto">
-                {items.map((item) => (
+                {items.map((item) => {
+                  const statusConfig = getStatusConfig(item.status);
+                  return (
                   <Card
                     key={item.id}
-                    className={`p-2 cursor-pointer transition-colors ${
-                      selectedItemId === item.id ? "border-primary" : ""
-                    }`}
+                    className={`p-2 cursor-pointer transition-colors border-2 ${
+                      selectedItemId === item.id ? "border-primary" : getCardBorderStyle(item.status)
+                    } ${statusConfig.bgColor}`}
                     onClick={() => setSelectedItemId(item.id)}
                     data-testid={`card-item-${item.id}`}
                   >
                     <div className="flex gap-2">
-                      {item.image_url ? (
-                        <img
-                          src={item.image_url}
-                          alt={item.name}
-                          className="w-10 h-10 object-cover rounded flex-shrink-0"
-                          data-testid={`image-item-${item.id}`}
-                        />
-                      ) : (
-                        <div className="w-10 h-10 flex items-center justify-center bg-muted rounded flex-shrink-0">
+                      {/* Фото позиции - клик открывает lightbox */}
+                      <div
+                        className="w-10 h-10 rounded bg-muted flex items-center justify-center shrink-0 cursor-pointer hover:opacity-80 transition-opacity overflow-hidden"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.image_url) {
+                            setLightboxImage(item.image_url);
+                          }
+                        }}
+                      >
+                        {item.image_url ? (
+                          <img
+                            src={item.image_url}
+                            alt={item.name}
+                            className="w-full h-full object-cover"
+                            data-testid={`image-item-${item.id}`}
+                          />
+                        ) : (
                           <ImageIcon className="w-5 h-5 text-muted-foreground" />
-                        </div>
-                      )}
+                        )}
+                      </div>
                       <div className="flex-1 min-w-0">
                         {/* Header: название, артикул, количество и кнопки в одной строке */}
                         <div className="flex items-center justify-between gap-2">
@@ -1279,12 +1320,45 @@ export default function ProjectDetailPage() {
                           </div>
                         </div>
 
+                        {/* Бейдж статуса с Popover для выбора */}
+                        <div className="mt-1">
+                          <Popover>
+                            <PopoverTrigger asChild onClick={(e) => e.stopPropagation()}>
+                              <button
+                                className={`px-2 py-0.5 rounded text-xs font-medium border hover:opacity-80 transition-opacity ${statusConfig.bgColor} ${statusConfig.textColor} ${statusConfig.borderColor}`}
+                                title="Нажмите для смены статуса"
+                              >
+                                {statusConfig.label}
+                              </button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-44 p-2" align="start">
+                              <div className="space-y-1">
+                                <p className="text-xs font-medium text-muted-foreground mb-2">Статус производства</p>
+                                {ITEM_STATUSES.map((s) => (
+                                  <button
+                                    key={s.value}
+                                    className={`w-full text-left px-2 py-1.5 rounded text-sm flex items-center gap-2 border hover:opacity-80 ${s.bgColor} ${s.textColor} ${s.borderColor}`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      updateItemStatusMutation.mutate({ itemId: item.id, status: s.value });
+                                    }}
+                                  >
+                                    {item.status === s.value && <Check className="w-3 h-3" />}
+                                    <span className={item.status === s.value ? "font-medium" : ""}>{s.label}</span>
+                                  </button>
+                                ))}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        </div>
+
                         {/* Tasks for this item - компактно */}
                         <ProjectItemTasksSection projectId={id!} itemId={item.id} onTaskClick={setSelectedTaskId} />
                       </div>
                     </div>
                   </Card>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>
@@ -2045,6 +2119,30 @@ export default function ProjectDetailPage() {
               {sendToMontageMutation.isPending ? "Отправка..." : "Отправить"}
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Lightbox для просмотра фото позиции */}
+      <Dialog open={!!lightboxImage} onOpenChange={(open) => !open && setLightboxImage(null)}>
+        <DialogContent className="max-w-4xl p-0 bg-black/90 border-none">
+          <div className="relative w-full flex items-center justify-center">
+            {lightboxImage && (
+              <img
+                src={lightboxImage}
+                alt="Фото позиции"
+                className="max-h-[85vh] max-w-full object-contain"
+              />
+            )}
+            <button
+              onClick={() => setLightboxImage(null)}
+              className="absolute top-2 right-2 text-white hover:text-gray-300 bg-black/50 rounded-full p-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"></line>
+                <line x1="6" y1="6" x2="18" y2="18"></line>
+              </svg>
+            </button>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

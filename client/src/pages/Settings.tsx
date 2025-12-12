@@ -1,16 +1,17 @@
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { UserAvatar } from "@/components/UserAvatar";
 import { UserFormDialog } from "@/components/UserFormDialog";
-import { Plus, Trash2, Edit } from "lucide-react";
+import { Plus, Trash2, Edit, Save, Settings2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import type { User, Role } from "@shared/schema";
+import type { User, Role, CompanySettings } from "@shared/schema";
 
 export default function Settings() {
   const { toast } = useToast();
@@ -33,6 +34,49 @@ export default function Settings() {
 
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<User | null>(null);
+
+  // Company settings state
+  const [dealNumberOffset, setDealNumberOffset] = useState<number>(269);
+
+  // Fetch company settings
+  const { data: companySettings, isLoading: settingsLoading } = useQuery<CompanySettings>({
+    queryKey: ["/api/settings/company"],
+    queryFn: async () => {
+      return await apiRequest("GET", "/api/settings/company");
+    },
+  });
+
+  // Update company settings mutation
+  const updateSettingsMutation = useMutation({
+    mutationFn: async (data: Partial<CompanySettings>) => {
+      return await apiRequest("PUT", "/api/settings/company", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/settings/company"] });
+      toast({
+        title: "Настройки сохранены",
+        description: "Настройки системы успешно обновлены",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Ошибка",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update local state when company settings are loaded
+  useEffect(() => {
+    if (companySettings?.deal_number_offset) {
+      setDealNumberOffset(companySettings.deal_number_offset);
+    }
+  }, [companySettings]);
+
+  const handleSaveDealNumberOffset = () => {
+    updateSettingsMutation.mutate({ deal_number_offset: dealNumberOffset });
+  };
 
   const { data: usersWithRoles = [], isLoading: usersLoading, error: usersError } = useQuery<Array<User & { role?: Role }>>({
     queryKey: ["/api/users", { includeRoles: true }],
@@ -112,6 +156,7 @@ export default function Settings() {
       <Tabs defaultValue="users" className="w-full">
         <TabsList className="overflow-x-auto">
           <TabsTrigger value="users">Пользователи</TabsTrigger>
+          <TabsTrigger value="system">Система</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users" className="mt-6 space-y-6">
@@ -188,6 +233,53 @@ export default function Settings() {
                   ))}
                 </div>
               )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="system" className="mt-6 space-y-6">
+          <p className="text-xs md:text-sm text-muted-foreground">Системные настройки и нумерация</p>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center gap-2">
+                <Settings2 className="h-5 w-5" />
+                Нумерация сделок
+              </CardTitle>
+              <CardDescription>
+                Установите начальный номер для новых сделок. Следующая сделка получит этот номер или следующий за максимальным существующим.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {settingsLoading ? (
+                <Skeleton className="h-10 w-48" />
+              ) : (
+                <div className="flex items-end gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="deal-number-offset">Начальный номер сделки</Label>
+                    <Input
+                      id="deal-number-offset"
+                      type="number"
+                      min={1}
+                      value={dealNumberOffset}
+                      onChange={(e) => setDealNumberOffset(parseInt(e.target.value) || 1)}
+                      className="w-48"
+                      placeholder="269"
+                    />
+                  </div>
+                  <Button
+                    onClick={handleSaveDealNumberOffset}
+                    disabled={updateSettingsMutation.isPending}
+                  >
+                    <Save className="h-4 w-4 mr-2" />
+                    {updateSettingsMutation.isPending ? "Сохранение..." : "Сохранить"}
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Текущая настройка: {companySettings?.deal_number_offset || 269}.
+                Если установить 500, следующая новая сделка получит номер 500 (или выше, если уже есть сделки с большими номерами).
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
