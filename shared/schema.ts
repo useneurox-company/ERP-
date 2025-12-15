@@ -114,6 +114,7 @@ export type DealStage = typeof dealStages.$inferSelect;
 // Deals
 export const deals = pgTable('deals', {
   id: text('id').$defaultFn(() => genId()).primaryKey(),
+  title: text('title'),
   pipeline_id: text('pipeline_id').references(() => salesPipelines.id),
   client_name: text('client_name').notNull(),
   company: text('company'),
@@ -133,6 +134,7 @@ export const deals = pgTable('deals', {
 export const insertDealSchema = createInsertSchema(deals)
   .omit({ id: true, created_at: true, updated_at: true })
   .extend({
+    title: z.string().nullable().optional().transform((val) => val === '' ? null : val),
     company: z.string().nullable().optional().transform((val) => val === '' ? null : val),
     amount: z.union([z.number(), z.string(), z.null()]).optional().transform((val) => {
       if (val === null || val === undefined || val === '') return null;
@@ -262,6 +264,9 @@ export const projects = pgTable('projects', {
   duration_days: integer('duration_days'),
   started_at: text('started_at'), // ISO 8601 string
   manager_id: text('manager_id').references(() => users.id),
+  address: text('address'), // Адрес монтажа/доставки
+  phone: text('phone'), // Телефон клиента
+  amount: real('amount'), // Сумма проекта
   created_at: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
   updated_at: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
@@ -1118,6 +1123,21 @@ export const insertProcurementComparisonItemSchema = createInsertSchema(procurem
 export type InsertProcurementComparisonItem = z.infer<typeof insertProcurementComparisonItemSchema>;
 export type ProcurementComparisonItem = typeof procurement_comparison_items.$inferSelect;
 
+// Procurement Shopping Cards (Карточки закупок - мини-Kanban)
+export const procurement_shopping_cards = pgTable('procurement_shopping_cards', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  stage_id: text('stage_id').references(() => project_stages.id, { onDelete: 'cascade' }).notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  status: text('status').default('todo').notNull(), // todo, in_progress, done
+  order_index: integer('order_index').default(0).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertProcurementShoppingCardSchema = createInsertSchema(procurement_shopping_cards).omit({ id: true, created_at: true, updated_at: true });
+export type InsertProcurementShoppingCard = z.infer<typeof insertProcurementShoppingCardSchema>;
+export type ProcurementShoppingCard = typeof procurement_shopping_cards.$inferSelect;
 
 // Suppliers (Поставщики)
 export const suppliers = pgTable('suppliers', {

@@ -47,7 +47,10 @@ import {
   Clock,
   Truck,
   PackageCheck,
-  Lock
+  Lock,
+  Plus,
+  X,
+  ListTodo
 } from "lucide-react";
 import { formatCurrency } from "@/lib/utils";
 
@@ -162,6 +165,80 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
     queryKey: ['/api/suppliers'],
     refetchInterval: 30000, // Real-time: обновление каждые 30 секунд
   });
+
+  // ========== SHOPPING CARDS (мини-Kanban) ==========
+  interface ShoppingCard {
+    id: string;
+    stage_id: string;
+    title: string;
+    description?: string;
+    status: 'todo' | 'in_progress' | 'done';
+    order_index: number;
+    created_at: string;
+    updated_at: string;
+  }
+
+  const [newCardTitle, setNewCardTitle] = useState('');
+  const [showAddCard, setShowAddCard] = useState(false);
+
+  // Получить карточки
+  const { data: shoppingCards = [] } = useQuery<ShoppingCard[]>({
+    queryKey: [`/api/procurement/stage/${stageId}/cards`],
+    enabled: !!stageId,
+    refetchInterval: 10000,
+  });
+
+  // Создать карточку
+  const createCardMutation = useMutation({
+    mutationFn: async (title: string) => {
+      const res = await fetch(`/api/procurement/stage/${stageId}/cards`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title }),
+      });
+      if (!res.ok) throw new Error('Ошибка создания');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/procurement/stage/${stageId}/cards`] });
+      setNewCardTitle('');
+      setShowAddCard(false);
+    },
+  });
+
+  // Обновить карточку
+  const updateCardMutation = useMutation({
+    mutationFn: async ({ cardId, data }: { cardId: string; data: Partial<ShoppingCard> }) => {
+      const res = await fetch(`/api/procurement/cards/${cardId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Ошибка обновления');
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/procurement/stage/${stageId}/cards`] });
+    },
+  });
+
+  // Удалить карточку
+  const deleteCardMutation = useMutation({
+    mutationFn: async (cardId: string) => {
+      const res = await fetch(`/api/procurement/cards/${cardId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Ошибка удаления');
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/procurement/stage/${stageId}/cards`] });
+    },
+  });
+
+  // Группировка карточек по статусам
+  const cardsByStatus = {
+    todo: shoppingCards.filter(c => c.status === 'todo'),
+    in_progress: shoppingCards.filter(c => c.status === 'in_progress'),
+    done: shoppingCards.filter(c => c.status === 'done'),
+  };
 
   // Мутация загрузки файла
   const uploadMutation = useMutation({
@@ -484,6 +561,155 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
                 </Button>
               </div>
             ))}
+          </div>
+        )}
+
+        {/* ========== МИНИ-KANBAN: Список покупок ========== */}
+        {!currentComparisonId && (
+          <div className="border rounded-lg p-3 bg-muted/30">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <ListTodo className="w-4 h-4 text-muted-foreground" />
+                <span className="text-sm font-medium">Список покупок</span>
+                <Badge variant="secondary" className="text-xs">{shoppingCards.length}</Badge>
+              </div>
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-6 text-xs"
+                onClick={() => setShowAddCard(!showAddCard)}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Добавить
+              </Button>
+            </div>
+
+            {/* Форма добавления */}
+            {showAddCard && (
+              <div className="flex gap-2 mb-3">
+                <Input
+                  value={newCardTitle}
+                  onChange={(e) => setNewCardTitle(e.target.value)}
+                  placeholder="Что нужно купить..."
+                  className="h-7 text-xs flex-1"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && newCardTitle.trim()) {
+                      createCardMutation.mutate(newCardTitle.trim());
+                    }
+                  }}
+                />
+                <Button
+                  size="sm"
+                  className="h-7 text-xs"
+                  disabled={!newCardTitle.trim() || createCardMutation.isPending}
+                  onClick={() => createCardMutation.mutate(newCardTitle.trim())}
+                >
+                  {createCardMutation.isPending ? <Loader2 className="w-3 h-3 animate-spin" /> : 'OK'}
+                </Button>
+              </div>
+            )}
+
+            {/* 3 колонки Kanban */}
+            <div className="grid grid-cols-3 gap-2">
+              {/* Колонка: Купить (todo) */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 rounded text-xs font-medium text-blue-700 dark:text-blue-300">
+                  <ShoppingCart className="w-3 h-3" />
+                  Купить ({cardsByStatus.todo.length})
+                </div>
+                {cardsByStatus.todo.map(card => (
+                  <div key={card.id} className="flex items-center gap-1 p-2 bg-white dark:bg-gray-800 border rounded text-xs group">
+                    <span className="flex-1 truncate">{card.title}</span>
+                    <Select
+                      value={card.status}
+                      onValueChange={(status) => updateCardMutation.mutate({ cardId: card.id, data: { status: status as 'todo' | 'in_progress' | 'done' } })}
+                    >
+                      <SelectTrigger className="h-5 w-5 p-0 border-0 opacity-0 group-hover:opacity-100">
+                        <ChevronRight className="w-3 h-3" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="in_progress">В процессе</SelectItem>
+                        <SelectItem value="done">Куплено</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700"
+                      onClick={() => deleteCardMutation.mutate(card.id)}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Колонка: В процессе (in_progress) */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 rounded text-xs font-medium text-yellow-700 dark:text-yellow-300">
+                  <Clock className="w-3 h-3" />
+                  В процессе ({cardsByStatus.in_progress.length})
+                </div>
+                {cardsByStatus.in_progress.map(card => (
+                  <div key={card.id} className="flex items-center gap-1 p-2 bg-white dark:bg-gray-800 border rounded text-xs group">
+                    <span className="flex-1 truncate">{card.title}</span>
+                    <Select
+                      value={card.status}
+                      onValueChange={(status) => updateCardMutation.mutate({ cardId: card.id, data: { status: status as 'todo' | 'in_progress' | 'done' } })}
+                    >
+                      <SelectTrigger className="h-5 w-5 p-0 border-0 opacity-0 group-hover:opacity-100">
+                        <ChevronRight className="w-3 h-3" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todo">Купить</SelectItem>
+                        <SelectItem value="done">Куплено</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700"
+                      onClick={() => deleteCardMutation.mutate(card.id)}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+
+              {/* Колонка: Куплено (done) */}
+              <div className="space-y-1">
+                <div className="flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 rounded text-xs font-medium text-green-700 dark:text-green-300">
+                  <CheckCircle className="w-3 h-3" />
+                  Куплено ({cardsByStatus.done.length})
+                </div>
+                {cardsByStatus.done.map(card => (
+                  <div key={card.id} className="flex items-center gap-1 p-2 bg-white dark:bg-gray-800 border rounded text-xs group">
+                    <span className="flex-1 truncate line-through text-muted-foreground">{card.title}</span>
+                    <Select
+                      value={card.status}
+                      onValueChange={(status) => updateCardMutation.mutate({ cardId: card.id, data: { status: status as 'todo' | 'in_progress' | 'done' } })}
+                    >
+                      <SelectTrigger className="h-5 w-5 p-0 border-0 opacity-0 group-hover:opacity-100">
+                        <ChevronRight className="w-3 h-3" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="todo">Купить</SelectItem>
+                        <SelectItem value="in_progress">В процессе</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <button
+                      className="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700"
+                      onClick={() => deleteCardMutation.mutate(card.id)}
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {shoppingCards.length === 0 && !showAddCard && (
+              <div className="text-center py-4 text-xs text-muted-foreground">
+                Нет карточек. Нажмите "Добавить" чтобы создать.
+              </div>
+            )}
           </div>
         )}
 

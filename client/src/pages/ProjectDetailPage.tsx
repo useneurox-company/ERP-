@@ -14,7 +14,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ITEM_STATUSES, getStatusConfig, getCardBorderStyle } from "@/lib/itemStatuses";
 import {
   ArrowLeft, Plus, Edit, Trash2, Calendar, FileText, Layers,
-  AlertCircle, GripVertical, MessageSquare, Play, ImageIcon, File, User as UserIcon, Package, Paperclip, Clock, Hammer, Check, Users
+  AlertCircle, GripVertical, MessageSquare, Play, ImageIcon, File, User as UserIcon, Package, Paperclip, Clock, Hammer, Check, Users,
+  MapPin, Phone, Banknote
 } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { ProjectItemDialog } from "@/components/ProjectItemDialog";
@@ -35,6 +36,7 @@ import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { useToast } from "@/hooks/use-toast";
+import { usePermissions } from "@/hooks/usePermissions";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Project, ProjectItem, ProjectStage, User } from "@shared/schema";
 import {
@@ -326,6 +328,12 @@ export default function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { shouldHidePrices, user: currentUser } = usePermissions();
+
+  // Проверка прав на просмотр суммы (только админ или can_view_financial)
+  const canViewAmount = currentUser?.username?.toLowerCase() === 'admin' ||
+                        currentUser?.can_view_financial === true ||
+                        !shouldHidePrices('projects');
 
   const [selectedItemId, setSelectedItemId] = useState<string | null>(null);
   const [itemDialogOpen, setItemDialogOpen] = useState(false);
@@ -1060,12 +1068,91 @@ export default function ProjectDetailPage() {
             </div>
           </div>
 
-          {/* Line 2: Client + Dates | Progress bar */}
+          {/* Line 2: Client + Contact + Dates | Progress bar */}
           <div className="flex items-center justify-between gap-4 px-4 py-2">
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
               <span data-testid="text-client-name">
                 Клиент: {project.client_name}
               </span>
+              {/* Телефон */}
+              {(project as any).phone && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="flex items-center gap-1" data-testid="text-phone">
+                    <Phone className="w-3 h-3" />
+                    <InlineEditField
+                      value={(project as any).phone}
+                      onSave={(value) => updateProjectField.mutate({ phone: value || null })}
+                      displayClassName="text-sm"
+                      inputClassName="text-sm w-32"
+                      placeholder="Телефон"
+                    />
+                  </span>
+                </>
+              )}
+              {!(project as any).phone && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="flex items-center gap-1 text-muted-foreground/50" data-testid="text-phone-empty">
+                    <Phone className="w-3 h-3" />
+                    <InlineEditField
+                      value=""
+                      onSave={(value) => updateProjectField.mutate({ phone: value || null })}
+                      displayClassName="text-sm italic"
+                      inputClassName="text-sm w-32"
+                      placeholder="+ телефон"
+                    />
+                  </span>
+                </>
+              )}
+              {/* Адрес */}
+              {(project as any).address && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="flex items-center gap-1" data-testid="text-address">
+                    <MapPin className="w-3 h-3" />
+                    <InlineEditField
+                      value={(project as any).address}
+                      onSave={(value) => updateProjectField.mutate({ address: value || null })}
+                      displayClassName="text-sm"
+                      inputClassName="text-sm w-48"
+                      placeholder="Адрес"
+                    />
+                  </span>
+                </>
+              )}
+              {!(project as any).address && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="flex items-center gap-1 text-muted-foreground/50" data-testid="text-address-empty">
+                    <MapPin className="w-3 h-3" />
+                    <InlineEditField
+                      value=""
+                      onSave={(value) => updateProjectField.mutate({ address: value || null })}
+                      displayClassName="text-sm italic"
+                      inputClassName="text-sm w-48"
+                      placeholder="+ адрес"
+                    />
+                  </span>
+                </>
+              )}
+              {/* Сумма - только для админа */}
+              {canViewAmount && (
+                <>
+                  <span className="text-muted-foreground">•</span>
+                  <span className="flex items-center gap-1" data-testid="text-amount">
+                    <Banknote className="w-3 h-3" />
+                    <InlineEditField
+                      value={(project as any).amount ? String((project as any).amount) : ""}
+                      onSave={(value) => updateProjectField.mutate({ amount: value ? parseFloat(value) : null })}
+                      displayClassName="text-sm font-medium"
+                      inputClassName="text-sm w-28"
+                      placeholder="Сумма"
+                      formatter={(val) => val ? `${parseFloat(val).toLocaleString('ru-RU')} ₽` : '+ сумма'}
+                    />
+                  </span>
+                </>
+              )}
               {project.started_at && (
                 <>
                   <span className="text-muted-foreground">•</span>
@@ -1144,7 +1231,7 @@ export default function ProjectDetailPage() {
                     if (!createMontageFormData.address) {
                       setCreateMontageFormData({
                         ...createMontageFormData,
-                        address: project?.delivery_address || "",
+                        address: (project as any)?.address || "",
                         client_name: project?.client_name || "",
                         client_phone: project?.client_phone || "",
                       });

@@ -593,106 +593,129 @@ export default function Tasks() {
               <Card
                 key={task.id}
                 data-testid={`task-${task.id}`}
-                className={`border-l-4 ${borderColor} ${bgColor} transition-all duration-200 cursor-pointer p-3`}
+                className={`group border-l-4 ${borderColor} ${bgColor} transition-all duration-300 cursor-pointer hover:shadow-md`}
                 onClick={() => setTaskDetailId(task.id)}
               >
-                {/* Строка 1: ID + Название + Статус + Удалить */}
-                <div className="flex items-center justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                <CardContent className="p-2">
+                  {/* Компактная строка - всегда видна */}
+                  <div className="flex items-center gap-2">
                     {/* Task ID Badge */}
                     <Badge variant="outline" className="text-xs font-mono bg-muted/50 shrink-0">
                       #{index + 1}
                     </Badge>
                     {/* Task Title */}
-                    <span className="text-base font-medium truncate">{task.title || task.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
+                    <span className="text-sm font-medium truncate flex-1 min-w-0">{task.title || task.name}</span>
+                    {/* Assignee - hidden on mobile */}
+                    {task.assignee && (
+                      <span className="text-xs text-muted-foreground truncate max-w-[100px] hidden sm:block">
+                        {task.assignee.full_name}
+                      </span>
+                    )}
+                    {/* Deadline - hidden on mobile */}
+                    {task.deadline && (
+                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(task.deadline).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                      </span>
+                    )}
                     {/* Status Badge */}
                     <Badge
                       variant="outline"
-                      className={`text-xs ${statusMeta.colorClass}`}
+                      className={`text-xs shrink-0 ${statusMeta.colorClass}`}
                     >
                       {statusMeta.label}
                     </Badge>
                     {/* Overdue/Urgent Badge */}
-                    {daysUntil !== null && task.status !== 'completed' && (isOverdue || isUrgent) && (
+                    {daysUntil !== null && task.status !== 'completed' && (
                       <Badge
                         variant="outline"
-                        className={`text-xs ${
+                        className={`text-xs shrink-0 ${
                           isOverdue
-                            ? 'bg-red-500/10 text-red-600 border-red-500/20'
-                            : 'bg-orange-500/10 text-orange-600 border-orange-500/20'
+                            ? 'bg-red-500/20 text-red-500 border-red-500/30'
+                            : isUrgent
+                            ? 'bg-orange-500/20 text-orange-500 border-orange-500/30'
+                            : 'bg-primary/10 text-primary border-primary/20'
                         }`}
                       >
-                        {isOverdue ? `+${Math.abs(daysUntil)} дн.` : `${daysUntil} дн.`}
+                        {isOverdue ? `+${Math.abs(daysUntil)}` : daysUntil} дн.
                       </Badge>
                     )}
                     {/* Delete Button */}
                     <Button
                       variant="ghost"
                       size="sm"
-                      className="h-7 w-7 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
                       onClick={(e) => handleDeleteTask(task, e)}
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
+                      <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
-                </div>
 
-                {/* Строка 2: Исполнитель + Дедлайн + Часы + Связанная сделка */}
-                <div className="flex items-center gap-3 text-sm text-muted-foreground flex-wrap">
-                  {/* Assignee */}
-                  {task.assignee && (
-                    <div className="flex items-center gap-1">
-                      <User className="w-3.5 h-3.5" />
-                      <span>{task.assignee.full_name}</span>
+                  {/* Раскрываемая часть при наведении */}
+                  <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300">
+                    <div className="overflow-hidden">
+                      <div className="pt-2 mt-2 border-t border-border/50 flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                        {/* Assignee - visible on mobile in expanded view */}
+                        {task.assignee && (
+                          <div className="flex items-center gap-1 sm:hidden">
+                            <User className="w-3 h-3" />
+                            <span>{task.assignee.full_name}</span>
+                          </div>
+                        )}
+                        {/* Deadline - visible on mobile in expanded view */}
+                        {task.deadline && (
+                          <div className="flex items-center gap-1 sm:hidden">
+                            <Calendar className="w-3 h-3" />
+                            <span>{new Date(task.deadline).toLocaleDateString('ru-RU')}</span>
+                          </div>
+                        )}
+                        {/* Estimated Hours */}
+                        {task.estimated_hours && (
+                          <div className="flex items-center gap-1">
+                            <Clock className="w-3 h-3" />
+                            <span>{task.estimated_hours} ч</span>
+                          </div>
+                        )}
+                        {/* Related Deal */}
+                        {task.deal_id && task.deal && (
+                          <div
+                            className="flex items-center gap-1 text-blue-600 hover:text-blue-700 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocation(`/sales?dealId=${task.deal.id}`);
+                            }}
+                          >
+                            <Briefcase className="w-3 h-3" />
+                            <span className="truncate max-w-[150px]">
+                              {task.deal.client_name} {task.deal.order_number && `#${task.deal.order_number}`}
+                            </span>
+                          </div>
+                        )}
+                        {/* Related Project */}
+                        {task.project_id && task.project && (
+                          <div
+                            className="flex items-center gap-1 text-green-600 hover:text-green-700 cursor-pointer"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocation(`/projects/${task.project.id}`);
+                            }}
+                          >
+                            <Hash className="w-3 h-3" />
+                            <span className="truncate max-w-[150px]">
+                              {task.project.name}
+                            </span>
+                          </div>
+                        )}
+                        {/* Description */}
+                        {task.description && (
+                          <span className="text-muted-foreground line-clamp-1 w-full">
+                            {task.description}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  )}
-                  {/* Deadline */}
-                  {task.deadline && (
-                    <div className="flex items-center gap-1">
-                      <Calendar className="w-3.5 h-3.5" />
-                      <span>{new Date(task.deadline).toLocaleDateString('ru-RU')}</span>
-                    </div>
-                  )}
-                  {/* Estimated Hours */}
-                  {task.estimated_hours && (
-                    <div className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      <span>{task.estimated_hours} ч</span>
-                    </div>
-                  )}
-                  {/* Related Deal */}
-                  {task.deal_id && task.deal && (
-                    <div
-                      className="flex items-center gap-1 text-blue-600 hover:text-blue-700"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/sales?dealId=${task.deal.id}`);
-                      }}
-                    >
-                      <Briefcase className="w-3.5 h-3.5" />
-                      <span className="truncate max-w-[200px]">
-                        {task.deal.client_name} {task.deal.order_number && `#${task.deal.order_number}`}
-                      </span>
-                    </div>
-                  )}
-                  {/* Related Project */}
-                  {task.project_id && task.project && (
-                    <div
-                      className="flex items-center gap-1 text-green-600 hover:text-green-700"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setLocation(`/projects/${task.project.id}`);
-                      }}
-                    >
-                      <Hash className="w-3.5 h-3.5" />
-                      <span className="truncate max-w-[200px]">
-                        {task.project.name}
-                      </span>
-                    </div>
-                  )}
-                </div>
+                  </div>
+                </CardContent>
               </Card>
             );
           })}

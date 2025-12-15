@@ -209,7 +209,7 @@ export default function MyTasks() {
         </CardContent>
       </Card>
 
-      {/* Список задач */}
+      {/* Список задач - компактный вид с раскрытием при наведении */}
       {filteredAndSortedTasks.length === 0 ? (
         <Card>
           <CardContent className="p-6">
@@ -219,94 +219,132 @@ export default function MyTasks() {
           </CardContent>
         </Card>
       ) : (
-        <div className="grid gap-4">
-          {filteredAndSortedTasks.map((task) => {
+        <div className="space-y-1">
+          {filteredAndSortedTasks.map((task, index) => {
             const daysUntil = calculateDaysUntilDeadline(task.planned_end_date);
             const isOverdue = daysUntil !== null && daysUntil < 0;
             const isUrgent = daysUntil !== null && daysUntil >= 0 && daysUntil < 3;
 
             const borderColor =
-              task.status === 'completed' ? 'border-green-500' :
-              task.status === 'in_progress' ? 'border-blue-500' :
-              'border-gray-400';
+              task.status === 'completed' ? 'border-l-green-500' :
+              task.status === 'in_progress' ? 'border-l-blue-500' :
+              isOverdue ? 'border-l-red-500' :
+              isUrgent ? 'border-l-orange-500' :
+              'border-l-gray-400';
 
             const bgColor =
-              isOverdue ? 'bg-red-50/50 hover:bg-red-50/70 dark:bg-red-950/20 dark:hover:bg-red-950/30' :
-              isUrgent ? 'bg-orange-50/50 hover:bg-orange-50/70 dark:bg-orange-950/20 dark:hover:bg-orange-950/30' :
-              task.status === 'completed' ? 'bg-green-50/50 hover:bg-green-50/70 dark:bg-green-950/20 dark:hover:bg-green-950/30' :
-              task.status === 'in_progress' ? 'bg-blue-50/50 hover:bg-blue-50/70 dark:bg-blue-950/20 dark:hover:bg-blue-950/30' :
-              'bg-accent/30 hover:bg-accent/50';
+              isOverdue ? 'bg-red-950/20' :
+              isUrgent ? 'bg-orange-950/10' :
+              task.status === 'completed' ? 'bg-green-950/10' :
+              task.status === 'in_progress' ? 'bg-blue-950/10' :
+              '';
 
             return (
               <Card
                 key={task.id}
                 data-testid={`task-${task.id}`}
-                className={`border-l-4 ${borderColor} ${bgColor} transition-all duration-200 cursor-pointer`}
+                className={`group border-l-4 ${borderColor} ${bgColor} transition-all duration-300 cursor-pointer hover:shadow-md`}
                 onClick={() => setSelectedStage(task)}
               >
-                <CardHeader>
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle className="text-lg">{task.name}</CardTitle>
-                      <p className="text-sm text-muted-foreground mt-1">
-                        Проект: {task.project?.name}
-                      </p>
-                    </div>
+                <CardContent className="p-3">
+                  {/* Компактная строка - всегда видна */}
+                  <div className="flex items-center gap-3">
+                    {/* Номер */}
+                    <span className="text-xs font-mono text-muted-foreground w-6 shrink-0">
+                      #{index + 1}
+                    </span>
+
+                    {/* Название */}
+                    <span className="font-medium text-sm truncate flex-1 min-w-0">
+                      {task.name}
+                    </span>
+
+                    {/* Исполнитель */}
+                    <span className="text-xs text-muted-foreground truncate max-w-[120px] hidden sm:block">
+                      {task.assignee?.full_name || task.assignee?.username || 'Не назначен'}
+                    </span>
+
+                    {/* Дата */}
+                    {task.planned_end_date && (
+                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:flex items-center gap-1">
+                        <Calendar className="w-3 h-3" />
+                        {new Date(task.planned_end_date).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
+                      </span>
+                    )}
+
+                    {/* Сумма если есть */}
+                    {task.cost && (
+                      <span className="text-xs text-green-600 font-medium shrink-0 hidden md:block">
+                        # {parseFloat(task.cost).toLocaleString('ru-RU')}
+                      </span>
+                    )}
+
+                    {/* Статус */}
                     <Badge
                       variant="outline"
-                      className={`${
-                        task.status === 'in_progress'
-                          ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
-                          : task.status === 'completed'
+                      className={`text-xs shrink-0 ${
+                        task.status === 'completed'
                           ? 'bg-green-500/10 text-green-600 border-green-500/20'
+                          : task.status === 'in_progress'
+                          ? 'bg-blue-500/10 text-blue-600 border-blue-500/20'
                           : 'bg-gray-500/10 text-gray-600 border-gray-500/20'
                       }`}
                     >
-                      {task.status === 'in_progress' && '🔵 В работе'}
-                      {task.status === 'completed' && '🟢 Завершён'}
-                      {task.status === 'pending' && '⚪ Ожидает'}
+                      {task.status === 'completed' ? 'Завершён' :
+                       task.status === 'in_progress' ? 'В работе' : 'Новая'}
                     </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {task.description && (
-                      <p className="text-sm">{task.description}</p>
-                    )}
 
-                    <div className="flex flex-wrap gap-3 text-sm">
-                      {task.planned_end_date && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <Calendar className="w-4 h-4" />
-                          {new Date(task.planned_end_date).toLocaleDateString('ru-RU')}
-                        </div>
-                      )}
-                      {task.cost && (
-                        <div className="flex items-center gap-1 text-muted-foreground">
-                          <DollarSign className="w-4 h-4" />
-                          {parseFloat(task.cost).toLocaleString('ru-RU')} ₽
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Осталось дней */}
+                    {/* Дни */}
                     {daysUntil !== null && task.status !== 'completed' && (
-                      <div className={`flex items-center justify-between text-sm p-2 rounded-md ${
-                        isOverdue
-                          ? 'bg-red-500/10 text-red-600 border border-red-500/20'
-                          : isUrgent
-                          ? 'bg-orange-500/10 text-orange-600 border border-orange-500/20'
-                          : 'bg-primary/10 border border-primary/20'
-                      }`}>
-                        <div className="flex items-center gap-1 font-medium">
-                          {isOverdue ? <AlertTriangle className="h-3 w-3" /> : <Clock className="h-3 w-3" />}
-                          <span>{isOverdue ? 'Просрочено' : 'Осталось'}</span>
-                        </div>
-                        <span className="text-xs font-bold">
-                          {isOverdue ? `+${Math.abs(daysUntil)}` : daysUntil} дн.
-                        </span>
-                      </div>
+                      <Badge
+                        variant="outline"
+                        className={`text-xs shrink-0 ${
+                          isOverdue
+                            ? 'bg-red-500/20 text-red-500 border-red-500/30'
+                            : isUrgent
+                            ? 'bg-orange-500/20 text-orange-500 border-orange-500/30'
+                            : 'bg-primary/10 text-primary border-primary/20'
+                        }`}
+                      >
+                        {isOverdue ? `+${Math.abs(daysUntil)}` : daysUntil} дн.
+                      </Badge>
                     )}
+                  </div>
+
+                  {/* Раскрываемая часть при наведении */}
+                  <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300">
+                    <div className="overflow-hidden">
+                      <div className="pt-3 mt-3 border-t border-border/50 space-y-2">
+                        {/* Проект */}
+                        {task.project?.name && (
+                          <p className="text-xs text-muted-foreground">
+                            Проект: <span className="text-foreground">{task.project.name}</span>
+                          </p>
+                        )}
+
+                        {/* Описание */}
+                        {task.description && (
+                          <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
+                        )}
+
+                        {/* Мобильная инфа */}
+                        <div className="flex flex-wrap gap-2 text-xs sm:hidden">
+                          <span className="text-muted-foreground">
+                            {task.assignee?.full_name || 'Не назначен'}
+                          </span>
+                          {task.planned_end_date && (
+                            <span className="text-muted-foreground">
+                              {new Date(task.planned_end_date).toLocaleDateString('ru-RU')}
+                            </span>
+                          )}
+                          {task.cost && (
+                            <span className="text-green-600 font-medium">
+                              {parseFloat(task.cost).toLocaleString('ru-RU')} ₽
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

@@ -95,6 +95,9 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
       progress: project?.progress || 0,
       duration_days: project?.duration_days || 0,
       manager_id: project?.manager_id || "",
+      address: (project as any)?.address || "",
+      phone: (project as any)?.phone || "",
+      amount: (project as any)?.amount || null,
     },
   });
 
@@ -108,6 +111,9 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
         progress: project.progress || 0,
         duration_days: project.duration_days || 0,
         manager_id: project.manager_id || "",
+        address: (project as any)?.address || "",
+        phone: (project as any)?.phone || "",
+        amount: (project as any)?.amount || null,
       });
     }
   }, [project, form]);
@@ -331,10 +337,69 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
                   <FormItem>
                     <FormLabel>Клиент</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="Имя клиента" 
+                      <Input
+                        {...field}
+                        placeholder="Имя клиента"
                         data-testid="input-project-client-name"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Адрес монтажа</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        placeholder="Адрес объекта"
+                        data-testid="input-project-address"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="phone"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Телефон клиента</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value || ""}
+                        placeholder="+7 XXX XXX-XX-XX"
+                        data-testid="input-project-phone"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="amount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Сумма проекта</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        onChange={(e) => field.onChange(e.target.value ? parseFloat(e.target.value) : null)}
+                        type="number"
+                        placeholder="0"
+                        data-testid="input-project-amount"
                       />
                     </FormControl>
                     <FormMessage />

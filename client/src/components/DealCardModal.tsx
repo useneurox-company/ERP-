@@ -492,7 +492,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-[95vw] h-[90vh] p-0" data-testid="dialog-deal-card">
         <DialogTitle className="sr-only">
-          {deal?.client_name || "Карточка сделки"}
+          {deal?.title || deal?.client_name || "Карточка сделки"}
         </DialogTitle>
         <DialogDescription className="sr-only">
           Подробная информация о сделке, сообщения, документы и вложения
@@ -510,15 +510,16 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
                   <div className="flex-1">
                     <InlineEditField
                       label=""
-                      value={deal.client_name}
+                      value={deal.title || deal.client_name}
                       type="text"
                       placeholder="Название сделки"
                       displayClassName="font-semibold text-lg"
-                      onSave={(value) => updateDealField.mutate({ client_name: value || "Сделка без названия" })}
+                      onSave={(value) => updateDealField.mutate({ title: value || null })}
                       data-testid="text-deal-name"
                     />
                     <p className="text-sm text-muted-foreground" data-testid="text-order-number">
                       Заказ #{deal.order_number || "не присвоен"}
+                      {deal.client_name && deal.title && ` • Клиент: ${deal.client_name}`}
                     </p>
                     {(deal as any).manager_user && (
                       <div className="flex items-center gap-2 mt-1 text-sm text-muted-foreground">
@@ -1218,7 +1219,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
         open={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={() => deleteDeal.mutate()}
-        dealName={deal?.client_name || "Сделка"}
+        dealName={deal?.title || deal?.client_name || "Сделка"}
         isPending={deleteDeal.isPending}
       />
 
@@ -1319,7 +1320,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
           }
         }}
         isPending={createProjectFromInvoice.isPending}
-        dealName={deal?.client_name || ""}
+        dealName={deal?.title || deal?.client_name || ""}
       />
 
       {dealId && (
@@ -1328,7 +1329,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
           onOpenChange={setAiAssistantOpen}
           dealId={dealId}
           userId={getCurrentUserId()}
-          dealName={deal?.client_name}
+          dealName={deal?.title || deal?.client_name}
         />
       )}
 

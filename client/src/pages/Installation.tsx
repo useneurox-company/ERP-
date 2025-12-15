@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -6,10 +7,12 @@ import { Plus, MapPin, Calendar, User, Phone, Camera } from "lucide-react";
 import { UserAvatar } from "@/components/UserAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
+import { CreateInstallationDialog } from "@/components/CreateInstallationDialog";
 import type { Installation, User as UserType, Project } from "@shared/schema";
 
 export default function Installation() {
   const { toast } = useToast();
+  const [createDialogOpen, setCreateDialogOpen] = useState(false);
 
   const { data: installations = [], isLoading: installationsLoading, error } = useQuery<Installation[]>({
     queryKey: ["/api/installations"],
@@ -71,15 +74,17 @@ export default function Installation() {
           <p className="text-xs md:text-sm text-muted-foreground mt-1">Управление монтажными работами</p>
         </div>
         <div className="flex items-center gap-2">
-          <Button 
+          <Button
             size="icon"
             className="md:hidden"
+            onClick={() => setCreateDialogOpen(true)}
             data-testid="button-create-installation"
           >
             <Plus className="h-4 w-4" />
           </Button>
-          <Button 
+          <Button
             className="hidden md:flex"
+            onClick={() => setCreateDialogOpen(true)}
             data-testid="button-create-installation-desktop"
           >
             <Plus className="h-4 w-4 mr-2" />
@@ -173,6 +178,11 @@ export default function Installation() {
           ))}
         </div>
       )}
+
+      <CreateInstallationDialog
+        open={createDialogOpen}
+        onOpenChange={setCreateDialogOpen}
+      />
     </div>
   );
 }

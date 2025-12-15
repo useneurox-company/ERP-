@@ -60,6 +60,7 @@ export function DealDetailSheet({ deal, open, onOpenChange }: DealDetailSheetPro
   const form = useForm({
     resolver: zodResolver(insertDealSchema),
     defaultValues: {
+      title: deal?.title || "",
       client_name: deal?.client_name || "",
       company: deal?.company || "",
       amount: deal?.amount || "",
@@ -73,6 +74,7 @@ export function DealDetailSheet({ deal, open, onOpenChange }: DealDetailSheetPro
   useEffect(() => {
     if (deal) {
       form.reset({
+        title: deal.title || "",
         client_name: deal.client_name || "",
         company: deal.company || "",
         amount: deal.amount || "",
@@ -88,6 +90,7 @@ export function DealDetailSheet({ deal, open, onOpenChange }: DealDetailSheetPro
     mutationFn: async (data: any) => {
       const dealData = {
         ...data,
+        title: data.title || null,
         amount: data.amount || null,
         company: data.company || null,
         deadline: data.deadline ? new Date(data.deadline).toISOString() : null,
@@ -191,14 +194,33 @@ export function DealDetailSheet({ deal, open, onOpenChange }: DealDetailSheetPro
             <form onSubmit={handleSubmit} className="space-y-4 mt-6">
               <FormField
                 control={form.control}
+                name="title"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Название сделки</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        value={field.value ?? ""}
+                        placeholder="Например: Кухня для Ивановых"
+                        data-testid="input-title"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
                 name="client_name"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Клиент</FormLabel>
                     <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder="Имя клиента" 
+                      <Input
+                        {...field}
+                        placeholder="Имя клиента"
                         data-testid="input-client-name"
                       />
                     </FormControl>

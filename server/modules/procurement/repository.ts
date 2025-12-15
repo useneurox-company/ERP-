@@ -2,15 +2,18 @@ import { db } from "../../db";
 import {
   procurement_comparisons,
   procurement_comparison_items,
+  procurement_shopping_cards,
   warehouse_items,
   suppliers,
   type InsertProcurementComparison,
   type InsertProcurementComparisonItem,
+  type InsertProcurementShoppingCard,
   type ProcurementComparison,
   type ProcurementComparisonItem,
+  type ProcurementShoppingCard,
   type Supplier
 } from "@shared/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, asc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 export const procurementRepository = {
@@ -156,5 +159,43 @@ export const procurementRepository = {
           eq(procurement_comparison_items.added_to_order, 1)
         )
       );
+  },
+
+  // ========== SHOPPING CARDS ==========
+
+  // Получить карточки этапа
+  async getShoppingCards(stageId: string): Promise<ProcurementShoppingCard[]> {
+    return await db
+      .select()
+      .from(procurement_shopping_cards)
+      .where(eq(procurement_shopping_cards.stage_id, stageId))
+      .orderBy(asc(procurement_shopping_cards.order_index), asc(procurement_shopping_cards.created_at));
+  },
+
+  // Создать карточку
+  async createShoppingCard(data: Omit<InsertProcurementShoppingCard, 'id'>): Promise<ProcurementShoppingCard> {
+    const id = nanoid();
+    const [card] = await db
+      .insert(procurement_shopping_cards)
+      .values({ ...data, id })
+      .returning();
+    return card;
+  },
+
+  // Обновить карточку
+  async updateShoppingCard(id: string, data: Partial<InsertProcurementShoppingCard>): Promise<ProcurementShoppingCard | null> {
+    const [card] = await db
+      .update(procurement_shopping_cards)
+      .set({ ...data, updated_at: new Date() })
+      .where(eq(procurement_shopping_cards.id, id))
+      .returning();
+    return card || null;
+  },
+
+  // Удалить карточку
+  async deleteShoppingCard(id: string): Promise<void> {
+    await db
+      .delete(procurement_shopping_cards)
+      .where(eq(procurement_shopping_cards.id, id));
   }
 };

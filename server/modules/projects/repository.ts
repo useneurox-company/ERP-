@@ -414,6 +414,9 @@ export class ProjectsRepository {
       invoice_id: invoiceId,
       duration_days: 0,
       manager_id: deal.manager_id,
+      address: deal.customer_address || null, // Копируем адрес из сделки
+      phone: deal.contact_phone || null, // Копируем телефон из сделки
+      amount: deal.amount || null, // Копируем сумму из сделки
       status: "pending",
       progress: 0,
     };

@@ -1846,6 +1846,63 @@ router.get("/api/projects/:projectId/items/ready-for-montage", async (req, res) 
   }
 });
 
+// PUT /api/project-items/:itemId/status - Update item production status
+router.put("/api/project-items/:itemId/status", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { status } = req.body;
+    const userId = req.headers["x-user-id"] as string;
+
+    if (!status) {
+      res.status(400).json({ error: "Status is required" });
+      return;
+    }
+
+    // Get current item
+    const item = await db.select().from(project_items).where(eq(project_items.id, itemId)).limit(1);
+
+    if (!item[0]) {
+      res.status(404).json({ error: "Project item not found" });
+      return;
+    }
+
+    const currentItem = item[0];
+    const oldStatus = currentItem.status || 'new';
+
+    // Update the item
+    const result = await db
+      .update(project_items)
+      .set({
+        status: status,
+        updated_at: new Date().toISOString()
+      })
+      .where(eq(project_items.id, itemId))
+      .returning();
+
+    if (!result[0]) {
+      res.status(500).json({ error: "Failed to update item status" });
+      return;
+    }
+
+    // Log activity
+    await activityLogsRepository.logActivity({
+      entity_type: "project",
+      entity_id: currentItem.project_id,
+      action_type: "item_status_changed",
+      user_id: userId || null,
+      field_changed: "status",
+      old_value: oldStatus,
+      new_value: status,
+      description: `Статус изделия "${currentItem.name}" изменён: ${oldStatus} → ${status}`,
+    });
+
+    res.json(result[0]);
+  } catch (error) {
+    console.error("Error updating item status:", error);
+    res.status(500).json({ error: "Failed to update item status" });
+  }
+});
+
 // === SUPPLIER DOCUMENTS (Документы поставщиков) ===
 
 // GET /api/projects/:projectId/supplier-documents - Get all supplier documents

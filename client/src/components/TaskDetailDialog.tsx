@@ -150,6 +150,18 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
     enabled: open,
   });
 
+  // Fetch all projects for project selector
+  const { data: allProjects = [] } = useQuery<any[]>({
+    queryKey: ["/api/projects"],
+    enabled: open,
+  });
+
+  // Fetch all deals for deal selector
+  const { data: allDeals = [] } = useQuery<any[]>({
+    queryKey: ["/api/deals"],
+    enabled: open,
+  });
+
   // Fetch deal if task is linked to a deal
   const { data: deal } = useQuery<any>({
     queryKey: [`/api/deals/${task?.deal_id}`],
@@ -302,6 +314,19 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
 
   const handleAssigneeChange = (assignee_id: string) => {
     updateTaskMutation.mutate({ assignee_id });
+  };
+
+  const handleProjectChange = (projectId: string) => {
+    updateTaskMutation.mutate({
+      project_id: projectId === "none" ? null : projectId,
+      // Clear stage and item if project changes
+      project_stage_id: null,
+      project_item_id: null
+    });
+  };
+
+  const handleDealChange = (dealId: string) => {
+    updateTaskMutation.mutate({ deal_id: dealId === "none" ? null : dealId });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -676,63 +701,88 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                   </div>
                 </Card>
 
-                {/* Related Entity */}
-                {(task.deal_id || task.project_id || task.project_stage_id || task.project_item_id) && (
+                {/* Project Selector */}
+                <Card className="p-3">
+                  <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Проект
+                  </label>
+                  <Select
+                    value={task.project_id || "none"}
+                    onValueChange={handleProjectChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите проект" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Без проекта</SelectItem>
+                      {allProjects.map((p: any) => (
+                        <SelectItem key={p.id} value={p.id}>
+                          {p.name} {p.project_number && `(№${p.project_number})`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {task.project_id && (task.project || project) && (
+                    <Button
+                      variant="link"
+                      className="h-auto p-0 mt-1 text-xs"
+                      onClick={() => {
+                        onOpenChange(false);
+                        setLocation(`/projects/${task.project_id}`);
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Перейти к проекту
+                    </Button>
+                  )}
+                </Card>
+
+                {/* Deal Selector */}
+                <Card className="p-3">
+                  <label className="text-sm font-medium mb-2 block flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Сделка
+                  </label>
+                  <Select
+                    value={task.deal_id || "none"}
+                    onValueChange={handleDealChange}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Выберите сделку" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Без сделки</SelectItem>
+                      {allDeals.map((d: any) => (
+                        <SelectItem key={d.id} value={d.id}>
+                          {d.client_name} {d.order_number && `#${d.order_number}`}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {task.deal_id && deal && (
+                    <Button
+                      variant="link"
+                      className="h-auto p-0 mt-1 text-xs"
+                      onClick={() => {
+                        onOpenChange(false);
+                        setLocation(`/sales?dealId=${task.deal_id}`);
+                      }}
+                    >
+                      <ExternalLink className="h-3 w-3 mr-1" />
+                      Перейти к сделке
+                    </Button>
+                  )}
+                </Card>
+
+                {/* Related Stage/Item (read-only info) */}
+                {(task.stage || task.project_item) && (
                   <Card className="p-3">
                     <label className="text-sm font-medium mb-2 block flex items-center gap-2">
-                      <ExternalLink className="h-4 w-4" />
+                      <Layers className="h-4 w-4" />
                       Связано с
                     </label>
                     <div className="space-y-2">
-                      {deal && (
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start gap-2 h-auto py-3"
-                          onClick={() => {
-                            onOpenChange(false);
-                            // Navigate to sales page with deal query param
-                            setLocation(`/sales?dealId=${deal.id}`);
-                          }}
-                        >
-                          <Briefcase className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <div className="flex flex-col items-start gap-1 flex-1 min-w-0">
-                            <span className="text-xs text-muted-foreground">Сделка</span>
-                            <span className="font-medium text-sm truncate w-full text-left">
-                              {deal.client_name}
-                            </span>
-                            {deal.order_number && (
-                              <span className="text-xs text-muted-foreground">
-                                Заказ #{deal.order_number}
-                              </span>
-                            )}
-                          </div>
-                          <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                        </Button>
-                      )}
-                      {(task.project || project) && (
-                        <Button
-                          variant="outline"
-                          className="w-full justify-start gap-2 h-auto py-3"
-                          onClick={() => {
-                            onOpenChange(false);
-                            setLocation(`/projects/${(task.project || project).id}`);
-                          }}
-                        >
-                          <Briefcase className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <div className="flex flex-col items-start gap-1 flex-1 min-w-0">
-                            <span className="text-xs text-muted-foreground">Проект</span>
-                            <span className="font-medium text-sm truncate w-full text-left">
-                              {(task.project || project).name}
-                            </span>
-                            {(task.project || project).project_number && (
-                              <span className="text-xs text-muted-foreground">
-                                №{(task.project || project).project_number}
-                              </span>
-                            )}
-                          </div>
-                          <ExternalLink className="h-3 w-3 text-muted-foreground flex-shrink-0" />
-                        </Button>
-                      )}
                       {task.stage && (
                         <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
                           <Layers className="h-4 w-4 text-muted-foreground flex-shrink-0" />
@@ -745,7 +795,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                         </div>
                       )}
                       {task.project_item && (
-                        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-md">
+                        <div className="flex items-center gap-2 p-2 bg-muted/50 rounded-md">
                           <Package className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                           <div className="flex flex-col gap-0.5 flex-1 min-w-0">
                             <span className="text-xs text-muted-foreground">Позиция проекта</span>
@@ -757,9 +807,6 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                                 Артикул: {task.project_item.article}
                               </span>
                             )}
-                            <span className="text-xs text-muted-foreground">
-                              Количество: {task.project_item.quantity} шт.
-                            </span>
                           </div>
                         </div>
                       )}

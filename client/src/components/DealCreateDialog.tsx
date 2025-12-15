@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
@@ -28,7 +28,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { X, Plus, Loader2 } from "lucide-react";
-import { insertDealSchema, type User } from "@shared/schema";
+import { insertDealSchema, type User, type DealStage } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 
@@ -45,13 +45,19 @@ export function DealCreateDialog({ open, onOpenChange }: DealCreateDialogProps) 
     queryKey: ["/api/users"],
   });
 
+  const { data: stages = [] } = useQuery<DealStage[]>({
+    queryKey: ["/api/deal-stages"],
+    enabled: open,
+  });
+
   const form = useForm({
     resolver: zodResolver(insertDealSchema),
     defaultValues: {
+      title: "",
       client_name: "",
       company: null,
       amount: null,
-      stage: "new" as const,
+      stage: "",
       manager_id: null,
       production_days_count: null,
       tags: [] as string[],
@@ -97,14 +103,16 @@ export function DealCreateDialog({ open, onOpenChange }: DealCreateDialogProps) 
     form.setValue("tags", currentTags.filter((_, i) => i !== index));
   };
 
-  const stageLabels: Record<string, string> = {
-    new: "Новые",
-    meeting: "Встреча назначена",
-    proposal: "КП отправлено",
-    contract: "Договор",
-    won: "Выиграна",
-    lost: "Проиграна",
-  };
+  // Устанавливаем первый этап по умолчанию когда загрузились stages
+  useEffect(() => {
+    if (stages.length > 0 && open) {
+      const currentStage = form.getValues("stage");
+      // Если текущий stage не найден в списке - ставим первый
+      if (!currentStage || !stages.find(s => s.key === currentStage)) {
+        form.setValue("stage", stages[0].key);
+      }
+    }
+  }, [stages, open, form]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -120,14 +128,33 @@ export function DealCreateDialog({ open, onOpenChange }: DealCreateDialogProps) 
           <form onSubmit={handleSubmit} className="space-y-4">
             <FormField
               control={form.control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Название сделки</FormLabel>
+                  <FormControl>
+                    <Input
+                      {...field}
+                      value={field.value ?? ""}
+                      placeholder="Например: Кухня для Ивановых"
+                      data-testid="input-create-title"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
               name="client_name"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Клиент</FormLabel>
                   <FormControl>
-                    <Input 
-                      {...field} 
-                      placeholder="Имя клиента" 
+                    <Input
+                      {...field}
+                      placeholder="Имя клиента"
                       data-testid="input-create-client-name"
                     />
                   </FormControl>
@@ -189,24 +216,15 @@ export function DealCreateDialog({ open, onOpenChange }: DealCreateDialogProps) 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="new" data-testid="option-create-stage-new">
-                        {stageLabels.new}
-                      </SelectItem>
-                      <SelectItem value="meeting" data-testid="option-create-stage-meeting">
-                        {stageLabels.meeting}
-                      </SelectItem>
-                      <SelectItem value="proposal" data-testid="option-create-stage-proposal">
-                        {stageLabels.proposal}
-                      </SelectItem>
-                      <SelectItem value="contract" data-testid="option-create-stage-contract">
-                        {stageLabels.contract}
-                      </SelectItem>
-                      <SelectItem value="won" data-testid="option-create-stage-won">
-                        {stageLabels.won}
-                      </SelectItem>
-                      <SelectItem value="lost" data-testid="option-create-stage-lost">
-                        {stageLabels.lost}
-                      </SelectItem>
+                      {stages.map((stage) => (
+                        <SelectItem
+                          key={stage.id}
+                          value={stage.key}
+                          data-testid={`option-create-stage-${stage.key}`}
+                        >
+                          {stage.name}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />

@@ -415,4 +415,79 @@ router.delete("/api/procurement/:comparisonId", async (req, res) => {
   }
 });
 
+// ========== SHOPPING CARDS (мини-Kanban) ==========
+
+// GET /api/procurement/stage/:stageId/cards - Получить карточки этапа
+router.get("/api/procurement/stage/:stageId/cards", async (req, res) => {
+  try {
+    const { stageId } = req.params;
+    const cards = await procurementRepository.getShoppingCards(stageId);
+    res.json(cards);
+  } catch (error: any) {
+    console.error("Error fetching shopping cards:", error);
+    res.status(500).json({ error: error.message || "Ошибка загрузки карточек" });
+  }
+});
+
+// POST /api/procurement/stage/:stageId/cards - Создать карточку
+router.post("/api/procurement/stage/:stageId/cards", async (req, res) => {
+  try {
+    const { stageId } = req.params;
+    const { title, description, status = 'todo' } = req.body;
+
+    if (!title) {
+      res.status(400).json({ error: "Название обязательно" });
+      return;
+    }
+
+    const card = await procurementRepository.createShoppingCard({
+      stage_id: stageId,
+      title,
+      description,
+      status,
+    });
+    res.status(201).json(card);
+  } catch (error: any) {
+    console.error("Error creating shopping card:", error);
+    res.status(500).json({ error: error.message || "Ошибка создания карточки" });
+  }
+});
+
+// PUT /api/procurement/cards/:cardId - Обновить карточку
+router.put("/api/procurement/cards/:cardId", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { title, description, status, order_index } = req.body;
+
+    const card = await procurementRepository.updateShoppingCard(cardId, {
+      title,
+      description,
+      status,
+      order_index,
+    });
+
+    if (!card) {
+      res.status(404).json({ error: "Карточка не найдена" });
+      return;
+    }
+
+    res.json(card);
+  } catch (error: any) {
+    console.error("Error updating shopping card:", error);
+    res.status(500).json({ error: error.message || "Ошибка обновления карточки" });
+  }
+});
+
+// DELETE /api/procurement/cards/:cardId - Удалить карточку
+router.delete("/api/procurement/cards/:cardId", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    await procurementRepository.deleteShoppingCard(cardId);
+    res.status(204).send();
+  } catch (error: any) {
+    console.error("Error deleting shopping card:", error);
+    res.status(500).json({ error: error.message || "Ошибка удаления карточки" });
+  }
+});
+
 export { router as procurementRouter };

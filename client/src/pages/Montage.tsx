@@ -946,23 +946,27 @@ export default function Montage() {
     },
   });
 
-  // Update montage item status (individual item in order)
+  // Update montage item (status, notes)
   const updateMontageItemMutation = useMutation({
-    mutationFn: async ({ itemId, status }: { itemId: string; status: string }) => {
+    mutationFn: async ({ itemId, status, notes }: { itemId: string; status?: string; notes?: string }) => {
+      const body: Record<string, string> = {};
+      if (status !== undefined) body.status = status;
+      if (notes !== undefined) body.notes = notes;
+
       const res = await fetch(`/api/montage/items/${itemId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ status }),
+        body: JSON.stringify(body),
       });
       if (!res.ok) {
         const error = await res.json();
-        throw new Error(error.error || "Failed to update item status");
+        throw new Error(error.error || "Failed to update item");
       }
       return res.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/montage"] });
-      toast({ title: "Статус изделия изменён" });
+      toast({ title: "Изделие обновлено" });
     },
     onError: (error: Error) => {
       toast({ title: "Ошибка", description: error.message, variant: "destructive" });
@@ -2052,56 +2056,78 @@ export default function Montage() {
                       {selectedOrder.items.map((item) => (
                         <div
                           key={item.id}
-                          className="flex items-center gap-3 p-2 bg-muted/30 rounded"
+                          className="p-3 bg-muted/30 rounded space-y-2"
                         >
-                          {/* Изображение позиции */}
-                          {item.item_image_url ? (
-                            <img
-                              src={item.item_image_url}
-                              alt={item.item_name || "Позиция"}
-                              className="w-12 h-12 object-cover rounded flex-shrink-0"
-                            />
-                          ) : (
-                            <div className="w-12 h-12 bg-muted rounded flex items-center justify-center flex-shrink-0">
-                              <Package className="w-6 h-6 text-muted-foreground" />
-                            </div>
-                          )}
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-sm truncate">{item.item_name || "Без названия"}</div>
-                            {item.item_article && (
-                              <div className="text-xs text-gray-400">Арт: {item.item_article}</div>
+                          {/* Верхняя строка: изображение + инфо + статус */}
+                          <div className="flex items-center gap-3">
+                            {/* Изображение позиции */}
+                            {item.item_image_url ? (
+                              <img
+                                src={item.item_image_url}
+                                alt={item.item_name || "Позиция"}
+                                className="w-12 h-12 object-cover rounded flex-shrink-0"
+                              />
+                            ) : (
+                              <div className="w-12 h-12 bg-muted rounded flex items-center justify-center flex-shrink-0">
+                                <Package className="w-6 h-6 text-muted-foreground" />
+                              </div>
                             )}
-                            <div className="text-xs text-gray-500">
-                              {item.quantity} шт.
-                              {item.cost && ` • ${item.cost.toLocaleString()} ₽`}
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-sm truncate">{item.item_name || "Без названия"}</div>
+                              {item.item_article && (
+                                <div className="text-xs text-gray-400">Арт: {item.item_article}</div>
+                              )}
+                              <div className="text-xs text-gray-500">
+                                {item.quantity} шт.
+                                {item.cost && ` • ${item.cost.toLocaleString()} ₽`}
+                              </div>
                             </div>
+                            <Select
+                              value={item.status}
+                              onValueChange={(newStatus) => {
+                                updateMontageItemMutation.mutate({ itemId: item.id, status: newStatus });
+                                // Update local state for immediate feedback
+                                if (selectedOrder) {
+                                  const updatedItems = selectedOrder.items.map((i) =>
+                                    i.id === item.id ? { ...i, status: newStatus } : i
+                                  );
+                                  setSelectedOrder({ ...selectedOrder, items: updatedItems });
+                                }
+                              }}
+                            >
+                              <SelectTrigger className={`w-[140px] h-8 text-xs ${itemStatusConfig[item.status]?.color}`}>
+                                <SelectValue>{itemStatusConfig[item.status]?.label || item.status}</SelectValue>
+                              </SelectTrigger>
+                              <SelectContent>
+                                {montageItemStatuses.map((status) => (
+                                  <SelectItem key={status.id} value={status.code}>
+                                    <span className={`${status.bg_color} ${status.text_color} px-2 py-0.5 rounded text-xs`}>
+                                      {status.name}
+                                    </span>
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
                           </div>
-                          <Select
-                            value={item.status}
-                            onValueChange={(newStatus) => {
-                              updateMontageItemMutation.mutate({ itemId: item.id, status: newStatus });
-                              // Update local state for immediate feedback
-                              if (selectedOrder) {
-                                const updatedItems = selectedOrder.items.map((i) =>
-                                  i.id === item.id ? { ...i, status: newStatus } : i
-                                );
-                                setSelectedOrder({ ...selectedOrder, items: updatedItems });
+                          {/* Описание позиции */}
+                          <Input
+                            defaultValue={item.notes || ""}
+                            placeholder="Описание / заметки..."
+                            className="h-7 text-xs"
+                            onBlur={(e) => {
+                              const newNotes = e.target.value;
+                              if (newNotes !== (item.notes || "")) {
+                                updateMontageItemMutation.mutate({ itemId: item.id, notes: newNotes });
+                                // Update local state
+                                if (selectedOrder) {
+                                  const updatedItems = selectedOrder.items.map((i) =>
+                                    i.id === item.id ? { ...i, notes: newNotes } : i
+                                  );
+                                  setSelectedOrder({ ...selectedOrder, items: updatedItems });
+                                }
                               }
                             }}
-                          >
-                            <SelectTrigger className={`w-[140px] h-8 text-xs ${itemStatusConfig[item.status]?.color}`}>
-                              <SelectValue>{itemStatusConfig[item.status]?.label || item.status}</SelectValue>
-                            </SelectTrigger>
-                            <SelectContent>
-                              {montageItemStatuses.map((status) => (
-                                <SelectItem key={status.id} value={status.code}>
-                                  <span className={`${status.bg_color} ${status.text_color} px-2 py-0.5 rounded text-xs`}>
-                                    {status.name}
-                                  </span>
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          />
                         </div>
                       ))}
                     </div>

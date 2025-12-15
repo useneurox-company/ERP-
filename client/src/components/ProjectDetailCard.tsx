@@ -1,12 +1,13 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, Building2, User, Clock } from "lucide-react";
+import { Calendar, Building2, User, Clock, MapPin } from "lucide-react";
 
 interface ProjectDetailCardProps {
   id: string;
   name: string;
   client: string;
+  address?: string | null;
   progress: number;
   status: "pending" | "in_progress" | "completed" | "overdue";
   durationDays: number;
@@ -19,6 +20,7 @@ export function ProjectDetailCard({
   id,
   name,
   client,
+  address,
   progress,
   status,
   durationDays,
@@ -58,6 +60,12 @@ export function ProjectDetailCard({
               <Building2 className="w-4 h-4" />
               <span className="text-sm">Клиент: {client}</span>
             </div>
+            {address && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <MapPin className="w-4 h-4" />
+                <span className="text-sm">{address}</span>
+              </div>
+            )}
           </div>
           <Badge
             variant="outline"

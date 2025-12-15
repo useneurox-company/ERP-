@@ -403,7 +403,7 @@ export function MeasurementStageForm({ stage, onDataChange, readOnly = false }: 
               <Label htmlFor="address" className="text-xs text-muted-foreground">Адрес объекта</Label>
               <Input
                 id="address"
-                value={project?.client_address || formData.address || "Не указан"}
+                value={(project as any)?.address || formData.address || "Не указан"}
                 readOnly
                 disabled
                 className="h-9 text-sm bg-muted/30"
