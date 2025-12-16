@@ -13,6 +13,14 @@ export class SalesRepository {
 
     return result.map(r => ({
       ...r.deals,
+      tags: (() => {
+        try {
+          return r.deals.tags ? JSON.parse(r.deals.tags) : [];
+        } catch (e) {
+          console.error('Failed to parse tags:', r.deals.tags);
+          return [];
+        }
+      })(),
       manager_user: r.users ? {
         id: r.users.id,
         username: r.users.username,
@@ -33,6 +41,14 @@ export class SalesRepository {
 
     return {
       ...result[0].deals,
+      tags: (() => {
+        try {
+          return result[0].deals.tags ? JSON.parse(result[0].deals.tags) : [];
+        } catch (e) {
+          console.error('Failed to parse tags:', result[0].deals.tags);
+          return [];
+        }
+      })(),
       manager_user: result[0].users ? {
         id: result[0].users.id,
         username: result[0].users.username,
