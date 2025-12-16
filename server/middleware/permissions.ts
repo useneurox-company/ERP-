@@ -90,30 +90,40 @@ export function checkAdminOnly() {
       const userId = req.header("X-User-Id") || req.query.userId as string;
 
       if (!userId) {
+        console.log("[checkAdminOnly] No userId provided");
         return res.status(401).json({
           error: "Не авторизован",
           message: "User ID not provided"
         });
       }
 
+      console.log("[checkAdminOnly] Checking user:", userId);
+
       let [user] = await db.select().from(users).where(eq(users.id, userId));
 
       if (!user) {
         // Fallback to Admin if user not found
+        console.log("[checkAdminOnly] User not found by ID, trying Admin fallback");
         const [adminUser] = await db.select().from(users).where(eq(users.username, 'Admin'));
         if (adminUser) {
           console.warn(`[AdminOnly] User ${userId} not found, using Admin fallback`);
           user = adminUser;
         } else {
+          console.log("[checkAdminOnly] Admin user not found in database");
           return res.status(401).json({ error: "Пользователь не найден" });
         }
       }
 
+      console.log("[checkAdminOnly] Found user:", user.username, user.id);
+
       // Admin user by username has all permissions
       if (user.username.toLowerCase() === 'admin') {
+        console.log("[checkAdminOnly] User is admin, allowing access");
         (req as any).currentUser = user;
         return next();
       }
+
+      console.log("[checkAdminOnly] User is not admin, checking warehouse permissions");
 
       // Check if user has warehouse permissions through role
       if (user.role_id) {
@@ -134,6 +144,7 @@ export function checkAdminOnly() {
         }
       }
 
+      console.log("[checkAdminOnly] Access denied - no warehouse permissions");
       return res.status(403).json({
         error: "Доступ запрещен",
         message: "У вас нет прав для этого действия"

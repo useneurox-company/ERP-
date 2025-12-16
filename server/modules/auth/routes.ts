@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { db } from "../../db";
 import { users, roles, role_permissions } from "@shared/schema";
-import { eq } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 
 export const router = Router();
@@ -15,11 +15,11 @@ router.post("/api/auth/login", async (req, res) => {
       return res.status(400).json({ message: "Требуются логин и пароль" });
     }
 
-    // Найти пользователя по username
+    // Найти пользователя по username (case-insensitive)
     const [user] = await db
       .select()
       .from(users)
-      .where(eq(users.username, username))
+      .where(sql`LOWER(${users.username}) = LOWER(${username})`)
       .limit(1);
 
     if (!user) {
