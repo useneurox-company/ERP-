@@ -566,9 +566,13 @@ export default function Montage() {
     };
     if (montageItemStatuses.length === 0) return defaultConfig;
     return montageItemStatuses.reduce((acc, status) => {
+      // Ensure valid colors with fallbacks
+      const bgColor = status.bg_color || 'bg-gray-200';
+      const textColor = status.text_color || 'text-gray-900';
+
       acc[status.code] = {
         label: status.name,
-        color: `${status.bg_color || 'bg-gray-200'} ${status.text_color || 'text-gray-700'}`,
+        color: `${bgColor} ${textColor}`,
       };
       return acc;
     }, {} as Record<string, { label: string; color: string }>);
@@ -2101,7 +2105,7 @@ export default function Montage() {
                               <SelectContent>
                                 {montageItemStatuses.map((status) => (
                                   <SelectItem key={status.id} value={status.code}>
-                                    <span className={`${status.bg_color} ${status.text_color} px-2 py-0.5 rounded text-xs`}>
+                                    <span className={`${status.bg_color || 'bg-gray-100'} ${status.text_color || 'text-gray-900'} px-2 py-0.5 rounded text-xs font-medium`}>
                                       {status.name}
                                     </span>
                                   </SelectItem>
