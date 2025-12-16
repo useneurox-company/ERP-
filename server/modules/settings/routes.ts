@@ -2,13 +2,14 @@ import { Router } from "express";
 import { settingsRepository } from "./repository";
 import { insertCompanySettingsSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
+import { checkAdminOnly } from "../../middleware/permissions";
 
 export const router = Router();
 
 // ========== Settings Endpoints ==========
 
 // GET /api/settings/company - Get company settings
-router.get("/api/settings/company", async (req, res) => {
+router.get("/api/settings/company", checkAdminOnly(), async (req, res) => {
   try {
     let settings = await settingsRepository.getCompanySettings();
 
@@ -30,7 +31,7 @@ router.get("/api/settings/company", async (req, res) => {
 });
 
 // PUT /api/settings/company - Update company settings
-router.put("/api/settings/company", async (req, res) => {
+router.put("/api/settings/company", checkAdminOnly(), async (req, res) => {
   try {
     const validationResult = insertCompanySettingsSchema.partial().safeParse(req.body);
     

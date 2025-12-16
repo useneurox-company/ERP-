@@ -3,11 +3,12 @@ import { usersRepository } from "./repository";
 import { insertUserSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { permissionsService } from "../permissions/service";
+import { checkAdminOnly } from "../../middleware/permissions";
 
 export const router = Router();
 
 // GET /api/users - Get all users
-router.get("/api/users", async (req, res) => {
+router.get("/api/users", checkAdminOnly(), async (req, res) => {
   try {
     const includeRoles = req.query.includeRoles === 'true';
 
@@ -25,7 +26,7 @@ router.get("/api/users", async (req, res) => {
 });
 
 // POST /api/users - Create new user
-router.post("/api/users", async (req, res) => {
+router.post("/api/users", checkAdminOnly(), async (req, res) => {
   try {
     const validationResult = insertUserSchema.safeParse(req.body);
 
@@ -101,7 +102,7 @@ router.get("/api/users/:id", async (req, res) => {
 });
 
 // PUT /api/users/:id - Update user
-router.put("/api/users/:id", async (req, res) => {
+router.put("/api/users/:id", checkAdminOnly(), async (req, res) => {
   try {
     const { id } = req.params;
     const validationResult = insertUserSchema.partial().safeParse(req.body);
@@ -132,7 +133,7 @@ router.put("/api/users/:id", async (req, res) => {
 });
 
 // DELETE /api/users/:id - Delete user
-router.delete("/api/users/:id", async (req, res) => {
+router.delete("/api/users/:id", checkAdminOnly(), async (req, res) => {
   try {
     const { id } = req.params;
     const deleted = await usersRepository.deleteUser(id);
@@ -150,7 +151,7 @@ router.delete("/api/users/:id", async (req, res) => {
 });
 
 // PUT /api/users/:id/role - Assign role to user
-router.put("/api/users/:id/role", async (req, res) => {
+router.put("/api/users/:id/role", checkAdminOnly(), async (req, res) => {
   try {
     const { id } = req.params;
     const { roleId } = req.body;
@@ -175,7 +176,7 @@ router.put("/api/users/:id/role", async (req, res) => {
 });
 
 // PUT /api/users/:id/status - Update user active status
-router.put("/api/users/:id/status", async (req, res) => {
+router.put("/api/users/:id/status", checkAdminOnly(), async (req, res) => {
   try {
     const { id } = req.params;
     const { isActive } = req.body;
@@ -200,7 +201,7 @@ router.put("/api/users/:id/status", async (req, res) => {
 });
 
 // GET /api/users/:userId/permissions - Get all permissions (role + individual)
-router.get("/api/users/:userId/permissions", async (req, res) => {
+router.get("/api/users/:userId/permissions", checkAdminOnly(), async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -227,7 +228,7 @@ router.get("/api/users/:userId/permissions", async (req, res) => {
 });
 
 // PUT /api/users/:userId/permissions/:module - Set/update permission for module
-router.put("/api/users/:userId/permissions/:module", async (req, res) => {
+router.put("/api/users/:userId/permissions/:module", checkAdminOnly(), async (req, res) => {
   try {
     const { userId, module } = req.params;
     const permissions = req.body;
@@ -252,7 +253,7 @@ router.put("/api/users/:userId/permissions/:module", async (req, res) => {
 });
 
 // DELETE /api/users/:userId/permissions/:module - Delete individual permission
-router.delete("/api/users/:userId/permissions/:module", async (req, res) => {
+router.delete("/api/users/:userId/permissions/:module", checkAdminOnly(), async (req, res) => {
   try {
     const { userId, module } = req.params;
 

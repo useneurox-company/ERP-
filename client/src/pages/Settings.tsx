@@ -25,6 +25,30 @@ import {
 import type { User, Role, CompanySettings } from "@shared/schema";
 
 export default function Settings() {
+  // Admin access control
+  const user = localStorage.getItem("user");
+  const isAdmin = user ? JSON.parse(user).username?.toLowerCase() === 'admin' : false;
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle>Доступ запрещён</CardTitle>
+            <CardDescription>
+              Эта страница доступна только администраторам.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button asChild variant="default" className="w-full">
+              <a href="/">Вернуться на главную</a>
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   const { toast } = useToast();
   const queryClient = useQueryClient();
 

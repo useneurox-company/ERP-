@@ -45,11 +45,6 @@ const tools = [
   { title: "Задачи", url: "/tasks", icon: CheckSquare },
 ];
 
-const settings = [
-  { title: "Шаблоны процессов", url: "/process-templates", icon: FileStack },
-  { title: "Настройки", url: "/settings", icon: Settings },
-];
-
 interface AppSidebarProps {
   activeModule?: string;
 }
@@ -57,6 +52,7 @@ interface AppSidebarProps {
 export function AppSidebar({ activeModule = "/" }: AppSidebarProps) {
   const [userName, setUserName] = useState("Пользователь");
   const [userRole, setUserRole] = useState<{ name: string } | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     const role = localStorage.getItem("userRole");
@@ -69,8 +65,16 @@ export function AppSidebar({ activeModule = "/" }: AppSidebarProps) {
     if (user) {
       const userData = JSON.parse(user);
       setUserName(userData.full_name || userData.username || "Пользователь");
+      // Check if user is admin
+      setIsAdmin(userData.username?.toLowerCase() === 'admin');
     }
   }, []);
+
+  // Dynamically build settings menu based on admin status
+  const settings = [
+    { title: "Шаблоны процессов", url: "/process-templates", icon: FileStack },
+    ...(isAdmin ? [{ title: "Настройки", url: "/settings", icon: Settings }] : []),
+  ];
 
   return (
     <Sidebar collapsible="icon">
