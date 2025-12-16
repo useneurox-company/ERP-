@@ -105,11 +105,7 @@ export default function Settings() {
   const { data: usersWithRoles = [], isLoading: usersLoading, error: usersError } = useQuery<Array<User & { role?: Role }>>({
     queryKey: ["/api/users", { includeRoles: true }],
     queryFn: async () => {
-      const response = await fetch("/api/users?includeRoles=true", {
-        credentials: "include",
-      });
-      if (!response.ok) throw new Error("Failed to fetch users");
-      return response.json();
+      return await apiRequest("GET", "/api/users?includeRoles=true");
     },
     refetchInterval: 30000, // Real-time: обновление каждые 30 секунд (редко меняется)
   });
@@ -126,14 +122,7 @@ export default function Settings() {
 
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
-      const response = await fetch(`/api/users/${userId}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to delete user");
-      }
+      return await apiRequest("DELETE", `/api/users/${userId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });
