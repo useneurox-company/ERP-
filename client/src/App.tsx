@@ -26,6 +26,7 @@ import Mail from "@/pages/Mail";
 import Documents from "@/pages/Documents";
 import AIAgents from "@/pages/AIAgents";
 import Tasks from "@/pages/Tasks";
+import Board from "@/pages/Board";
 import Settings from "@/pages/Settings";
 import ProcessTemplates from "@/pages/ProcessTemplates";
 import Login from "@/pages/Login";
@@ -53,6 +54,7 @@ function Router() {
       <Route path="/documents" component={Documents} />
       <Route path="/ai-agents" component={AIAgents} />
       <Route path="/tasks" component={Tasks} />
+      <Route path="/board" component={Board} />
       <Route path="/process-templates" component={ProcessTemplates} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />

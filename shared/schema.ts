@@ -1295,3 +1295,100 @@ export const montage_item_statuses = pgTable('montage_item_statuses', {
 export const insertMontageItemStatusSchema = createInsertSchema(montage_item_statuses).omit({ id: true, created_at: true, updated_at: true });
 export type InsertMontageItemStatus = z.infer<typeof insertMontageItemStatusSchema>;
 export type MontageItemStatus = typeof montage_item_statuses.$inferSelect;
+
+// ============================================
+// KANBAN BOARDS (Доски)
+// ============================================
+
+// Доски
+export const boards = pgTable('boards', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  created_by: text('created_by').references(() => users.id),
+  is_active: boolean('is_active').default(true).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardSchema = createInsertSchema(boards).omit({ id: true, created_at: true, updated_at: true });
+export type InsertBoard = z.infer<typeof insertBoardSchema>;
+export type Board = typeof boards.$inferSelect;
+
+// Колонки доски
+export const board_columns = pgTable('board_columns', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  board_id: text('board_id').references(() => boards.id, { onDelete: 'cascade' }).notNull(),
+  title: text('title').notNull(),
+  color: text('color').default('#6366f1'),
+  order: integer('order').notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardColumnSchema = createInsertSchema(board_columns).omit({ id: true, created_at: true });
+export type InsertBoardColumn = z.infer<typeof insertBoardColumnSchema>;
+export type BoardColumn = typeof board_columns.$inferSelect;
+
+// Карточки
+export const board_cards = pgTable('board_cards', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  column_id: text('column_id').references(() => board_columns.id, { onDelete: 'cascade' }).notNull(),
+  title: text('title').notNull(),
+  description: text('description'),
+  order: integer('order').notNull(),
+  assigned_to: text('assigned_to').references(() => users.id),
+  priority: text('priority').default('normal'), // low, normal, high, urgent
+  due_date: timestamp('due_date'),
+  created_by: text('created_by').references(() => users.id),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardCardSchema = createInsertSchema(board_cards).omit({ id: true, created_at: true, updated_at: true });
+export type InsertBoardCard = z.infer<typeof insertBoardCardSchema>;
+export type BoardCard = typeof board_cards.$inferSelect;
+
+// Метки
+export const board_labels = pgTable('board_labels', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  board_id: text('board_id').references(() => boards.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  color: text('color').notNull().default('#6366f1'),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardLabelSchema = createInsertSchema(board_labels).omit({ id: true, created_at: true });
+export type InsertBoardLabel = z.infer<typeof insertBoardLabelSchema>;
+export type BoardLabel = typeof board_labels.$inferSelect;
+
+// Связь карточка-метка
+export const board_card_labels = pgTable('board_card_labels', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  card_id: text('card_id').references(() => board_cards.id, { onDelete: 'cascade' }).notNull(),
+  label_id: text('label_id').references(() => board_labels.id, { onDelete: 'cascade' }).notNull(),
+});
+
+// Вложения карточек
+export const board_card_attachments = pgTable('board_card_attachments', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  card_id: text('card_id').references(() => board_cards.id, { onDelete: 'cascade' }).notNull(),
+  file_name: text('file_name').notNull(),
+  file_path: text('file_path').notNull(),
+  file_size: integer('file_size'),
+  mime_type: text('mime_type'),
+  uploaded_by: text('uploaded_by').references(() => users.id),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardCardAttachmentSchema = createInsertSchema(board_card_attachments).omit({ id: true, created_at: true });
+export type InsertBoardCardAttachment = z.infer<typeof insertBoardCardAttachmentSchema>;
+export type BoardCardAttachment = typeof board_card_attachments.$inferSelect;
+
+// Участники доски
+export const board_members = pgTable('board_members', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  board_id: text('board_id').references(() => boards.id, { onDelete: 'cascade' }).notNull(),
+  user_id: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  role: text('role').default('member'), // owner, admin, member
+  added_at: timestamp('added_at').$defaultFn(() => new Date()).notNull(),
+});

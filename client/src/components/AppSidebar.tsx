@@ -16,6 +16,7 @@ import {
   FileStack,
   Building2,
   Users,
+  Kanban,
 } from "lucide-react";
 import {
   Sidebar,
@@ -43,6 +44,7 @@ const modules = [
 
 const tools = [
   { title: "Задачи", url: "/tasks", icon: CheckSquare },
+  { title: "Доска", url: "/board", icon: Kanban },
 ];
 
 interface AppSidebarProps {
