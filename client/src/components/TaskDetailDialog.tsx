@@ -124,6 +124,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
   const [isEditing, setIsEditing] = useState(false);
   const [editedTitle, setEditedTitle] = useState("");
   const [editedDescription, setEditedDescription] = useState("");
+  const [editedDeadline, setEditedDeadline] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [newComment, setNewComment] = useState("");
   const [lightboxImage, setLightboxImage] = useState<string | null>(null);
@@ -303,6 +304,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
     updateTaskMutation.mutate({
       title: editedTitle,
       description: editedDescription,
+      deadline: editedDeadline || null,
     });
   };
 
@@ -471,6 +473,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                       onClick={() => {
                         setEditedTitle(task.title);
                         setEditedDescription(task.description || "");
+                        setEditedDeadline(task.deadline ? task.deadline.split('T')[0] : "");
                         setIsEditing(true);
                       }}
                     >
@@ -689,7 +692,14 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                     <Calendar className="h-4 w-4" />
                     Срок выполнения
                   </label>
-                  {task.deadline ? (
+                  {isEditing && canEdit ? (
+                    <Input
+                      type="date"
+                      value={editedDeadline}
+                      onChange={(e) => setEditedDeadline(e.target.value)}
+                      className="w-full"
+                    />
+                  ) : task.deadline ? (
                     <div className="text-base font-semibold">
                       {format(new Date(task.deadline), "d MMMM yyyy", { locale: ru })}
                     </div>
