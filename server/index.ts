@@ -127,7 +127,7 @@ if (isProduction) {
   }
 
   // Start server
-  const port = 5000;
+  const port = process.env.PORT ? parseInt(process.env.PORT) : 5000;
   const isWindows = process.platform === 'win32';
 
   const listenOptions: any = {

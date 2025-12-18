@@ -10,9 +10,12 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StageDetailView } from "@/components/StageDetailView";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
-import { Calendar, Clock, AlertTriangle, Filter, ArrowUpDown, Search, User, Plus, Trash2, Upload, X, Hash, Briefcase, ExternalLink } from "lucide-react";
+import { Calendar, Clock, AlertTriangle, Filter, ArrowUpDown, Search, User, Plus, Trash2, Upload, X, Hash, Briefcase, ExternalLink, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 type TaskStatus = 'all' | 'new' | 'pending' | 'in_progress' | 'pending_review' | 'completed' | 'rejected' | 'cancelled' | 'on_hold';
 type TaskDeadline = 'all' | 'overdue' | 'today' | 'week';
@@ -53,6 +56,7 @@ export default function Tasks() {
   const [projectStages, setProjectStages] = useState<any[]>([]);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [taskToDelete, setTaskToDelete] = useState<any>(null);
+  const [projectComboboxOpen, setProjectComboboxOpen] = useState(false);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -788,21 +792,49 @@ export default function Tasks() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="project">Проект *</Label>
-                    <Select
-                      value={newTask.project_id}
-                      onValueChange={(value) => setNewTask({ ...newTask, project_id: value, project_stage_id: '' })}
-                    >
-                      <SelectTrigger id="project">
-                        <SelectValue placeholder="Выберите проект" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {projects.map((project: any) => (
-                          <SelectItem key={project.id} value={project.id}>
-                            {project.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <Popover open={projectComboboxOpen} onOpenChange={setProjectComboboxOpen}>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={projectComboboxOpen}
+                          className="w-full justify-between font-normal"
+                        >
+                          {newTask.project_id
+                            ? projects.find((p: any) => p.id === newTask.project_id)?.name
+                            : "Выберите проект"}
+                          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-[300px] p-0">
+                        <Command>
+                          <CommandInput placeholder="Поиск проекта..." />
+                          <CommandList>
+                            <CommandEmpty>Проект не найден</CommandEmpty>
+                            <CommandGroup>
+                              {projects.map((project: any) => (
+                                <CommandItem
+                                  key={project.id}
+                                  value={project.name}
+                                  onSelect={() => {
+                                    setNewTask({ ...newTask, project_id: project.id, project_stage_id: '' });
+                                    setProjectComboboxOpen(false);
+                                  }}
+                                >
+                                  <Check
+                                    className={cn(
+                                      "mr-2 h-4 w-4",
+                                      newTask.project_id === project.id ? "opacity-100" : "opacity-0"
+                                    )}
+                                  />
+                                  {project.name}
+                                </CommandItem>
+                              ))}
+                            </CommandGroup>
+                          </CommandList>
+                        </Command>
+                      </PopoverContent>
+                    </Popover>
                   </div>
 
                   <div className="space-y-2">

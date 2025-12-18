@@ -122,7 +122,7 @@ const getFileTypeBgColor = (type: string): string => {
   }
 };
 
-export function FilePreview({ file, onDownload, onDelete, downloadUrl, previewUrl, compact = false }: FilePreviewProps) {
+export function FilePreview({ file, onDownload, onDelete, onImageClick, downloadUrl, previewUrl, compact = false }: FilePreviewProps) {
   const [imageError, setImageError] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -180,7 +180,8 @@ export function FilePreview({ file, onDownload, onDelete, downloadUrl, previewUr
               alt={file.file_name}
               className={cn(
                 "w-full h-full object-cover transition-opacity duration-300",
-                imageLoaded ? "opacity-100" : "opacity-0"
+                imageLoaded ? "opacity-100" : "opacity-0",
+                isImage && onImageClick && "cursor-pointer"
               )}
               onLoad={() => setImageLoaded(true)}
               onError={() => {
@@ -188,6 +189,7 @@ export function FilePreview({ file, onDownload, onDelete, downloadUrl, previewUr
                 setImageLoaded(true);
               }}
               loading="lazy"
+              onClick={() => isImage && onImageClick && thumbnailUrl && onImageClick(thumbnailUrl)}
             />
             {/* Бейдж типа файла */}
             {isPdf && (

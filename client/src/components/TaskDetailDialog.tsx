@@ -45,6 +45,7 @@ interface Task {
   priority: string;
   deadline: string | null;
   assignee_id: string | null;
+  created_by: string | null;
   assignee?: {
     id: string;
     username: string;
@@ -125,6 +126,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
   const [editedDescription, setEditedDescription] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [newComment, setNewComment] = useState("");
+  const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
   // Fetch task details
   const { data: task, isLoading: taskLoading } = useQuery<Task>({
@@ -391,6 +393,14 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
   const currentStatus = statusOptions.find(s => s.value === task?.status);
   const currentPriority = priorityOptions.find(p => p.value === task?.priority);
 
+  // Check if current user can edit task (author or admin)
+  const currentUserId = getCurrentUserId();
+  const userStr = typeof window !== 'undefined' ? localStorage.getItem('user') : null;
+  const currentUser = userStr ? JSON.parse(userStr) : null;
+  const isAdmin = currentUser?.role_id === 'admin' || currentUser?.is_admin === true;
+  const isAuthor = task?.created_by === currentUserId;
+  const canEdit = isAuthor || isAdmin;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto p-4">
@@ -453,7 +463,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                         Отмена
                       </Button>
                     </div>
-                  ) : (
+                  ) : canEdit ? (
                     <Button
                       size="sm"
                       variant="outline"
@@ -466,7 +476,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                     >
                       Редактировать
                     </Button>
-                  )}
+                  ) : null}
                 </Card>
 
                 {/* Attachments */}
@@ -534,6 +544,7 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                           downloadUrl={`/api/tasks/${taskId}/attachments/${attachment.id}/download`}
                           onDownload={() => window.open(`/api/tasks/${taskId}/attachments/${attachment.id}/download`, "_blank")}
                           onDelete={() => deleteAttachmentMutation.mutate(attachment.id)}
+                          onImageClick={(url) => setLightboxImage(url)}
                           compact
                         />
                       ))}
@@ -818,6 +829,27 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
           </>
         ) : null}
       </DialogContent>
+
+      {/* Lightbox for image preview */}
+      {lightboxImage && (
+        <div
+          className="fixed inset-0 z-[100] bg-black/90 flex items-center justify-center cursor-pointer"
+          onClick={() => setLightboxImage(null)}
+        >
+          <button
+            className="absolute top-4 right-4 text-white hover:text-gray-300 z-10"
+            onClick={() => setLightboxImage(null)}
+          >
+            <X className="w-8 h-8" />
+          </button>
+          <img
+            src={lightboxImage}
+            className="max-w-[90vw] max-h-[90vh] object-contain"
+            alt="Preview"
+            onClick={(e) => e.stopPropagation()}
+          />
+        </div>
+      )}
     </Dialog>
   );
 }
