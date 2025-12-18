@@ -78,11 +78,18 @@ export const boardRepository = {
     // Get card-label relations
     const cardIds = cards.map(c => c.board_cards.id);
     let cardLabels: any[] = [];
+    let cardAttachments: any[] = [];
     if (cardIds.length > 0) {
       cardLabels = await db
         .select()
         .from(board_card_labels)
         .where(inArray(board_card_labels.card_id, cardIds));
+
+      // Get attachments for all cards
+      cardAttachments = await db
+        .select()
+        .from(board_card_attachments)
+        .where(inArray(board_card_attachments.card_id, cardIds));
     }
 
     // Build response with cards organized by column
@@ -101,6 +108,8 @@ export const boardRepository = {
             .filter(cl => cl.card_id === c.board_cards.id)
             .map(cl => labels.find(l => l.id === cl.label_id))
             .filter(Boolean),
+          attachments: cardAttachments
+            .filter(a => a.card_id === c.board_cards.id),
         })),
     }));
 
