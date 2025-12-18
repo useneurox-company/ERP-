@@ -430,9 +430,22 @@ export default function Board() {
         body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error("Failed to update card");
-      return response.json();
+      return { cardId, card: await response.json() };
     },
-    onSuccess: () => {
+    onSuccess: async ({ cardId }) => {
+      // Upload new attachments if any
+      if (attachmentFiles.length > 0) {
+        for (const file of attachmentFiles) {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("userId", currentUser?.id || "");
+          await fetch(`/api/boards/cards/${cardId}/attachments`, {
+            method: "POST",
+            body: formData,
+          });
+        }
+      }
+
       queryClient.invalidateQueries({ queryKey: [`/api/boards/${selectedBoardId}`] });
       setEditCardDialogOpen(false);
       setSelectedCard(null);
@@ -617,6 +630,7 @@ export default function Board() {
     setNewCardAssignee(card.assigned_to || "");
     setNewCardPriority(card.priority || "normal");
     setNewCardDueDate(card.due_date ? card.due_date.split("T")[0] : "");
+    setAttachmentFiles([]); // Reset new files
     setEditCardDialogOpen(true);
   };
 
@@ -1105,6 +1119,100 @@ export default function Board() {
                 onChange={(e) => setNewCardDueDate(e.target.value)}
               />
             </div>
+
+            {/* Existing Attachments */}
+            {selectedCard?.attachments && selectedCard.attachments.length > 0 && (
+              <div className="space-y-2">
+                <Label>Вложения ({selectedCard.attachments.length})</Label>
+                <div className="grid grid-cols-2 gap-2">
+                  {selectedCard.attachments.map((attachment) => {
+                    const isImage = attachment.mime_type?.startsWith("image/");
+                    return (
+                      <div key={attachment.id} className="relative group">
+                        {isImage ? (
+                          <div
+                            className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer"
+                            onClick={() => setPreviewImage(`/api/boards/attachments/${attachment.id}/download`)}
+                          >
+                            <img
+                              src={`/api/boards/attachments/${attachment.id}/download`}
+                              alt={attachment.file_name}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <Search className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
+                        ) : (
+                          <a
+                            href={`/api/boards/attachments/${attachment.id}/download`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 p-2 bg-muted rounded-lg hover:bg-muted/80"
+                          >
+                            <Paperclip className="h-4 w-4 flex-shrink-0" />
+                            <span className="text-sm truncate">{attachment.file_name}</span>
+                          </a>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* Add new files */}
+            <div className="space-y-2">
+              <Label>Добавить файлы</Label>
+              <div className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed rounded-md">
+                <Upload className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  Используйте Ctrl+V для вставки
+                </span>
+              </div>
+              {attachmentFiles.length > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {attachmentFiles.map((file, idx) => {
+                    const isImage = file.type.startsWith("image/");
+                    const previewUrl = isImage ? URL.createObjectURL(file) : null;
+                    return (
+                      <div key={idx} className="relative group">
+                        {isImage && previewUrl ? (
+                          <div
+                            className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer"
+                            onClick={() => setPreviewImage(previewUrl)}
+                          >
+                            <img
+                              src={previewUrl}
+                              alt={file.name}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <Search className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                            <Paperclip className="h-4 w-4 flex-shrink-0" />
+                            <span className="text-sm truncate">{file.name}</span>
+                          </div>
+                        )}
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setAttachmentFiles((prev) => prev.filter((_, i) => i !== idx))}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
             <div className="flex justify-between">
               <Button
                 type="button"
