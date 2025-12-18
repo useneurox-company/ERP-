@@ -366,6 +366,25 @@ export default function Board() {
     },
   });
 
+  const deleteBoardMutation = useMutation({
+    mutationFn: async (boardId: string) => {
+      const response = await fetch(`/api/boards/${boardId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to delete board");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/boards"] });
+      // Switch to first available board or null
+      const remainingBoards = boards.filter((b) => b.id !== selectedBoardId);
+      setSelectedBoardId(remainingBoards.length > 0 ? remainingBoards[0].id : null);
+      toast({ title: "Доска удалена" });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось удалить доску", variant: "destructive" });
+    },
+  });
+
   const createCardMutation = useMutation({
     mutationFn: async (data: any) => {
       const response = await fetch(
@@ -728,10 +747,6 @@ export default function Board() {
                 className="pl-8 w-[200px]"
               />
             </div>
-            <Button variant="outline" onClick={() => setCreateLabelDialogOpen(true)}>
-              <Tag className="h-4 w-4 mr-2" />
-              Метки
-            </Button>
             <Button variant="outline" onClick={() => setMembersDialogOpen(true)} disabled={!selectedBoardId}>
               <Users className="h-4 w-4 mr-2" />
               Участники
@@ -741,10 +756,20 @@ export default function Board() {
                 </Badge>
               )}
             </Button>
-            <Button variant="outline" onClick={() => setCreateColumnDialogOpen(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Колонка
-            </Button>
+            {selectedBoardId && (
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={() => {
+                  if (confirm("Удалить доску? Все колонки и карточки будут удалены.")) {
+                    deleteBoardMutation.mutate(selectedBoardId);
+                  }
+                }}
+                className="text-destructive hover:text-destructive"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            )}
             <Button onClick={() => setCreateBoardDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Новая доска
