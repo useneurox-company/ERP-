@@ -19,6 +19,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  useDroppable,
   type DragStartEvent,
   type DragEndEvent,
   type DragOverEvent,
@@ -119,18 +120,12 @@ function SortableCard({ card, onClick }: { card: BoardCard; onClick: () => void 
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-card border rounded-lg p-3 cursor-pointer hover:shadow-md transition-shadow group"
+      {...attributes}
+      {...listeners}
+      className="bg-card border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow touch-none"
       onClick={onClick}
     >
-      <div className="flex items-start gap-2">
-        <div
-          {...attributes}
-          {...listeners}
-          className="opacity-0 group-hover:opacity-100 cursor-grab active:cursor-grabbing mt-1"
-        >
-          <GripVertical className="h-4 w-4 text-muted-foreground" />
-        </div>
-        <div className="flex-1 min-w-0">
+      <div className="flex-1 min-w-0">
           {/* Labels */}
           {card.labels && card.labels.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-2">
@@ -180,7 +175,6 @@ function SortableCard({ card, onClick }: { card: BoardCard; onClick: () => void 
             )}
           </div>
         </div>
-      </div>
     </div>
   );
 }
@@ -200,6 +194,7 @@ function BoardColumnComponent({
   onCardClick: (card: BoardCard) => void;
 }) {
   const cardIds = column.cards.map((c) => c.id);
+  const { setNodeRef, isOver } = useDroppable({ id: column.id, data: { type: "column", column } });
 
   return (
     <div className="flex-shrink-0 w-72">
@@ -235,7 +230,10 @@ function BoardColumnComponent({
         </DropdownMenu>
       </div>
 
-      <div className="bg-muted/30 rounded-b-lg p-2 min-h-[400px] space-y-2">
+      <div
+        ref={setNodeRef}
+        className={`bg-muted/30 rounded-b-lg p-2 min-h-[400px] space-y-2 transition-colors ${isOver ? "bg-primary/10 ring-2 ring-primary/30" : ""}`}
+      >
         <SortableContext items={cardIds} strategy={verticalListSortingStrategy}>
           {column.cards.map((card) => (
             <SortableCard
@@ -307,6 +305,7 @@ export default function Board() {
   const { data: currentBoard } = useQuery<Board>({
     queryKey: [`/api/boards/${selectedBoardId}`],
     enabled: !!selectedBoardId,
+    refetchInterval: 5000, // Обновление каждые 5 секунд для реалтайма
   });
 
   const { data: users = [] } = useQuery<any[]>({
@@ -837,13 +836,13 @@ export default function Board() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Исполнитель</Label>
-                <Select value={newCardAssignee} onValueChange={setNewCardAssignee}>
+                <Select value={newCardAssignee || "none"} onValueChange={(val) => setNewCardAssignee(val === "none" ? "" : val)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Не назначен" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Не назначен</SelectItem>
-                    {users.map((user) => (
+                    <SelectItem value="none">Не назначен</SelectItem>
+                    {users.filter(u => u.id).map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.full_name || user.username}
                       </SelectItem>
@@ -958,13 +957,13 @@ export default function Board() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Исполнитель</Label>
-                <Select value={newCardAssignee} onValueChange={setNewCardAssignee}>
+                <Select value={newCardAssignee || "none"} onValueChange={(val) => setNewCardAssignee(val === "none" ? "" : val)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Не назначен" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Не назначен</SelectItem>
-                    {users.map((user) => (
+                    <SelectItem value="none">Не назначен</SelectItem>
+                    {users.filter(u => u.id).map((user) => (
                       <SelectItem key={user.id} value={user.id}>
                         {user.full_name || user.username}
                       </SelectItem>
