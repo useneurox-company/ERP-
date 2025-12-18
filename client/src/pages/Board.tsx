@@ -302,6 +302,7 @@ export default function Board() {
   const [newLabelName, setNewLabelName] = useState("");
   const [newLabelColor, setNewLabelColor] = useState("#6366f1");
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   // Get current user
   const userStr = localStorage.getItem("user");
@@ -945,20 +946,44 @@ export default function Board() {
                 </span>
               </div>
               {attachmentFiles.length > 0 && (
-                <div className="space-y-1">
-                  {attachmentFiles.map((file, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm p-2 bg-muted rounded">
-                      <span className="truncate">{file.name}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setAttachmentFiles((prev) => prev.filter((_, i) => i !== idx))}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  ))}
+                <div className="grid grid-cols-2 gap-2">
+                  {attachmentFiles.map((file, idx) => {
+                    const isImage = file.type.startsWith("image/");
+                    const previewUrl = isImage ? URL.createObjectURL(file) : null;
+                    return (
+                      <div key={idx} className="relative group">
+                        {isImage && previewUrl ? (
+                          <div
+                            className="relative aspect-video bg-muted rounded-lg overflow-hidden cursor-pointer"
+                            onClick={() => setPreviewImage(previewUrl)}
+                          >
+                            <img
+                              src={previewUrl}
+                              alt={file.name}
+                              className="w-full h-full object-cover hover:scale-105 transition-transform"
+                            />
+                            <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
+                              <Search className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2 p-2 bg-muted rounded-lg">
+                            <Paperclip className="h-4 w-4 flex-shrink-0" />
+                            <span className="text-sm truncate">{file.name}</span>
+                          </div>
+                        )}
+                        <Button
+                          type="button"
+                          variant="destructive"
+                          size="sm"
+                          className="absolute -top-2 -right-2 h-6 w-6 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={() => setAttachmentFiles((prev) => prev.filter((_, i) => i !== idx))}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -1344,6 +1369,31 @@ export default function Board() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Image Preview Lightbox */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 bg-black/80 flex items-center justify-center p-4"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-w-[90vw] max-h-[90vh]">
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-full max-h-[90vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+            <Button
+              variant="secondary"
+              size="sm"
+              className="absolute top-2 right-2"
+              onClick={() => setPreviewImage(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
