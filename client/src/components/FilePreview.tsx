@@ -13,6 +13,7 @@ interface FilePreviewProps {
   };
   onDownload?: () => void;
   onDelete?: () => void;
+  onImageClick?: (url: string) => void;
   downloadUrl?: string;
   previewUrl?: string;
   compact?: boolean;

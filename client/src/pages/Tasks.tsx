@@ -98,6 +98,39 @@ export default function Tasks() {
     }
   }, [newTask.project_id, newTask.related_entity_type]);
 
+  // Handle Ctrl+V paste for files in create dialog
+  const handleCreateDialogPaste = (e: React.ClipboardEvent) => {
+    const items = e.clipboardData.items;
+    const newFiles: File[] = [];
+
+    for (let i = 0; i < items.length; i++) {
+      const item = items[i];
+      if (item.kind === 'file') {
+        const file = item.getAsFile();
+        if (file) {
+          // Validate size (10MB max)
+          if (file.size > 10 * 1024 * 1024) {
+            toast({
+              title: "Ошибка",
+              description: `Файл ${file.name} превышает максимальный размер 10MB`,
+              variant: "destructive",
+            });
+            continue;
+          }
+          newFiles.push(file);
+        }
+      }
+    }
+
+    if (newFiles.length > 0) {
+      setAttachmentFiles(prev => [...prev, ...newFiles]);
+      toast({
+        title: "Файл добавлен",
+        description: `Добавлено файлов из буфера обмена: ${newFiles.length}`,
+      });
+    }
+  };
+
   const createTaskMutation = useMutation({
     mutationFn: async (taskData: any) => {
       const payload: any = {
@@ -735,7 +768,7 @@ export default function Tasks() {
 
       {/* Диалог создания задачи */}
       <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-        <DialogContent className="max-w-2xl">
+        <DialogContent className="max-w-2xl" onPaste={handleCreateDialogPaste} tabIndex={0}>
           <DialogHeader>
             <DialogTitle>Создать новую задачу</DialogTitle>
             <DialogDescription>
@@ -948,10 +981,13 @@ export default function Tasks() {
                     }}
                     className="hidden"
                   />
-                  <div className="flex items-center justify-center gap-2 p-4 border-2 border-dashed border-muted-foreground/25 rounded-md hover:border-primary/50 hover:bg-accent/50 transition-colors cursor-pointer">
+                  <div className="flex flex-col items-center justify-center gap-2 p-4 border-2 border-dashed border-muted-foreground/25 rounded-md hover:border-primary/50 hover:bg-accent/50 transition-colors cursor-pointer">
                     <Upload className="w-5 h-5 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
                       Нажмите для выбора файлов (макс. 10 МБ)
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      или используйте Ctrl+V для вставки из буфера
                     </span>
                   </div>
                 </label>
