@@ -39,11 +39,14 @@ import {
   GripVertical,
   X,
   User,
+  Users,
   Calendar,
   Tag,
   Upload,
   Paperclip,
   LayoutGrid,
+  UserPlus,
+  UserMinus,
 } from "lucide-react";
 
 // Types
@@ -89,6 +92,12 @@ interface Board {
   description?: string;
   columns: BoardColumn[];
   labels: BoardLabel[];
+}
+
+interface BoardMember {
+  user_id: string;
+  role: string;
+  user?: { id: string; username: string; full_name?: string };
 }
 
 // Priority colors
@@ -275,6 +284,7 @@ export default function Board() {
   const [createColumnDialogOpen, setCreateColumnDialogOpen] = useState(false);
   const [editColumnDialogOpen, setEditColumnDialogOpen] = useState(false);
   const [createLabelDialogOpen, setCreateLabelDialogOpen] = useState(false);
+  const [membersDialogOpen, setMembersDialogOpen] = useState(false);
 
   // Form state
   const [newBoardName, setNewBoardName] = useState("");
@@ -310,6 +320,12 @@ export default function Board() {
 
   const { data: users = [] } = useQuery<any[]>({
     queryKey: ["/api/users"],
+  });
+
+  // Query for board members
+  const { data: boardMembers = [] } = useQuery<BoardMember[]>({
+    queryKey: [`/api/boards/${selectedBoardId}/members`],
+    enabled: !!selectedBoardId,
   });
 
   // Set first board as selected if none selected
@@ -522,6 +538,42 @@ export default function Board() {
     },
   });
 
+  // Member mutations
+  const addMemberMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch(`/api/boards/${selectedBoardId}/members`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ user_id: userId, role: "member" }),
+      });
+      if (!response.ok) throw new Error("Failed to add member");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${selectedBoardId}/members`] });
+      toast({ title: "Участник добавлен" });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось добавить участника", variant: "destructive" });
+    },
+  });
+
+  const removeMemberMutation = useMutation({
+    mutationFn: async (userId: string) => {
+      const response = await fetch(`/api/boards/${selectedBoardId}/members/${userId}`, {
+        method: "DELETE",
+      });
+      if (!response.ok) throw new Error("Failed to remove member");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${selectedBoardId}/members`] });
+      toast({ title: "Участник удалён" });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось удалить участника", variant: "destructive" });
+    },
+  });
+
   // Handlers
   const resetCardForm = () => {
     setNewCardTitle("");
@@ -678,6 +730,15 @@ export default function Board() {
             <Button variant="outline" onClick={() => setCreateLabelDialogOpen(true)}>
               <Tag className="h-4 w-4 mr-2" />
               Метки
+            </Button>
+            <Button variant="outline" onClick={() => setMembersDialogOpen(true)} disabled={!selectedBoardId}>
+              <Users className="h-4 w-4 mr-2" />
+              Участники
+              {boardMembers.length > 0 && (
+                <Badge variant="secondary" className="ml-2">
+                  {boardMembers.length}
+                </Badge>
+              )}
             </Button>
             <Button variant="outline" onClick={() => setCreateColumnDialogOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />
@@ -1182,6 +1243,105 @@ export default function Board() {
               </Button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Members Dialog */}
+      <Dialog open={membersDialogOpen} onOpenChange={setMembersDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Участники доски</DialogTitle>
+            <DialogDescription>
+              Добавьте пользователей для совместной работы
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Add member */}
+            <div className="space-y-2">
+              <Label>Добавить участника</Label>
+              <Select
+                onValueChange={(userId) => {
+                  if (userId && userId !== "none") {
+                    addMemberMutation.mutate(userId);
+                  }
+                }}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Выберите пользователя" />
+                </SelectTrigger>
+                <SelectContent>
+                  {users
+                    .filter((user) => user.id && !boardMembers.some((m) => m.user_id === user.id))
+                    .map((user) => (
+                      <SelectItem key={user.id} value={user.id}>
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-6 w-6">
+                            <AvatarFallback className="text-xs">
+                              {(user.full_name || user.username)?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          {user.full_name || user.username}
+                        </div>
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Current members list */}
+            <div className="space-y-2">
+              <Label>Текущие участники ({boardMembers.length})</Label>
+              <div className="space-y-2 max-h-[300px] overflow-y-auto">
+                {boardMembers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground text-center py-4">
+                    Нет участников. Добавьте пользователей для совместной работы.
+                  </p>
+                ) : (
+                  boardMembers.map((member) => {
+                    const user = users.find((u) => u.id === member.user_id);
+                    return (
+                      <div
+                        key={member.user_id}
+                        className="flex items-center justify-between p-2 bg-muted rounded-lg"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-8 w-8">
+                            <AvatarFallback>
+                              {(user?.full_name || user?.username || "?")?.[0]}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="text-sm font-medium">
+                              {user?.full_name || user?.username || "Неизвестный"}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {member.role === "owner" ? "Владелец" : "Участник"}
+                            </p>
+                          </div>
+                        </div>
+                        {member.role !== "owner" && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeMemberMutation.mutate(member.user_id)}
+                            className="h-8 w-8 p-0 text-destructive hover:text-destructive"
+                          >
+                            <UserMinus className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            </div>
+
+            <div className="flex justify-end">
+              <Button variant="outline" onClick={() => setMembersDialogOpen(false)}>
+                Закрыть
+              </Button>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

@@ -471,10 +471,14 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                       variant="outline"
                       className="mt-4"
                       onClick={() => {
+                        console.log('[DEBUG] Edit button clicked!');
+                        console.log('[DEBUG] task.title:', task.title);
+                        console.log('[DEBUG] isEditing before:', false);
                         setEditedTitle(task.title);
                         setEditedDescription(task.description || "");
                         setEditedDeadline(task.deadline ? task.deadline.split('T')[0] : "");
                         setIsEditing(true);
+                        console.log('[DEBUG] setIsEditing(true) called');
                       }}
                     >
                       Редактировать
