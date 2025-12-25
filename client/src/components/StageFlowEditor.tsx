@@ -273,7 +273,7 @@ export function StageFlowEditor({ projectId, itemId, itemName }: StageFlowEditor
                       {stage.name}
                     </p>
                   </div>
-                  <StatusBadge status={stage.status} />
+                  <StatusBadge status={stage.status as "pending" | "in_progress" | "completed" | "overdue" | "cancelled"} />
                   <div className="flex items-center gap-1 pt-2 border-t">
                     <Button
                       size="icon"
@@ -347,7 +347,7 @@ export function StageFlowEditor({ projectId, itemId, itemName }: StageFlowEditor
               stageStatus={selectedStage.status}
               stageDescription={selectedStage.description || undefined}
               stageDeadline={selectedStage.planned_end_date ? selectedStage.planned_end_date.toString() : undefined}
-              stageCost={selectedStage.cost || undefined}
+              stageCost={selectedStage.cost !== undefined && selectedStage.cost !== null ? String(selectedStage.cost) : undefined}
             />
           )}
         </DialogContent>

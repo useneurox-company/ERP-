@@ -84,7 +84,7 @@ export function StageDialog({ open, onOpenChange, projectId, itemId, stage }: St
         planned_start_date: stage.planned_start_date ? new Date(stage.planned_start_date) : null,
         planned_end_date: stage.planned_end_date ? new Date(stage.planned_end_date) : null,
         assignee_id: stage.assignee_id || null,
-        cost: stage.cost || undefined,
+        cost: stage.cost !== undefined && stage.cost !== null ? String(stage.cost) : undefined,
         status: stage.status,
       });
     } else {

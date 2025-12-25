@@ -82,12 +82,12 @@ export function ContractViewDialog({
         id: contract.id,
         name: contract.name,
         file_url: contract.file_url,
-        is_signed: contract.is_signed
+        is_signed: Boolean(contract.is_signed)
       });
       form.reset({
         name: contract.name,
         comment: contract.comment || "",
-        is_signed: contract.is_signed || false,
+        is_signed: Boolean(contract.is_signed),
       });
     }
   }, [contract, open, form]);

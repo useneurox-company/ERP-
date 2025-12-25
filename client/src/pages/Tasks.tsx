@@ -10,16 +10,444 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { StageDetailView } from "@/components/StageDetailView";
 import { TaskDetailDialog } from "@/components/TaskDetailDialog";
-import { Calendar, Clock, AlertTriangle, Filter, ArrowUpDown, Search, User, Plus, Trash2, Upload, X, Hash, Briefcase, ExternalLink, Check, ChevronsUpDown } from "lucide-react";
+import { Calendar, Clock, AlertTriangle, Filter, ArrowUpDown, Search, User, Users, Plus, Trash2, Upload, X, Hash, Briefcase, ExternalLink, Check, ChevronsUpDown, LayoutList, LayoutGrid, Archive, ArchiveRestore, GripVertical, ChevronLeft, ChevronRight, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { cn } from "@/lib/utils";
+import {
+  DndContext,
+  DragOverlay,
+  closestCorners,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  type DragStartEvent,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import { SortableContext, useSortable, verticalListSortingStrategy } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  addDays,
+  format,
+  startOfMonth,
+  endOfMonth,
+  startOfWeek,
+  endOfWeek,
+  eachDayOfInterval,
+  isSameMonth,
+  isSameDay,
+  addMonths,
+  subMonths
+} from "date-fns";
+import { ru } from "date-fns/locale";
 
 type TaskStatus = 'all' | 'new' | 'pending' | 'in_progress' | 'pending_review' | 'completed' | 'rejected' | 'cancelled' | 'on_hold';
 type TaskDeadline = 'all' | 'overdue' | 'today' | 'week';
 type SortBy = 'deadline' | 'project' | 'status' | 'assignee';
+type ViewMode = 'list' | 'kanban';
+
+// Интерфейс для сохраняемых фильтров
+interface SavedFilters {
+  statusFilter: TaskStatus;
+  deadlineFilter: TaskDeadline;
+  assigneeFilter: string;
+  entityFilter: 'all' | 'deals' | 'projects' | 'none';
+  sortBy: SortBy;
+  viewMode: ViewMode;
+  showArchived: boolean;
+}
+
+const FILTERS_STORAGE_KEY = 'tasks_filters';
+
+// Статусы для канбана в порядке отображения
+const kanbanStatuses = ['new', 'pending', 'in_progress', 'pending_review', 'completed'] as const;
+
+// Компонент календаря задач
+function TaskCalendar({
+  tasks,
+  onSelectDate,
+  selectedDate,
+  userFilter,
+  onUserFilterChange,
+  isAdmin,
+  onTaskClick,
+  isCollapsed,
+  onToggleCollapse,
+}: {
+  tasks: any[];
+  onSelectDate: (date: string | null) => void;
+  selectedDate: string | null;
+  userFilter: 'my' | 'all';
+  onUserFilterChange: (value: 'my' | 'all') => void;
+  isAdmin: boolean;
+  onTaskClick: (id: string) => void;
+  isCollapsed: boolean;
+  onToggleCollapse: () => void;
+}) {
+  // State для текущего месяца
+  const [currentMonth, setCurrentMonth] = useState(new Date());
+
+  // Группировка задач по датам дедлайнов
+  const tasksByDate = useMemo(() => {
+    const map = new Map<string, any[]>();
+    tasks.forEach(task => {
+      if (task.deadline) {
+        const dateKey = task.deadline.split('T')[0];
+        if (!map.has(dateKey)) map.set(dateKey, []);
+        map.get(dateKey)!.push(task);
+      }
+    });
+    return map;
+  }, [tasks]);
+
+  // Генерация дней для сетки месяца
+  const calendarDays = useMemo(() => {
+    const start = startOfWeek(startOfMonth(currentMonth), { weekStartsOn: 1 }); // Пн
+    const end = endOfWeek(endOfMonth(currentMonth), { weekStartsOn: 1 });
+    return eachDayOfInterval({ start, end });
+  }, [currentMonth]);
+
+  return (
+    <Card>
+      <CardContent className="p-3">
+        {/* Шапка с навигацией */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-1">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0"
+              onClick={onToggleCollapse}
+              title={isCollapsed ? "Развернуть календарь" : "Свернуть календарь"}
+            >
+              {isCollapsed ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+            </Button>
+            <Calendar className="w-4 h-4 text-muted-foreground" />
+            <span className="font-medium text-sm">Календарь</span>
+            {!isCollapsed && (
+              <>
+                <span className="text-muted-foreground mx-1">•</span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setCurrentMonth(m => subMonths(m, 1))}
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </Button>
+                <span className="font-medium text-sm min-w-[120px] text-center capitalize">
+                  {format(currentMonth, 'LLLL yyyy', { locale: ru })}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  onClick={() => setCurrentMonth(m => addMonths(m, 1))}
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 px-2 text-xs"
+                  onClick={() => setCurrentMonth(new Date())}
+                >
+                  Сегодня
+                </Button>
+              </>
+            )}
+          </div>
+          {/* Фильтр по пользователю */}
+          {isAdmin && !isCollapsed && (
+            <Select value={userFilter} onValueChange={(v) => onUserFilterChange(v as 'my' | 'all')}>
+              <SelectTrigger className="w-36 h-8">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="my">Мои задачи</SelectItem>
+                <SelectItem value="all">Все задачи</SelectItem>
+              </SelectContent>
+            </Select>
+          )}
+        </div>
+
+        {/* Содержимое календаря (скрывается при сворачивании) */}
+        {!isCollapsed && (
+          <>
+            {/* Заголовки дней недели */}
+            <div className="grid grid-cols-7 gap-1 mb-1 mt-3">
+              {['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'].map(day => (
+                <div key={day} className="text-center text-xs text-muted-foreground py-1 font-medium">
+                  {day}
+                </div>
+              ))}
+            </div>
+
+            {/* Сетка дней месяца */}
+            <div className="grid grid-cols-7 gap-1">
+              {calendarDays.map(day => {
+                const dateKey = format(day, 'yyyy-MM-dd');
+                const dayTasks = tasksByDate.get(dateKey) || [];
+                const isCurrentMonth = isSameMonth(day, currentMonth);
+                const isToday = isSameDay(day, new Date());
+                const isSelected = selectedDate === dateKey;
+
+                return (
+                  <button
+                    key={dateKey}
+                    onClick={() => onSelectDate(isSelected ? null : dateKey)}
+                    className={cn(
+                      "h-10 rounded-md text-sm relative transition-all",
+                      !isCurrentMonth && "text-muted-foreground/40",
+                      isToday && "bg-primary text-primary-foreground font-bold",
+                      isSelected && !isToday && "ring-2 ring-primary bg-primary/10",
+                      dayTasks.length > 0 && !isToday && !isSelected && "bg-accent",
+                      "hover:bg-muted"
+                    )}
+                  >
+                    {format(day, 'd')}
+                    {dayTasks.length > 0 && (
+                      <span className={cn(
+                        "absolute bottom-0.5 right-1 text-[10px] font-bold",
+                        isToday ? "text-primary-foreground" : "text-primary"
+                      )}>
+                        {dayTasks.length}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* Задачи выбранного дня */}
+            {selectedDate && (
+              <div className="mt-3 pt-3 border-t space-y-2">
+                <div className="flex items-center justify-between">
+                  <p className="text-sm font-medium">
+                    {format(new Date(selectedDate), 'd MMMM yyyy', { locale: ru })}
+                  </p>
+                  <Button variant="ghost" size="sm" className="h-6 px-2" onClick={() => onSelectDate(null)}>
+                    <X className="w-3 h-3" />
+                  </Button>
+                </div>
+                {(tasksByDate.get(selectedDate) || []).length > 0 ? (
+                  <div className="space-y-1 max-h-[200px] overflow-y-auto">
+                    {(tasksByDate.get(selectedDate) || []).map(task => (
+                      <div
+                        key={task.id}
+                        className="text-sm p-2 bg-muted/50 rounded cursor-pointer hover:bg-muted flex items-center justify-between gap-2"
+                        onClick={() => onTaskClick(task.id)}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="font-medium truncate">{task.title}</p>
+                          {task.project && (
+                            <p className="text-xs text-green-600 truncate">
+                              # {task.project.project_number || task.project.name}
+                            </p>
+                          )}
+                        </div>
+                        {task.assignee && (
+                          <Badge variant="outline" className="text-xs shrink-0">
+                            {task.assignee.full_name?.split(' ')[0]}
+                          </Badge>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-muted-foreground text-center py-2">Нет задач на этот день</p>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+// Компонент колонки Канбана
+function KanbanColumn({
+  status,
+  tasks,
+  onTaskClick,
+  onArchive,
+  onDelete,
+  statusMeta,
+}: {
+  status: string;
+  tasks: any[];
+  onTaskClick: (id: string) => void;
+  onArchive: (task: any, e: React.MouseEvent) => void;
+  onDelete: (task: any, e: React.MouseEvent) => void;
+  statusMeta: { label: string; colorClass: string; borderClass: string; bgClass: string };
+}) {
+  const { setNodeRef, isOver } = useDroppable({
+    id: status,
+  });
+
+  return (
+    <div
+      ref={setNodeRef}
+      className={`flex flex-col min-w-[280px] max-w-[320px] bg-muted/30 rounded-lg p-2 ${
+        isOver ? 'ring-2 ring-primary bg-primary/5' : ''
+      }`}
+    >
+      <div className={`flex items-center gap-2 p-2 mb-2 rounded-md ${statusMeta.bgClass}`}>
+        <div className={`w-3 h-3 rounded-full ${statusMeta.borderClass.replace('border-', 'bg-')}`} />
+        <span className="font-medium text-sm">{statusMeta.label}</span>
+        <Badge variant="outline" className="ml-auto text-xs">
+          {tasks.length}
+        </Badge>
+      </div>
+      <div className="flex flex-col gap-2 flex-1 overflow-y-auto max-h-[calc(100vh-350px)]">
+        {tasks.map((task) => (
+          <KanbanCard
+            key={task.id}
+            task={task}
+            onClick={() => onTaskClick(task.id)}
+            onArchive={onArchive}
+            onDelete={onDelete}
+          />
+        ))}
+        {tasks.length === 0 && (
+          <div className="text-center text-muted-foreground text-sm py-8">
+            Нет задач
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// Компонент карточки Канбана
+function KanbanCard({
+  task,
+  onClick,
+  onArchive,
+  onDelete,
+}: {
+  task: any;
+  onClick: () => void;
+  onArchive: (task: any, e: React.MouseEvent) => void;
+  onDelete: (task: any, e: React.MouseEvent) => void;
+}) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const daysUntil = task.deadline
+    ? Math.ceil((new Date(task.deadline).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24))
+    : null;
+  const isOverdue = daysUntil !== null && daysUntil < 0 && task.status !== 'completed';
+
+  return (
+    <Card
+      ref={setNodeRef}
+      style={style}
+      className={`group cursor-pointer hover:shadow-md transition-all ${
+        isOverdue ? 'border-red-500/50' : ''
+      }`}
+      onClick={onClick}
+    >
+      <CardContent className="p-2">
+        {/* Компактная часть - всегда видна */}
+        <div className="flex items-center gap-2">
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing shrink-0"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <GripVertical className="w-4 h-4 text-muted-foreground" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="font-medium text-sm truncate">{task.title || task.name}</p>
+              {task.assignment_type === 'pool' && !task.assignee_id && (
+                <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-[10px] shrink-0">
+                  <Users className="w-2 h-2 mr-0.5" />
+                  Пул
+                </Badge>
+              )}
+            </div>
+            {/* Номер проекта */}
+            {task.project && (
+              <span className="text-xs text-green-600">
+                # {task.project.project_number || task.project.name}
+              </span>
+            )}
+          </div>
+          {/* Дедлайн badge справа */}
+          {task.deadline && (
+            <Badge variant="outline" className={`text-xs shrink-0 ${isOverdue ? 'bg-red-500/20 text-red-600 border-red-500/30' : ''}`}>
+              {new Date(task.deadline).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' })}
+            </Badge>
+          )}
+        </div>
+
+        {/* Раскрываемая часть при hover */}
+        <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300">
+          <div className="overflow-hidden">
+            <div className="pt-2 mt-2 border-t border-border/50 space-y-2">
+              {/* Описание */}
+              {task.description && (
+                <p className="text-xs text-muted-foreground line-clamp-2">{task.description}</p>
+              )}
+
+              {/* Исполнитель + кнопки */}
+              <div className="flex items-center justify-between gap-2">
+                {task.assignee ? (
+                  <Badge variant="outline" className="text-xs">
+                    <User className="w-3 h-3 mr-1" />
+                    {task.assignee.full_name?.split(' ')[0]}
+                  </Badge>
+                ) : (
+                  <span className="text-xs text-muted-foreground">Не назначено</span>
+                )}
+                <div className="flex gap-1">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-orange-600"
+                    onClick={(e) => onArchive(task, e)}
+                    title={task.is_archived ? "Восстановить" : "Архивировать"}
+                  >
+                    {task.is_archived ? <ArchiveRestore className="w-3 h-3" /> : <Archive className="w-3 h-3" />}
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 w-6 p-0 text-muted-foreground hover:text-red-600"
+                    onClick={(e) => onDelete(task, e)}
+                    title="Удалить"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
 
 // Статусы задач с метаданными
 const statusMetadata: Record<string, { label: string; colorClass: string; borderClass: string; bgClass: string }> = {
@@ -67,11 +495,67 @@ export default function Tasks() {
   const [assigneeFilter, setAssigneeFilter] = useState<string>('all'); // 'all' | 'my' | 'unassigned' | userId
   const [entityFilter, setEntityFilter] = useState<'all' | 'deals' | 'projects' | 'none'>('all');
   const [sortBy, setSortBy] = useState<SortBy>('deadline');
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
+  const [showArchived, setShowArchived] = useState(false);
+  const [filtersLoaded, setFiltersLoaded] = useState(false);
+  const [activeTask, setActiveTask] = useState<any>(null); // для drag overlay
+
+  // State для календаря задач
+  const [calendarUserFilter, setCalendarUserFilter] = useState<'my' | 'all'>('all');
+  const [selectedCalendarDate, setSelectedCalendarDate] = useState<string | null>(null);
+  const [calendarCollapsed, setCalendarCollapsed] = useState(false);
+
+  // Проверка админа
+  const isAdmin = user?.username?.toLowerCase() === 'admin' || user?.is_admin;
 
   const { data: tasks = [], isLoading } = useQuery<any[]>({
-    queryKey: ["/api/tasks"],
+    queryKey: ["/api/tasks", { archived: showArchived }],
+    queryFn: async () => {
+      const response = await fetch(`/api/tasks?archived=${showArchived}`);
+      if (!response.ok) throw new Error('Failed to fetch tasks');
+      return response.json();
+    },
     refetchInterval: 10000, // Real-time: обновление каждые 10 секунд
   });
+
+  // Загрузка фильтров из localStorage при монтировании
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(FILTERS_STORAGE_KEY);
+      if (saved) {
+        const filters: SavedFilters = JSON.parse(saved);
+        setStatusFilter(filters.statusFilter || 'all');
+        setDeadlineFilter(filters.deadlineFilter || 'all');
+        setAssigneeFilter(filters.assigneeFilter || 'all');
+        setEntityFilter(filters.entityFilter || 'all');
+        setSortBy(filters.sortBy || 'deadline');
+        setViewMode(filters.viewMode || 'list');
+        setShowArchived(filters.showArchived || false);
+      }
+    } catch (e) {
+      console.error('Failed to load filters from localStorage:', e);
+    }
+    setFiltersLoaded(true);
+  }, []);
+
+  // Сохранение фильтров в localStorage при изменении
+  useEffect(() => {
+    if (!filtersLoaded) return; // Не сохранять до загрузки
+    try {
+      const filters: SavedFilters = {
+        statusFilter,
+        deadlineFilter,
+        assigneeFilter,
+        entityFilter,
+        sortBy,
+        viewMode,
+        showArchived,
+      };
+      localStorage.setItem(FILTERS_STORAGE_KEY, JSON.stringify(filters));
+    } catch (e) {
+      console.error('Failed to save filters to localStorage:', e);
+    }
+  }, [statusFilter, deadlineFilter, assigneeFilter, entityFilter, sortBy, viewMode, showArchived, filtersLoaded]);
 
   const { data: projects = [] } = useQuery<any[]>({
     queryKey: ["/api/projects"],
@@ -310,6 +794,93 @@ export default function Tasks() {
     }
   };
 
+  // Мутация для архивации/разархивации
+  const archiveMutation = useMutation({
+    mutationFn: async ({ taskId, archive }: { taskId: string; archive: boolean }) => {
+      const endpoint = archive ? 'archive' : 'unarchive';
+      const response = await fetch(`/api/tasks/${taskId}/${endpoint}`, {
+        method: 'PUT',
+      });
+      if (!response.ok) throw new Error(`Failed to ${endpoint} task`);
+      return response.json();
+    },
+    onSuccess: (_, { archive }) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({
+        title: archive ? "Задача архивирована" : "Задача восстановлена",
+        description: archive ? "Задача перемещена в архив" : "Задача восстановлена из архива",
+      });
+    },
+    onError: (_, { archive }) => {
+      toast({
+        title: "Ошибка",
+        description: `Не удалось ${archive ? 'архивировать' : 'восстановить'} задачу`,
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Мутация для обновления статуса (для Kanban)
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ taskId, status }: { taskId: string; status: string }) => {
+      const response = await fetch(`/api/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      });
+      if (!response.ok) throw new Error('Failed to update task status');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+    },
+    onError: () => {
+      toast({
+        title: "Ошибка",
+        description: "Не удалось изменить статус задачи",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // DnD сенсоры
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor)
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const task = tasks.find(t => t.id === event.active.id);
+    setActiveTask(task || null);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    setActiveTask(null);
+
+    if (!over) return;
+
+    const taskId = active.id as string;
+    const newStatus = over.id as string;
+
+    // Проверяем что это валидный статус
+    if (kanbanStatuses.includes(newStatus as any)) {
+      const task = tasks.find(t => t.id === taskId);
+      if (task && task.status !== newStatus) {
+        updateStatusMutation.mutate({ taskId, status: newStatus });
+      }
+    }
+  };
+
+  const handleArchiveTask = (task: any, e: React.MouseEvent) => {
+    e.stopPropagation();
+    archiveMutation.mutate({ taskId: task.id, archive: !task.is_archived });
+  };
+
   // Расчёт дней до дедлайна
   const calculateDaysUntilDeadline = (deadline: string | Date | null) => {
     if (!deadline) return null;
@@ -434,6 +1005,14 @@ export default function Tasks() {
     };
   }, [tasks]);
 
+  // Задачи для календаря (фильтр по пользователю)
+  const calendarTasks = useMemo(() => {
+    if (calendarUserFilter === 'my') {
+      return tasks.filter(t => t.assignee_id === user?.id && !t.is_archived);
+    }
+    return tasks.filter(t => !t.is_archived);
+  }, [tasks, calendarUserFilter, user?.id]);
+
   if (isLoading) {
     return <div className="p-6">Загрузка...</div>;
   }
@@ -442,16 +1021,80 @@ export default function Tasks() {
     <div className="p-4 md:p-6 space-y-6 max-w-full overflow-x-hidden">
       {/* Заголовок со счётчиками */}
       <div>
-        <div className="flex items-center justify-between">
+        <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-bold">Все задачи</h1>
-            <p className="text-muted-foreground">Управление задачами по всем проектам</p>
+            <h1 className="text-2xl font-bold">
+              {showArchived ? 'Архив задач' : 'Все задачи'}
+            </h1>
+            <p className="text-muted-foreground">
+              {showArchived ? 'Архивированные задачи' : 'Управление задачами по всем проектам'}
+            </p>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Создать задачу
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* Переключатель вида */}
+            <div className="flex items-center border rounded-md p-1">
+              <Button
+                variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 px-3"
+                onClick={() => setViewMode('list')}
+              >
+                <LayoutList className="w-4 h-4 mr-2" />
+                Список
+              </Button>
+              <Button
+                variant={viewMode === 'kanban' ? 'secondary' : 'ghost'}
+                size="sm"
+                className="h-8 px-3"
+                onClick={() => setViewMode('kanban')}
+              >
+                <LayoutGrid className="w-4 h-4 mr-2" />
+                Канбан
+              </Button>
+            </div>
+
+            {/* Кнопка архива */}
+            <Button
+              variant={showArchived ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={() => setShowArchived(!showArchived)}
+            >
+              {showArchived ? (
+                <>
+                  <ArchiveRestore className="w-4 h-4 mr-2" />
+                  Активные
+                </>
+              ) : (
+                <>
+                  <Archive className="w-4 h-4 mr-2" />
+                  Архив
+                </>
+              )}
+            </Button>
+
+            <Button onClick={() => setCreateDialogOpen(true)}>
+              <Plus className="w-4 h-4 mr-2" />
+              Создать задачу
+            </Button>
+          </div>
         </div>
+
+        {/* Календарь задач */}
+        {!showArchived && (
+          <div className="mt-4">
+            <TaskCalendar
+              tasks={calendarTasks}
+              selectedDate={selectedCalendarDate}
+              onSelectDate={setSelectedCalendarDate}
+              userFilter={calendarUserFilter}
+              onUserFilterChange={setCalendarUserFilter}
+              isAdmin={isAdmin}
+              onTaskClick={(id) => setTaskDetailId(id)}
+              isCollapsed={calendarCollapsed}
+              onToggleCollapse={() => setCalendarCollapsed(!calendarCollapsed)}
+            />
+          </div>
+        )}
 
         <div className="grid grid-cols-2 md:grid-cols-5 gap-3 mt-4">
           <Card>
@@ -602,8 +1245,48 @@ export default function Tasks() {
         </CardContent>
       </Card>
 
-      {/* Список задач */}
-      {filteredAndSortedTasks.length === 0 ? (
+      {/* Список задач / Канбан */}
+      {viewMode === 'kanban' ? (
+        /* Канбан-вид */
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCorners}
+          onDragStart={handleDragStart}
+          onDragEnd={handleDragEnd}
+        >
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {kanbanStatuses.map((status) => {
+              const statusTasks = filteredAndSortedTasks.filter(t => t.status === status);
+              const meta = statusMetadata[status] || statusMetadata.pending;
+              return (
+                <SortableContext
+                  key={status}
+                  items={statusTasks.map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <KanbanColumn
+                    status={status}
+                    tasks={statusTasks}
+                    onTaskClick={(id) => setTaskDetailId(id)}
+                    onArchive={handleArchiveTask}
+                    onDelete={handleDeleteTask}
+                    statusMeta={meta}
+                  />
+                </SortableContext>
+              );
+            })}
+          </div>
+          <DragOverlay>
+            {activeTask && (
+              <Card className="shadow-lg opacity-90">
+                <CardContent className="p-3">
+                  <p className="font-medium text-sm">{activeTask.title || activeTask.name}</p>
+                </CardContent>
+              </Card>
+            )}
+          </DragOverlay>
+        </DndContext>
+      ) : filteredAndSortedTasks.length === 0 ? (
         <Card>
           <CardContent className="p-6">
             <p className="text-muted-foreground text-center">
@@ -612,6 +1295,7 @@ export default function Tasks() {
           </CardContent>
         </Card>
       ) : (
+        /* Список задач */
         <div className="grid gap-2">
           {filteredAndSortedTasks.map((task, index) => {
             const daysUntil = calculateDaysUntilDeadline(task.deadline);
@@ -636,62 +1320,91 @@ export default function Tasks() {
                 <CardContent className="p-2">
                   {/* Компактная строка - всегда видна */}
                   <div className="flex items-center gap-2">
-                    {/* Task ID Badge */}
-                    <Badge variant="outline" className="text-xs font-mono bg-muted/50 shrink-0">
-                      #{index + 1}
-                    </Badge>
-                    {/* Task Title */}
-                    <span className="text-sm font-medium truncate flex-1 min-w-0">{task.title || task.name}</span>
-                    {/* Assignee - hidden on mobile */}
-                    {task.assignee && (
-                      <span className="text-xs text-muted-foreground truncate max-w-[100px] hidden sm:block">
-                        {task.assignee.full_name}
-                      </span>
-                    )}
-                    {/* Deadline - hidden on mobile */}
-                    {task.deadline && (
-                      <span className="text-xs text-muted-foreground shrink-0 hidden sm:flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {new Date(task.deadline).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit' })}
-                      </span>
-                    )}
-                    {/* Status Badge */}
-                    <Badge
-                      variant="outline"
-                      className={`text-xs shrink-0 ${statusMeta.colorClass}`}
-                    >
-                      {statusMeta.label}
-                    </Badge>
-                    {/* Overdue/Urgent Badge */}
-                    {daysUntil !== null && task.status !== 'completed' && (
+                    {/* Left side: № + Название + Проект */}
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      {/* Task ID Badge */}
+                      <Badge variant="outline" className="text-xs font-mono bg-muted/50 shrink-0">
+                        #{index + 1}
+                      </Badge>
+                      {/* Task Title */}
+                      <span className="text-sm font-medium truncate">{task.title || task.name}</span>
+                      {/* Pool Badge */}
+                      {task.assignment_type === 'pool' && !task.assignee_id && (
+                        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-xs shrink-0">
+                          <Users className="w-3 h-3 mr-1" />
+                          Пул
+                        </Badge>
+                      )}
+                      {/* Project name */}
+                      {task.project_id && task.project && (
+                        <span className="text-xs text-green-600 truncate max-w-[150px] hidden sm:block">
+                          # {task.project.name}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Right side: Description preview + Assignee + Status */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      {/* Description preview - hidden on mobile */}
+                      {task.description && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[200px] hidden md:block">
+                          {task.description}
+                        </span>
+                      )}
+                      {/* Assignee - hidden on mobile */}
+                      {task.assignee && (
+                        <span className="text-xs text-muted-foreground truncate max-w-[100px] hidden sm:block">
+                          {task.assignee.full_name}
+                        </span>
+                      )}
+                      {/* Status Badge */}
                       <Badge
                         variant="outline"
-                        className={`text-xs shrink-0 ${
-                          isOverdue
-                            ? 'bg-red-500/20 text-red-500 border-red-500/30'
-                            : isUrgent
-                            ? 'bg-orange-500/20 text-orange-500 border-orange-500/30'
-                            : 'bg-primary/10 text-primary border-primary/20'
-                        }`}
+                        className={`text-xs shrink-0 ${statusMeta.colorClass}`}
                       >
-                        {isOverdue ? `+${Math.abs(daysUntil)}` : daysUntil} дн.
+                        {statusMeta.label}
                       </Badge>
-                    )}
-                    {/* Delete Button */}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
-                      onClick={(e) => handleDeleteTask(task, e)}
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
+                      {/* Archive Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-orange-600 hover:text-orange-700 hover:bg-orange-50 shrink-0"
+                        onClick={(e) => handleArchiveTask(task, e)}
+                        title={task.is_archived ? "Восстановить" : "В архив"}
+                      >
+                        {task.is_archived ? <ArchiveRestore className="w-3 h-3" /> : <Archive className="w-3 h-3" />}
+                      </Button>
+                      {/* Delete Button */}
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="h-6 w-6 p-0 text-red-600 hover:text-red-700 hover:bg-red-50 shrink-0"
+                        onClick={(e) => handleDeleteTask(task, e)}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Раскрываемая часть при наведении */}
                   <div className="grid grid-rows-[0fr] group-hover:grid-rows-[1fr] transition-[grid-template-rows] duration-300">
                     <div className="overflow-hidden">
                       <div className="pt-2 mt-2 border-t border-border/50 flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+                        {/* Project - visible on mobile in expanded view */}
+                        {task.project_id && task.project && (
+                          <div
+                            className="flex items-center gap-1 text-green-600 hover:text-green-700 cursor-pointer sm:hidden"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setLocation(`/projects/${task.project.id}`);
+                            }}
+                          >
+                            <Hash className="w-3 h-3" />
+                            <span className="truncate max-w-[150px]">
+                              {task.project.name}
+                            </span>
+                          </div>
+                        )}
                         {/* Assignee - visible on mobile in expanded view */}
                         {task.assignee && (
                           <div className="flex items-center gap-1 sm:hidden">
@@ -699,11 +1412,25 @@ export default function Tasks() {
                             <span>{task.assignee.full_name}</span>
                           </div>
                         )}
-                        {/* Deadline - visible on mobile in expanded view */}
+                        {/* Deadline */}
                         {task.deadline && (
-                          <div className="flex items-center gap-1 sm:hidden">
+                          <div className="flex items-center gap-1">
                             <Calendar className="w-3 h-3" />
                             <span>{new Date(task.deadline).toLocaleDateString('ru-RU')}</span>
+                            {daysUntil !== null && task.status !== 'completed' && (
+                              <Badge
+                                variant="outline"
+                                className={`text-xs ml-1 ${
+                                  isOverdue
+                                    ? 'bg-red-500/20 text-red-500 border-red-500/30'
+                                    : isUrgent
+                                    ? 'bg-orange-500/20 text-orange-500 border-orange-500/30'
+                                    : 'bg-primary/10 text-primary border-primary/20'
+                                }`}
+                              >
+                                {isOverdue ? `+${Math.abs(daysUntil)}` : daysUntil} дн.
+                              </Badge>
+                            )}
                           </div>
                         )}
                         {/* Estimated Hours */}
@@ -728,24 +1455,22 @@ export default function Tasks() {
                             </span>
                           </div>
                         )}
-                        {/* Related Project */}
+                        {/* Related Project - desktop only link */}
                         {task.project_id && task.project && (
                           <div
-                            className="flex items-center gap-1 text-green-600 hover:text-green-700 cursor-pointer"
+                            className="hidden sm:flex items-center gap-1 text-green-600 hover:text-green-700 cursor-pointer"
                             onClick={(e) => {
                               e.stopPropagation();
                               setLocation(`/projects/${task.project.id}`);
                             }}
                           >
-                            <Hash className="w-3 h-3" />
-                            <span className="truncate max-w-[150px]">
-                              {task.project.name}
-                            </span>
+                            <ExternalLink className="w-3 h-3" />
+                            <span>Открыть проект</span>
                           </div>
                         )}
-                        {/* Description */}
+                        {/* Full description */}
                         {task.description && (
-                          <span className="text-muted-foreground line-clamp-1 w-full">
+                          <span className="text-muted-foreground w-full mt-1">
                             {task.description}
                           </span>
                         )}

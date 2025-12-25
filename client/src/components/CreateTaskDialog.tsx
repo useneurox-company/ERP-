@@ -7,8 +7,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Upload, X, Paperclip } from "lucide-react";
+import { Upload, X, Paperclip, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 
 interface CreateTaskDialogProps {
   open: boolean;
@@ -38,6 +41,8 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, stageId, dealI
   const [files, setFiles] = useState<File[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [assignmentType, setAssignmentType] = useState<'single' | 'pool'>('single');
+  const [potentialAssignees, setPotentialAssignees] = useState<string[]>([]);
 
   const { data: users = [] } = useQuery<any[]>({
     queryKey: ["/api/users"],
@@ -115,7 +120,8 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, stageId, dealI
         status: 'new',
         priority: taskData.priority,
         deadline: taskData.deadline || null,
-        assignee_id: taskData.assignee_id === 'none' || !taskData.assignee_id ? null : taskData.assignee_id,
+        assignee_id: assignmentType === 'pool' ? null : (taskData.assignee_id === 'none' || !taskData.assignee_id ? null : taskData.assignee_id),
+        assignment_type: assignmentType,
         project_id: projectId || null,
         project_stage_id: stageId || null,
         deal_id: dealId || null,
@@ -132,6 +138,19 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, stageId, dealI
       return response.json();
     },
     onSuccess: async (newTask) => {
+      // Add potential assignees if pool mode
+      if (assignmentType === 'pool' && potentialAssignees.length > 0) {
+        try {
+          await fetch(`/api/tasks/${newTask.id}/potential-assignees`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_ids: potentialAssignees }),
+          });
+        } catch (error) {
+          console.error('Failed to add potential assignees:', error);
+        }
+      }
+
       // Upload files if any
       if (files.length > 0) {
         for (const file of files) {
@@ -175,6 +194,8 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, stageId, dealI
         assignee_id: '',
       });
       setFiles([]);
+      setAssignmentType('single');
+      setPotentialAssignees([]);
 
       toast({
         title: "Задача создана",
@@ -269,25 +290,110 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, stageId, dealI
             </div>
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="task-assignee">Исполнитель</Label>
-            <Select
-              value={newTask.assignee_id}
-              onValueChange={(value) => setNewTask({ ...newTask, assignee_id: value })}
-            >
-              <SelectTrigger id="task-assignee">
-                <SelectValue placeholder="Выберите исполнителя" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">Не назначен</SelectItem>
-                {users.map((u: any) => (
-                  <SelectItem key={u.id} value={u.id}>
-                    {u.full_name || u.username}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          {/* Assignment Type */}
+          <div className="space-y-3">
+            <Label>Тип назначения</Label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="assignmentType"
+                  checked={assignmentType === 'single'}
+                  onChange={() => {
+                    setAssignmentType('single');
+                    setPotentialAssignees([]);
+                  }}
+                  className="w-4 h-4"
+                />
+                <User className="w-4 h-4" />
+                <span className="text-sm">Один исполнитель</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="radio"
+                  name="assignmentType"
+                  checked={assignmentType === 'pool'}
+                  onChange={() => {
+                    setAssignmentType('pool');
+                    setNewTask({ ...newTask, assignee_id: '' });
+                  }}
+                  className="w-4 h-4"
+                />
+                <Users className="w-4 h-4" />
+                <span className="text-sm">Пул исполнителей</span>
+              </label>
+            </div>
           </div>
+
+          {assignmentType === 'single' ? (
+            <div className="space-y-2">
+              <Label htmlFor="task-assignee">Исполнитель</Label>
+              <Select
+                value={newTask.assignee_id}
+                onValueChange={(value) => setNewTask({ ...newTask, assignee_id: value })}
+              >
+                <SelectTrigger id="task-assignee">
+                  <SelectValue placeholder="Выберите исполнителя" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">Не назначен</SelectItem>
+                  {users.map((u: any) => (
+                    <SelectItem key={u.id} value={u.id}>
+                      {u.full_name || u.username}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          ) : (
+            <div className="space-y-2">
+              <Label>Потенциальные исполнители (выберите 2+)</Label>
+              <div className="border rounded-lg p-3 max-h-[200px] overflow-y-auto space-y-2">
+                {users.map((u: any) => (
+                  <label
+                    key={u.id}
+                    className="flex items-center gap-3 p-2 rounded-md hover:bg-muted cursor-pointer"
+                  >
+                    <Checkbox
+                      checked={potentialAssignees.includes(u.id)}
+                      onCheckedChange={(checked) => {
+                        if (checked) {
+                          setPotentialAssignees([...potentialAssignees, u.id]);
+                        } else {
+                          setPotentialAssignees(potentialAssignees.filter(id => id !== u.id));
+                        }
+                      }}
+                    />
+                    <Avatar className="h-6 w-6">
+                      <AvatarFallback className="text-xs">
+                        {(u.full_name || u.username)?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <span className="text-sm">{u.full_name || u.username}</span>
+                  </label>
+                ))}
+              </div>
+              {potentialAssignees.length > 0 && (
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {potentialAssignees.map(id => {
+                    const u = users.find((user: any) => user.id === id);
+                    return u ? (
+                      <Badge key={id} variant="secondary" className="text-xs">
+                        {u.full_name || u.username}
+                        <X
+                          className="w-3 h-3 ml-1 cursor-pointer"
+                          onClick={() => setPotentialAssignees(potentialAssignees.filter(i => i !== id))}
+                        />
+                      </Badge>
+                    ) : null;
+                  })}
+                </div>
+              )}
+              {potentialAssignees.length < 2 && (
+                <p className="text-xs text-amber-600">Выберите минимум 2 исполнителей для пула</p>
+              )}
+            </div>
+          )}
 
           {/* File Upload */}
           <div className="space-y-2">
@@ -358,7 +464,7 @@ export function CreateTaskDialog({ open, onOpenChange, projectId, stageId, dealI
             </Button>
             <Button
               type="submit"
-              disabled={!newTask.title.trim() || createTaskMutation.isPending}
+              disabled={!newTask.title.trim() || createTaskMutation.isPending || (assignmentType === 'pool' && potentialAssignees.length < 2)}
             >
               {createTaskMutation.isPending ? "Создание..." : "Создать задачу"}
             </Button>

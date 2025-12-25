@@ -14,6 +14,7 @@ import {
   Calendar,
   Clock,
   User,
+  Users,
   Paperclip,
   Download,
   Trash2,
@@ -24,17 +25,32 @@ import {
   Briefcase,
   ExternalLink,
   Layers,
-  Package
+  Package,
+  Hand
 } from "lucide-react";
 import { format } from "date-fns";
 import { ru } from "date-fns/locale";
 import { useLocation } from "wouter";
 import { FilePreview } from "@/components/FilePreview";
+import { ChecklistSection } from "@/components/ChecklistSection";
 
 interface TaskDetailDialogProps {
   taskId: string | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+}
+
+interface PotentialAssignee {
+  id: string;
+  task_id: string;
+  user_id: string;
+  added_at: string;
+  user: {
+    id: string;
+    username: string;
+    full_name: string | null;
+    email: string | null;
+  } | null;
 }
 
 interface Task {
@@ -46,6 +62,8 @@ interface Task {
   deadline: string | null;
   assignee_id: string | null;
   created_by: string | null;
+  assignment_type?: string; // 'single' | 'pool'
+  taken_at?: string | null;
   assignee?: {
     id: string;
     username: string;
@@ -69,6 +87,7 @@ interface Task {
     article: string | null;
     quantity: number;
   };
+  potential_assignees?: PotentialAssignee[];
   created_at: string;
   updated_at: string;
 }
@@ -163,6 +182,12 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
   const { data: allDeals = [] } = useQuery<any[]>({
     queryKey: ["/api/deals"],
     enabled: open,
+  });
+
+  // Fetch potential assignees (for pool tasks)
+  const { data: potentialAssignees = [] } = useQuery<PotentialAssignee[]>({
+    queryKey: [`/api/tasks/${taskId}/potential-assignees`],
+    enabled: !!taskId && open && task?.assignment_type === 'pool',
   });
 
   // Fetch deal if task is linked to a deal
@@ -297,6 +322,40 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
     },
     onError: () => {
       toast({ title: "Ошибка", description: "Не удалось добавить комментарий", variant: "destructive" });
+    },
+  });
+
+  // Take task from pool mutation
+  const takeTaskMutation = useMutation({
+    mutationFn: async () => {
+      const userId = getCurrentUserId();
+
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+
+      const response = await fetch(`/api/tasks/${taskId}/take`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": userId
+        },
+        body: JSON.stringify({ userId }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to take task");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/tasks/${taskId}`] });
+      queryClient.invalidateQueries({ queryKey: [`/api/tasks/${taskId}/potential-assignees`] });
+      queryClient.invalidateQueries({ queryKey: ["/api/tasks"] });
+      toast({ title: "Задача взята", description: "Вы стали исполнителем этой задачи" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
     },
   });
 
@@ -563,6 +622,9 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                   ) : null}
                 </Card>
 
+                {/* Checklists */}
+                {taskId && <ChecklistSection taskId={taskId} users={users} />}
+
                 {/* Comments */}
                 <Card className="p-3">
                   <h3 className="font-semibold text-sm mb-3">Комментарии ({comments.length})</h3>
@@ -662,32 +724,71 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                     <User className="h-4 w-4" />
                     Исполнитель
                   </label>
-                  <Select value={task.assignee_id || "none"} onValueChange={handleAssigneeChange}>
-                    <SelectTrigger>
-                      <SelectValue>
-                        {task.assignee ? (
-                          <div className="flex items-center gap-2">
-                            <Avatar className="h-6 w-6">
+                  {task.assignment_type === 'pool' && !task.assignee_id ? (
+                    // Show pool info when task is in pool mode and not taken
+                    <div className="space-y-2">
+                      <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                        <Users className="w-3 h-3 mr-1" />
+                        Пул исполнителей ({potentialAssignees.length})
+                      </Badge>
+                      <div className="space-y-1 mt-2">
+                        {potentialAssignees.map((pa) => (
+                          <div key={pa.id} className="flex items-center gap-2 text-sm">
+                            <Avatar className="h-5 w-5">
                               <AvatarFallback className="text-xs">
-                                {task.assignee.full_name?.[0] || task.assignee.username[0]}
+                                {pa.user?.full_name?.[0] || pa.user?.username?.[0] || "?"}
                               </AvatarFallback>
                             </Avatar>
-                            <span>{task.assignee.full_name || task.assignee.username}</span>
+                            <span>{pa.user?.full_name || pa.user?.username}</span>
                           </div>
-                        ) : (
-                          "Не назначен"
-                        )}
-                      </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="none">Не назначен</SelectItem>
-                      {users.map((user) => (
-                        <SelectItem key={user.id} value={user.id}>
-                          {user.full_name || user.username}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                        ))}
+                      </div>
+                      {potentialAssignees.some(pa => pa.user_id === currentUserId) && (
+                        <Button
+                          size="sm"
+                          className="w-full mt-2 bg-green-600 hover:bg-green-700"
+                          onClick={() => takeTaskMutation.mutate()}
+                          disabled={takeTaskMutation.isPending}
+                        >
+                          <Hand className="w-4 h-4 mr-2" />
+                          {takeTaskMutation.isPending ? "Беру..." : "Взять задачу"}
+                        </Button>
+                      )}
+                    </div>
+                  ) : (
+                    // Normal assignee selector
+                    <Select value={task.assignee_id || "none"} onValueChange={handleAssigneeChange}>
+                      <SelectTrigger>
+                        <SelectValue>
+                          {task.assignee ? (
+                            <div className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback className="text-xs">
+                                  {task.assignee.full_name?.[0] || task.assignee.username[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span>{task.assignee.full_name || task.assignee.username}</span>
+                            </div>
+                          ) : (
+                            "Не назначен"
+                          )}
+                        </SelectValue>
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="none">Не назначен</SelectItem>
+                        {users.map((user) => (
+                          <SelectItem key={user.id} value={user.id}>
+                            {user.full_name || user.username}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )}
+                  {task.taken_at && (
+                    <div className="text-xs text-muted-foreground mt-2">
+                      Взята: {format(new Date(task.taken_at), "d MMM yyyy HH:mm", { locale: ru })}
+                    </div>
+                  )}
                 </Card>
 
                 {/* Deadline */}
@@ -750,8 +851,8 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                   </Select>
                   {task.project_id && (task.project || project) && (
                     <Button
-                      variant="link"
-                      className="h-auto p-0 mt-1 text-xs"
+                      variant="ghost"
+                      className="h-auto p-0 mt-1 text-xs text-primary underline-offset-4 hover:underline"
                       onClick={() => {
                         onOpenChange(false);
                         setLocation(`/projects/${task.project_id}`);
@@ -787,8 +888,8 @@ export function TaskDetailDialog({ taskId, open, onOpenChange }: TaskDetailDialo
                   </Select>
                   {task.deal_id && deal && (
                     <Button
-                      variant="link"
-                      className="h-auto p-0 mt-1 text-xs"
+                      variant="ghost"
+                      className="h-auto p-0 mt-1 text-xs text-primary underline-offset-4 hover:underline"
                       onClick={() => {
                         onOpenChange(false);
                         setLocation(`/sales?dealId=${task.deal_id}`);

@@ -238,7 +238,7 @@ export function DealCreateDialog({ open, onOpenChange }: DealCreateDialogProps) 
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Менеджер</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} defaultValue={field.value ?? undefined}>
                     <FormControl>
                       <SelectTrigger data-testid="select-create-manager">
                         <SelectValue placeholder="Выберите менеджера" />

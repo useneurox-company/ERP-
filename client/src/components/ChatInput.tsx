@@ -122,7 +122,7 @@ export function ChatInput({ onSend, disabled = false, placeholder = "Введи�
     const items = e.clipboardData?.items;
     if (!items) return;
 
-    for (const item of items) {
+    for (const item of Array.from(items)) {
       if (item.type.startsWith('image/')) {
         e.preventDefault();
         const file = item.getAsFile();

@@ -386,3 +386,308 @@ router.delete("/api/boards/:boardId/members/:userId", async (req, res) => {
     res.status(500).json({ error: "Failed to remove member" });
   }
 });
+
+// ============ CARD CHECKLISTS ============
+
+// GET /api/boards/cards/:cardId/checklists - get all checklists
+router.get("/api/boards/cards/:cardId/checklists", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const checklists = await boardRepository.getCardChecklists(cardId);
+    res.json(checklists);
+  } catch (error) {
+    console.error("[Boards] Error fetching checklists:", error);
+    res.status(500).json({ error: "Failed to fetch checklists" });
+  }
+});
+
+// POST /api/boards/cards/:cardId/checklists - create checklist
+router.post("/api/boards/cards/:cardId/checklists", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { name } = req.body;
+
+    if (!name) {
+      res.status(400).json({ error: "Checklist name is required" });
+      return;
+    }
+
+    const checklist = await boardRepository.createCardChecklist(cardId, { name });
+    res.status(201).json(checklist);
+  } catch (error) {
+    console.error("[Boards] Error creating checklist:", error);
+    res.status(500).json({ error: "Failed to create checklist" });
+  }
+});
+
+// PUT /api/boards/cards/:cardId/checklists/:checklistId - update checklist
+router.put("/api/boards/cards/:cardId/checklists/:checklistId", async (req, res) => {
+  try {
+    const { checklistId } = req.params;
+    const { name, hide_completed } = req.body;
+
+    const checklist = await boardRepository.updateCardChecklist(checklistId, { name, hide_completed });
+    res.json(checklist);
+  } catch (error) {
+    console.error("[Boards] Error updating checklist:", error);
+    res.status(500).json({ error: "Failed to update checklist" });
+  }
+});
+
+// DELETE /api/boards/cards/:cardId/checklists/:checklistId - delete checklist
+router.delete("/api/boards/cards/:cardId/checklists/:checklistId", async (req, res) => {
+  try {
+    const { checklistId } = req.params;
+    await boardRepository.deleteCardChecklist(checklistId);
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Boards] Error deleting checklist:", error);
+    res.status(500).json({ error: "Failed to delete checklist" });
+  }
+});
+
+// POST /api/boards/cards/:cardId/checklists/:checklistId/items - add item
+router.post("/api/boards/cards/:cardId/checklists/:checklistId/items", async (req, res) => {
+  try {
+    const { cardId, checklistId } = req.params;
+    const { item_text, deadline, assignee_id } = req.body;
+
+    if (!item_text) {
+      res.status(400).json({ error: "Item text is required" });
+      return;
+    }
+
+    const item = await boardRepository.createChecklistItem(checklistId, cardId, {
+      item_text,
+      deadline,
+      assignee_id,
+    });
+
+    res.status(201).json(item);
+  } catch (error) {
+    console.error("[Boards] Error creating checklist item:", error);
+    res.status(500).json({ error: "Failed to create checklist item" });
+  }
+});
+
+// PUT /api/boards/cards/:cardId/checklists/:checklistId/items/:itemId - update item
+router.put("/api/boards/cards/:cardId/checklists/:checklistId/items/:itemId", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { item_text, is_completed, order, deadline, assignee_id } = req.body;
+
+    const item = await boardRepository.updateChecklistItem(itemId, {
+      item_text,
+      is_completed,
+      order,
+      deadline,
+      assignee_id,
+    });
+
+    res.json(item);
+  } catch (error) {
+    console.error("[Boards] Error updating checklist item:", error);
+    res.status(500).json({ error: "Failed to update checklist item" });
+  }
+});
+
+// DELETE /api/boards/cards/:cardId/checklists/:checklistId/items/:itemId - delete item
+router.delete("/api/boards/cards/:cardId/checklists/:checklistId/items/:itemId", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    await boardRepository.deleteChecklistItem(itemId);
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Boards] Error deleting checklist item:", error);
+    res.status(500).json({ error: "Failed to delete checklist item" });
+  }
+});
+
+// ============ CARD MEMBERS ============
+
+// GET /api/boards/cards/:cardId/members - get card members
+router.get("/api/boards/cards/:cardId/members", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const members = await boardRepository.getCardMembers(cardId);
+    res.json(members);
+  } catch (error) {
+    console.error("[Boards] Error fetching card members:", error);
+    res.status(500).json({ error: "Failed to fetch card members" });
+  }
+});
+
+// POST /api/boards/cards/:cardId/members - add card member
+router.post("/api/boards/cards/:cardId/members", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { user_id } = req.body;
+
+    if (!user_id) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const member = await boardRepository.addCardMember(cardId, user_id);
+    res.status(201).json(member);
+  } catch (error) {
+    console.error("[Boards] Error adding card member:", error);
+    res.status(500).json({ error: "Failed to add card member" });
+  }
+});
+
+// DELETE /api/boards/cards/:cardId/members/:userId - remove card member
+router.delete("/api/boards/cards/:cardId/members/:userId", async (req, res) => {
+  try {
+    const { cardId, userId } = req.params;
+    await boardRepository.removeCardMember(cardId, userId);
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Boards] Error removing card member:", error);
+    res.status(500).json({ error: "Failed to remove card member" });
+  }
+});
+
+// ============ CARD POOL (Пул исполнителей) ============
+
+// GET /api/boards/cards/:cardId/pool - get card with pool info
+router.get("/api/boards/cards/:cardId/pool", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const card = await boardRepository.getCardWithPool(cardId);
+
+    if (!card) {
+      res.status(404).json({ error: "Card not found" });
+      return;
+    }
+
+    res.json(card);
+  } catch (error) {
+    console.error("[Boards] Error fetching card with pool:", error);
+    res.status(500).json({ error: "Failed to fetch card with pool" });
+  }
+});
+
+// GET /api/boards/cards/:cardId/potential-assignees - get potential assignees
+router.get("/api/boards/cards/:cardId/potential-assignees", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const assignees = await boardRepository.getCardPotentialAssignees(cardId);
+    res.json(assignees);
+  } catch (error) {
+    console.error("[Boards] Error fetching potential assignees:", error);
+    res.status(500).json({ error: "Failed to fetch potential assignees" });
+  }
+});
+
+// POST /api/boards/cards/:cardId/potential-assignees - add potential assignees
+router.post("/api/boards/cards/:cardId/potential-assignees", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { user_ids } = req.body;
+
+    if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
+      res.status(400).json({ error: "user_ids array is required" });
+      return;
+    }
+
+    await boardRepository.addCardPotentialAssignees(cardId, user_ids);
+
+    // Update assignment_type to 'pool'
+    await boardRepository.updateCard(cardId, { assignment_type: 'pool', assigned_to: null });
+
+    const assignees = await boardRepository.getCardPotentialAssignees(cardId);
+    res.status(201).json(assignees);
+  } catch (error) {
+    console.error("[Boards] Error adding potential assignees:", error);
+    res.status(500).json({ error: "Failed to add potential assignees" });
+  }
+});
+
+// PUT /api/boards/cards/:cardId/potential-assignees - set potential assignees (replace all)
+router.put("/api/boards/cards/:cardId/potential-assignees", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const { user_ids } = req.body;
+
+    if (!user_ids || !Array.isArray(user_ids)) {
+      res.status(400).json({ error: "user_ids array is required" });
+      return;
+    }
+
+    await boardRepository.setCardPotentialAssignees(cardId, user_ids);
+
+    // Update assignment_type based on whether there are any assignees
+    if (user_ids.length > 0) {
+      await boardRepository.updateCard(cardId, { assignment_type: 'pool', assigned_to: null });
+    } else {
+      await boardRepository.updateCard(cardId, { assignment_type: 'single' });
+    }
+
+    const assignees = await boardRepository.getCardPotentialAssignees(cardId);
+    res.json(assignees);
+  } catch (error) {
+    console.error("[Boards] Error setting potential assignees:", error);
+    res.status(500).json({ error: "Failed to set potential assignees" });
+  }
+});
+
+// DELETE /api/boards/cards/:cardId/potential-assignees/:userId - remove potential assignee
+router.delete("/api/boards/cards/:cardId/potential-assignees/:userId", async (req, res) => {
+  try {
+    const { cardId, userId } = req.params;
+    await boardRepository.removeCardPotentialAssignee(cardId, userId);
+
+    // Check if any assignees left
+    const remaining = await boardRepository.getCardPotentialAssignees(cardId);
+    if (remaining.length === 0) {
+      await boardRepository.updateCard(cardId, { assignment_type: 'single' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Boards] Error removing potential assignee:", error);
+    res.status(500).json({ error: "Failed to remove potential assignee" });
+  }
+});
+
+// POST /api/boards/cards/:cardId/take - take card from pool
+router.post("/api/boards/cards/:cardId/take", async (req, res) => {
+  try {
+    const { cardId } = req.params;
+    const userId = req.body.userId || req.headers['x-user-id'] as string;
+
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const card = await boardRepository.takeCard(cardId, userId);
+    res.json(card);
+  } catch (error: any) {
+    console.error("[Boards] Error taking card:", error);
+    if (error.message === 'User is not in the potential assignees list') {
+      res.status(403).json({ error: "You are not in the list of potential assignees for this card" });
+    } else {
+      res.status(500).json({ error: "Failed to take card" });
+    }
+  }
+});
+
+// GET /api/boards/cards/pool/available - get pool cards available to current user
+router.get("/api/boards/cards/pool/available", async (req, res) => {
+  try {
+    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
+
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const cards = await boardRepository.getPoolCardsForUser(userId);
+    res.json(cards);
+  } catch (error) {
+    console.error("[Boards] Error fetching available pool cards:", error);
+    res.status(500).json({ error: "Failed to fetch available pool cards" });
+  }
+});

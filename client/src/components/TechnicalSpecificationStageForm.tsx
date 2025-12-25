@@ -88,7 +88,7 @@ export function TechnicalSpecificationStageForm({
       const stages = await apiRequest('GET', `/api/projects/${stage.project_id}/stages`);
       // Find measurement stage for the same item
       return stages.find((s: ProjectStage) =>
-        s.stage_type === 'measurement' && s.item_id === stage.item_id
+        s.stage_type_id === 'measurement' && s.item_id === stage.item_id
       ) || null;
     },
     enabled: !!stage?.project_id && !!stage?.item_id

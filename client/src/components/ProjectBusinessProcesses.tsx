@@ -110,7 +110,7 @@ export function ProjectBusinessProcesses({ projectId, selectedItemId, onAddStage
   });
 
   // Проверяем, имеет ли пользователь полный доступ ко всем этапам (админ)
-  const canViewAll = permissions.find(p => p.module === 'projects')?.view_all === 1;
+  const canViewAll = Boolean(permissions.find(p => p.module === 'projects')?.view_all);
 
   if (isLoading) {
     return (
@@ -481,7 +481,7 @@ export function ProjectBusinessProcesses({ projectId, selectedItemId, onAddStage
               stageStatus={selectedStage.status}
               stageDescription={selectedStage.description || undefined}
               stageDeadline={selectedStage.planned_end_date ? new Date(selectedStage.planned_end_date).toISOString() : undefined}
-              stageCost={selectedStage.cost || undefined}
+              stageCost={selectedStage.cost !== undefined && selectedStage.cost !== null ? String(selectedStage.cost) : undefined}
               projectId={projectId}
               onStatusChange={() => {
                 queryClient.invalidateQueries({ queryKey: ['/api/projects', projectId, 'stages'] });

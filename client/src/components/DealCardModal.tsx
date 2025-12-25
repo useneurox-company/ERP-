@@ -19,6 +19,14 @@ import { DeleteDealDialog } from "@/components/DeleteDealDialog";
 import { CreateProjectDialog } from "@/components/CreateProjectDialog";
 import { useToast } from "@/hooks/use-toast";
 import type { Deal, DealMessage, InsertDealMessage, DealDocument, User, DealStage, DealAttachment, Project } from "@shared/schema";
+
+// Extended User type with role permissions (added by API joins)
+interface UserWithPermissions extends User {
+  can_delete_deals?: boolean;
+  role?: {
+    permissions?: Array<{ module: string; can_delete?: boolean }>;
+  };
+}
 import { DealCustomFields } from "@/components/DealCustomFields";
 import { AllDocumentsDialog } from "@/components/AllDocumentsDialog";
 import { useLocation } from "wouter";
@@ -81,12 +89,6 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
     enabled: !!dealId && open,
     retry: false,
     refetchOnWindowFocus: false,
-    onError: (error: any) => {
-      // Suppress 404 errors - it's normal when no project exists yet
-      if (error.response?.status !== 404) {
-        console.error('[DealCardModal] Error fetching project:', error);
-      }
-    },
   });
 
   const { data: activityLogs = [], isLoading: activityLogsLoading } = useQuery<any[]>({
@@ -143,7 +145,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
   const { toast } = useToast();
   const [, setLocation] = useLocation();
 
-  const { data: currentUser } = useQuery<User>({
+  const { data: currentUser } = useQuery<UserWithPermissions>({
     queryKey: ['/api/users', getCurrentUserId()],
     enabled: open,
   });
@@ -440,7 +442,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
 
   // Создаём единый timeline из сообщений, задач и событий
   const timelineItems = useMemo(() => {
-    const items: Array<{ type: 'message' | 'task' | 'event'; data: any; timestamp: string }> = [];
+    const items: Array<{ type: 'message' | 'task' | 'event'; data: any; timestamp: Date | string }> = [];
 
     // Добавляем сообщения
     messages.forEach(msg => {
@@ -570,7 +572,7 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
                       value={deal.order_number}
                       type="text"
                       placeholder="Не присвоен"
-                      formatter={(val) => val || '—'}
+                      formatter={(val) => String(val || '—')}
                       onSave={(value) => updateDealField.mutate({ order_number: value || null })}
                     />
                   </div>
@@ -660,9 +662,11 @@ export function DealCardModal({ dealId, open, onOpenChange }: DealCardModalProps
                             file={{
                               id: attachment.id,
                               file_name: attachment.file_name,
-                              file_size: attachment.file_size,
-                              mime_type: attachment.mime_type,
-                              created_at: attachment.created_at
+                              file_size: attachment.file_size ?? 0,
+                              mime_type: attachment.mime_type ?? undefined,
+                              created_at: typeof attachment.created_at === 'string'
+                                ? attachment.created_at
+                                : attachment.created_at.toISOString()
                             }}
                             downloadUrl={attachment.file_path}
                             onDownload={() => window.open(attachment.file_path, '_blank')}

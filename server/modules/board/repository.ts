@@ -7,9 +7,13 @@ import {
   board_card_labels,
   board_card_attachments,
   board_members,
+  board_card_checklists,
+  board_card_checklist_items,
+  board_card_members,
+  board_card_potential_assignees,
   users
 } from "@shared/schema";
-import { eq, asc, and, inArray } from "drizzle-orm";
+import { eq, asc, and, inArray, desc } from "drizzle-orm";
 import { nanoid } from "nanoid";
 
 const genId = () => nanoid();
@@ -304,6 +308,9 @@ export const boardRepository = {
     if (data.assigned_to !== undefined) updateData.assigned_to = data.assigned_to;
     if (data.priority !== undefined) updateData.priority = data.priority;
     if (data.due_date !== undefined) updateData.due_date = data.due_date ? new Date(data.due_date) : null;
+    if (data.is_completed !== undefined) updateData.is_completed = data.is_completed;
+    if (data.assignment_type !== undefined) updateData.assignment_type = data.assignment_type;
+    if (data.taken_at !== undefined) updateData.taken_at = data.taken_at;
 
     await db.update(board_cards)
       .set(updateData)
@@ -474,6 +481,353 @@ export const boardRepository = {
     return result.map(r => ({
       ...r.board_members,
       user: r.users ? {
+        id: r.users.id,
+        username: r.users.username,
+        full_name: r.users.full_name,
+      } : null,
+    }));
+  },
+
+  // ============ CARD CHECKLISTS ============
+
+  async getCardChecklists(cardId: string) {
+    // Get all checklists for card
+    const checklists = await db
+      .select()
+      .from(board_card_checklists)
+      .where(eq(board_card_checklists.card_id, cardId))
+      .orderBy(asc(board_card_checklists.order));
+
+    // For each checklist get items with assignee info
+    const result = await Promise.all(
+      checklists.map(async (checklist) => {
+        const itemsResult = await db
+          .select()
+          .from(board_card_checklist_items)
+          .leftJoin(users, eq(board_card_checklist_items.assignee_id, users.id))
+          .where(eq(board_card_checklist_items.checklist_id, checklist.id))
+          .orderBy(asc(board_card_checklist_items.order));
+
+        const items = itemsResult.map(r => ({
+          ...r.board_card_checklist_items,
+          assignee: r.users ? {
+            id: r.users.id,
+            username: r.users.username,
+            full_name: r.users.full_name,
+          } : null,
+        }));
+
+        const completedCount = items.filter(i => i.is_completed).length;
+        const totalCount = items.length;
+
+        return {
+          ...checklist,
+          items,
+          progress: {
+            completed: completedCount,
+            total: totalCount,
+            percentage: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
+          },
+        };
+      })
+    );
+
+    return result;
+  },
+
+  async createCardChecklist(cardId: string, data: { name: string; order?: number }) {
+    // Get max order
+    const existing = await db
+      .select()
+      .from(board_card_checklists)
+      .where(eq(board_card_checklists.card_id, cardId))
+      .orderBy(desc(board_card_checklists.order))
+      .limit(1);
+
+    const maxOrder = existing.length > 0 ? (existing[0].order || 0) + 1 : 0;
+
+    const newChecklist = {
+      id: genId(),
+      card_id: cardId,
+      name: data.name,
+      order: data.order ?? maxOrder,
+      hide_completed: false,
+      created_at: new Date(),
+      updated_at: new Date(),
+    };
+
+    await db.insert(board_card_checklists).values(newChecklist);
+    return { ...newChecklist, items: [], progress: { completed: 0, total: 0, percentage: 0 } };
+  },
+
+  async updateCardChecklist(checklistId: string, data: { name?: string; hide_completed?: boolean }) {
+    await db
+      .update(board_card_checklists)
+      .set({ ...data, updated_at: new Date() })
+      .where(eq(board_card_checklists.id, checklistId));
+
+    const result = await db
+      .select()
+      .from(board_card_checklists)
+      .where(eq(board_card_checklists.id, checklistId))
+      .limit(1);
+
+    return result[0] || null;
+  },
+
+  async deleteCardChecklist(checklistId: string) {
+    await db.delete(board_card_checklists).where(eq(board_card_checklists.id, checklistId));
+  },
+
+  async createChecklistItem(checklistId: string, cardId: string, data: { item_text: string; order?: number; deadline?: string; assignee_id?: string }) {
+    // Get max order
+    const existing = await db
+      .select()
+      .from(board_card_checklist_items)
+      .where(eq(board_card_checklist_items.checklist_id, checklistId))
+      .orderBy(desc(board_card_checklist_items.order))
+      .limit(1);
+
+    const maxOrder = existing.length > 0 ? (existing[0].order || 0) + 1 : 0;
+
+    const newItem = {
+      id: genId(),
+      checklist_id: checklistId,
+      card_id: cardId,
+      item_text: data.item_text,
+      is_completed: false,
+      order: data.order ?? maxOrder,
+      deadline: data.deadline || null,
+      assignee_id: data.assignee_id || null,
+      created_at: new Date(),
+    };
+
+    await db.insert(board_card_checklist_items).values(newItem);
+
+    // Return with assignee if set
+    if (newItem.assignee_id) {
+      const userResult = await db
+        .select()
+        .from(users)
+        .where(eq(users.id, newItem.assignee_id))
+        .limit(1);
+
+      return {
+        ...newItem,
+        assignee: userResult[0] ? {
+          id: userResult[0].id,
+          username: userResult[0].username,
+          full_name: userResult[0].full_name,
+        } : null,
+      };
+    }
+
+    return { ...newItem, assignee: null };
+  },
+
+  async updateChecklistItem(itemId: string, data: { item_text?: string; is_completed?: boolean; order?: number; deadline?: string; assignee_id?: string }) {
+    await db
+      .update(board_card_checklist_items)
+      .set(data)
+      .where(eq(board_card_checklist_items.id, itemId));
+
+    const result = await db
+      .select()
+      .from(board_card_checklist_items)
+      .leftJoin(users, eq(board_card_checklist_items.assignee_id, users.id))
+      .where(eq(board_card_checklist_items.id, itemId))
+      .limit(1);
+
+    if (result.length === 0) return null;
+
+    return {
+      ...result[0].board_card_checklist_items,
+      assignee: result[0].users ? {
+        id: result[0].users.id,
+        username: result[0].users.username,
+        full_name: result[0].users.full_name,
+      } : null,
+    };
+  },
+
+  async deleteChecklistItem(itemId: string) {
+    await db.delete(board_card_checklist_items).where(eq(board_card_checklist_items.id, itemId));
+  },
+
+  // ============ CARD MEMBERS ============
+
+  async getCardMembers(cardId: string) {
+    const result = await db
+      .select()
+      .from(board_card_members)
+      .leftJoin(users, eq(board_card_members.user_id, users.id))
+      .where(eq(board_card_members.card_id, cardId));
+
+    return result.map(r => ({
+      ...r.board_card_members,
+      user: r.users ? {
+        id: r.users.id,
+        username: r.users.username,
+        full_name: r.users.full_name,
+      } : null,
+    }));
+  },
+
+  async addCardMember(cardId: string, userId: string) {
+    // Check if already exists
+    const existing = await db
+      .select()
+      .from(board_card_members)
+      .where(and(
+        eq(board_card_members.card_id, cardId),
+        eq(board_card_members.user_id, userId)
+      ))
+      .limit(1);
+
+    if (existing.length > 0) return existing[0];
+
+    const newMember = {
+      id: genId(),
+      card_id: cardId,
+      user_id: userId,
+      added_at: new Date(),
+    };
+
+    await db.insert(board_card_members).values(newMember);
+    return newMember;
+  },
+
+  async removeCardMember(cardId: string, userId: string) {
+    await db.delete(board_card_members)
+      .where(and(
+        eq(board_card_members.card_id, cardId),
+        eq(board_card_members.user_id, userId)
+      ));
+  },
+
+  // ============ CARD POOL (Пул исполнителей) ============
+
+  async addCardPotentialAssignees(cardId: string, userIds: string[]) {
+    if (userIds.length === 0) return;
+
+    const values = userIds.map(userId => ({
+      id: genId(),
+      card_id: cardId,
+      user_id: userId,
+      added_at: new Date(),
+    }));
+
+    await db.insert(board_card_potential_assignees).values(values);
+  },
+
+  async removeCardPotentialAssignee(cardId: string, userId: string) {
+    await db.delete(board_card_potential_assignees)
+      .where(and(
+        eq(board_card_potential_assignees.card_id, cardId),
+        eq(board_card_potential_assignees.user_id, userId)
+      ));
+  },
+
+  async getCardPotentialAssignees(cardId: string) {
+    const result = await db
+      .select()
+      .from(board_card_potential_assignees)
+      .leftJoin(users, eq(board_card_potential_assignees.user_id, users.id))
+      .where(eq(board_card_potential_assignees.card_id, cardId))
+      .orderBy(desc(board_card_potential_assignees.added_at));
+
+    return result.map(r => ({
+      id: r.board_card_potential_assignees.id,
+      card_id: r.board_card_potential_assignees.card_id,
+      user_id: r.board_card_potential_assignees.user_id,
+      added_at: r.board_card_potential_assignees.added_at,
+      user: r.users ? {
+        id: r.users.id,
+        username: r.users.username,
+        full_name: r.users.full_name,
+        email: r.users.email,
+      } : null,
+    }));
+  },
+
+  async takeCard(cardId: string, userId: string) {
+    // Check user is in pool
+    const potential = await db
+      .select()
+      .from(board_card_potential_assignees)
+      .where(and(
+        eq(board_card_potential_assignees.card_id, cardId),
+        eq(board_card_potential_assignees.user_id, userId)
+      ))
+      .limit(1);
+
+    if (potential.length === 0) {
+      throw new Error('User is not in the potential assignees list');
+    }
+
+    // Set assignee and taken_at
+    await db
+      .update(board_cards)
+      .set({
+        assigned_to: userId,
+        taken_at: new Date().toISOString(),
+        updated_at: new Date(),
+      })
+      .where(eq(board_cards.id, cardId));
+
+    // Clear pool
+    await db.delete(board_card_potential_assignees)
+      .where(eq(board_card_potential_assignees.card_id, cardId));
+
+    return this.getCardById(cardId);
+  },
+
+  async clearCardPotentialAssignees(cardId: string) {
+    await db.delete(board_card_potential_assignees)
+      .where(eq(board_card_potential_assignees.card_id, cardId));
+  },
+
+  async setCardPotentialAssignees(cardId: string, userIds: string[]) {
+    await this.clearCardPotentialAssignees(cardId);
+    await this.addCardPotentialAssignees(cardId, userIds);
+  },
+
+  async getCardWithPool(cardId: string) {
+    const card = await this.getCardById(cardId);
+    if (!card) return null;
+
+    const potentialAssignees = await this.getCardPotentialAssignees(cardId);
+
+    return {
+      ...card,
+      potential_assignees: potentialAssignees,
+    };
+  },
+
+  async getPoolCardsForUser(userId: string) {
+    // Get card IDs where user is in pool
+    const potentialCards = await db
+      .select({ card_id: board_card_potential_assignees.card_id })
+      .from(board_card_potential_assignees)
+      .where(eq(board_card_potential_assignees.user_id, userId));
+
+    if (potentialCards.length === 0) return [];
+
+    const cardIds = potentialCards.map(c => c.card_id);
+
+    const result = await db
+      .select()
+      .from(board_cards)
+      .leftJoin(users, eq(board_cards.assigned_to, users.id))
+      .where(and(
+        inArray(board_cards.id, cardIds),
+        eq(board_cards.assignment_type, 'pool')
+      ))
+      .orderBy(desc(board_cards.created_at));
+
+    return result.map(r => ({
+      ...r.board_cards,
+      assignee: r.users ? {
         id: r.users.id,
         username: r.users.username,
         full_name: r.users.full_name,

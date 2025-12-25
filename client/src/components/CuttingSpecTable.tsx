@@ -176,7 +176,7 @@ export function CuttingSpecTable({
 
     try {
       // Найти этап Производства
-      const productionStage = projectStages.find(stage => stage.stage_type === "production");
+      const productionStage = projectStages.find(stage => stage.stage_type_id === "production");
 
       if (!productionStage) {
         toast({

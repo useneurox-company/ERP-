@@ -278,11 +278,11 @@ export function MeasurementStageForm({ stage, onDataChange, readOnly = false }: 
                   )}
                   <div className="flex items-center gap-3 text-sm flex-wrap">
                     <span className="text-muted-foreground">
-                      Количество: <span className="font-medium text-foreground">{projectItem.quantity} {projectItem.unit || 'шт'}</span>
+                      Количество: <span className="font-medium text-foreground">{projectItem.quantity} шт</span>
                     </span>
                     {projectItem.price && (
                       <span className="text-muted-foreground">
-                        Цена: <span className="font-medium text-foreground">{formatCurrency(projectItem.price)}</span>
+                        Цена: <span className="font-medium text-foreground">{formatCurrency(String(projectItem.price))}</span>
                       </span>
                     )}
                   </div>
@@ -290,7 +290,7 @@ export function MeasurementStageForm({ stage, onDataChange, readOnly = false }: 
                     <div className="pt-1 border-t">
                       <span className="text-xs text-muted-foreground">
                         Итого: <span className="font-semibold text-sm text-foreground">
-                          {formatCurrency((parseFloat(projectItem.price) * projectItem.quantity).toString())}
+                          {formatCurrency(String(Number(projectItem.price) * projectItem.quantity))}
                         </span>
                       </span>
                     </div>

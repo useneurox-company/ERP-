@@ -17,6 +17,7 @@ import type {
   BasisViewerLink,
   HardwareSpecItem,
   CuttingSpecItem,
+  WarehouseComparisonResult,
 } from "@/types/constructorDocumentation";
 import { getInitialConstructorDocumentationData as getInitialData } from "@/types/constructorDocumentation";
 import type { ProjectStage } from "@shared/schema";

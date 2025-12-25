@@ -407,7 +407,7 @@ export function StageMediaGallery({
                     >
                       <img
                         src={mediaURLs[doc.id]}
-                        alt={doc.file_name}
+                        alt={doc.file_name ?? ''}
                         className="w-full h-full object-cover"
                       />
                       {/* Иконка увеличения при наведении */}
@@ -442,7 +442,7 @@ export function StageMediaGallery({
                   )}
 
                   {/* Название файла */}
-                  <p className="text-xs text-center truncate w-full" title={doc.file_name}>
+                  <p className="text-xs text-center truncate w-full" title={doc.file_name ?? undefined}>
                     {doc.file_name}
                   </p>
 

@@ -120,7 +120,7 @@ export function WarehouseReserveDialog({
       item_id: item.id,
       project_id: projectId,
       quantity: quantityNum,
-      reserved_by: userId || undefined,
+      reserved_by: userId || "",
       reason: reason || undefined,
       notes: notes || undefined,
     });

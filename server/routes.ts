@@ -37,6 +37,7 @@ import { router as clientsRouter } from "./modules/clients/routes";
 import { router as installersRouter } from "./modules/installers/routes";
 import { router as montageRouter } from "./modules/montage/routes";
 import { router as boardRouter } from "./modules/board/routes";
+import { router as telephonyRouter } from "./modules/telephony/routes";
 // Browser Agent временно отключен
 // import { router as browserAgentRouter } from "./modules/browser-agent";
 
@@ -96,6 +97,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use(installersRouter);
   app.use(montageRouter);
   app.use(boardRouter);
+  app.use(telephonyRouter);
   // Browser Agent временно отключен
   // app.use(browserAgentRouter);
 

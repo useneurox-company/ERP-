@@ -559,7 +559,6 @@ export function InvoiceFromQuoteDialog({
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <Textarea
-                                          ref={textareaRef}
                                           {...field}
                                           placeholder="Описание"
                                           className="min-h-[36px] resize-none"

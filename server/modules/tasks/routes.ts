@@ -35,9 +35,13 @@ const upload = multer({
 // GET /api/tasks - get all tasks (with filters)
 router.get("/api/tasks", async (req, res) => {
   try {
-    const { status, priority, assignee_id } = req.query;
+    const { status, priority, assignee_id, archived } = req.query;
 
     let tasks = await tasksRepository.getAllTasks();
+
+    // Filter by archived status (default: show non-archived)
+    const showArchived = archived === 'true';
+    tasks = tasks.filter(t => (t.is_archived || false) === showArchived);
 
     // Apply filters
     if (status) {
@@ -137,6 +141,30 @@ router.delete("/api/tasks/:id", async (req, res) => {
   } catch (error) {
     console.error("[Tasks] Error deleting task:", error);
     res.status(500).json({ error: "Failed to delete task" });
+  }
+});
+
+// PUT /api/tasks/:id/archive - archive task
+router.put("/api/tasks/:id/archive", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await tasksRepository.updateTask(id, { is_archived: true });
+    res.json(task);
+  } catch (error) {
+    console.error("[Tasks] Error archiving task:", error);
+    res.status(500).json({ error: "Failed to archive task" });
+  }
+});
+
+// PUT /api/tasks/:id/unarchive - unarchive task
+router.put("/api/tasks/:id/unarchive", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await tasksRepository.updateTask(id, { is_archived: false });
+    res.json(task);
+  } catch (error) {
+    console.error("[Tasks] Error unarchiving task:", error);
+    res.status(500).json({ error: "Failed to unarchive task" });
   }
 });
 
@@ -445,6 +473,128 @@ router.delete("/api/tasks/:id/checklist/:itemId", async (req, res) => {
   }
 });
 
+// ========================================
+// NAMED CHECKLISTS (Именованные чеклисты)
+// ========================================
+
+// GET /api/tasks/:id/checklists - get all named checklists with items
+router.get("/api/tasks/:id/checklists", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const checklists = await tasksRepository.getTaskChecklists(id);
+    res.json(checklists);
+  } catch (error) {
+    console.error("[Tasks] Error fetching checklists:", error);
+    res.status(500).json({ error: "Failed to fetch checklists" });
+  }
+});
+
+// POST /api/tasks/:id/checklists - create named checklist
+router.post("/api/tasks/:id/checklists", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name } = req.body;
+
+    if (!name) {
+      res.status(400).json({ error: "Checklist name is required" });
+      return;
+    }
+
+    const checklist = await tasksRepository.createTaskChecklist({
+      task_id: id,
+      name,
+    });
+
+    res.status(201).json(checklist);
+  } catch (error) {
+    console.error("[Tasks] Error creating checklist:", error);
+    res.status(500).json({ error: "Failed to create checklist" });
+  }
+});
+
+// PUT /api/tasks/:id/checklists/:checklistId - update checklist (name, hide_completed)
+router.put("/api/tasks/:id/checklists/:checklistId", async (req, res) => {
+  try {
+    const { checklistId } = req.params;
+    const { name, hide_completed } = req.body;
+
+    const checklist = await tasksRepository.updateTaskChecklist(checklistId, { name, hide_completed });
+    res.json(checklist);
+  } catch (error) {
+    console.error("[Tasks] Error updating checklist:", error);
+    res.status(500).json({ error: "Failed to update checklist" });
+  }
+});
+
+// DELETE /api/tasks/:id/checklists/:checklistId - delete checklist and all items
+router.delete("/api/tasks/:id/checklists/:checklistId", async (req, res) => {
+  try {
+    const { checklistId } = req.params;
+    await tasksRepository.deleteTaskChecklist(checklistId);
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Tasks] Error deleting checklist:", error);
+    res.status(500).json({ error: "Failed to delete checklist" });
+  }
+});
+
+// POST /api/tasks/:id/checklists/:checklistId/items - add item to checklist
+router.post("/api/tasks/:id/checklists/:checklistId/items", async (req, res) => {
+  try {
+    const { id, checklistId } = req.params;
+    const { item_text, deadline, assignee_id } = req.body;
+
+    if (!item_text) {
+      res.status(400).json({ error: "Item text is required" });
+      return;
+    }
+
+    const item = await tasksRepository.createChecklistItemForChecklist(checklistId, id, {
+      item_text,
+      deadline,
+      assignee_id,
+    });
+
+    res.status(201).json(item);
+  } catch (error) {
+    console.error("[Tasks] Error creating checklist item:", error);
+    res.status(500).json({ error: "Failed to create checklist item" });
+  }
+});
+
+// PUT /api/tasks/:id/checklists/:checklistId/items/:itemId - update item
+router.put("/api/tasks/:id/checklists/:checklistId/items/:itemId", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    const { item_text, is_completed, order, deadline, assignee_id } = req.body;
+
+    const item = await tasksRepository.updateChecklistItemWithAssignee(itemId, {
+      item_text,
+      is_completed,
+      order,
+      deadline,
+      assignee_id,
+    });
+
+    res.json(item);
+  } catch (error) {
+    console.error("[Tasks] Error updating checklist item:", error);
+    res.status(500).json({ error: "Failed to update checklist item" });
+  }
+});
+
+// DELETE /api/tasks/:id/checklists/:checklistId/items/:itemId - delete item
+router.delete("/api/tasks/:id/checklists/:checklistId/items/:itemId", async (req, res) => {
+  try {
+    const { itemId } = req.params;
+    await tasksRepository.deleteChecklistItem(itemId);
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Tasks] Error deleting checklist item:", error);
+    res.status(500).json({ error: "Failed to delete checklist item" });
+  }
+});
+
 // GET /api/projects/:projectId/items/:itemId/tasks - get tasks for project item
 router.get("/api/projects/:projectId/items/:itemId/tasks", async (req, res) => {
   try {
@@ -454,5 +604,167 @@ router.get("/api/projects/:projectId/items/:itemId/tasks", async (req, res) => {
   } catch (error) {
     console.error("[Tasks] Error fetching tasks by project item:", error);
     res.status(500).json({ error: "Failed to fetch tasks for project item" });
+  }
+});
+
+// ========================================
+// POOL METHODS (Пул исполнителей)
+// ========================================
+
+// GET /api/tasks/:id/pool - get task with pool info
+router.get("/api/tasks/:id/pool", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await tasksRepository.getTaskWithPool(id);
+
+    if (!task) {
+      res.status(404).json({ error: "Task not found" });
+      return;
+    }
+
+    res.json(task);
+  } catch (error) {
+    console.error("[Tasks] Error fetching task with pool:", error);
+    res.status(500).json({ error: "Failed to fetch task with pool" });
+  }
+});
+
+// GET /api/tasks/:id/potential-assignees - get potential assignees
+router.get("/api/tasks/:id/potential-assignees", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const assignees = await tasksRepository.getPotentialAssignees(id);
+    res.json(assignees);
+  } catch (error) {
+    console.error("[Tasks] Error fetching potential assignees:", error);
+    res.status(500).json({ error: "Failed to fetch potential assignees" });
+  }
+});
+
+// POST /api/tasks/:id/potential-assignees - add potential assignees
+router.post("/api/tasks/:id/potential-assignees", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_ids } = req.body;
+
+    if (!user_ids || !Array.isArray(user_ids) || user_ids.length === 0) {
+      res.status(400).json({ error: "user_ids array is required" });
+      return;
+    }
+
+    await tasksRepository.addPotentialAssignees(id, user_ids);
+
+    // Update assignment_type to 'pool'
+    await tasksRepository.updateTask(id, { assignment_type: 'pool', assignee_id: null });
+
+    const assignees = await tasksRepository.getPotentialAssignees(id);
+    res.status(201).json(assignees);
+  } catch (error) {
+    console.error("[Tasks] Error adding potential assignees:", error);
+    res.status(500).json({ error: "Failed to add potential assignees" });
+  }
+});
+
+// PUT /api/tasks/:id/potential-assignees - set potential assignees (replace all)
+router.put("/api/tasks/:id/potential-assignees", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { user_ids } = req.body;
+
+    if (!user_ids || !Array.isArray(user_ids)) {
+      res.status(400).json({ error: "user_ids array is required" });
+      return;
+    }
+
+    await tasksRepository.setPotentialAssignees(id, user_ids);
+
+    // Update assignment_type based on whether there are any assignees
+    if (user_ids.length > 0) {
+      await tasksRepository.updateTask(id, { assignment_type: 'pool', assignee_id: null });
+    } else {
+      await tasksRepository.updateTask(id, { assignment_type: 'single' });
+    }
+
+    const assignees = await tasksRepository.getPotentialAssignees(id);
+    res.json(assignees);
+  } catch (error) {
+    console.error("[Tasks] Error setting potential assignees:", error);
+    res.status(500).json({ error: "Failed to set potential assignees" });
+  }
+});
+
+// DELETE /api/tasks/:id/potential-assignees/:userId - remove potential assignee
+router.delete("/api/tasks/:id/potential-assignees/:userId", async (req, res) => {
+  try {
+    const { id, userId } = req.params;
+    await tasksRepository.removePotentialAssignee(id, userId);
+
+    // Check if any assignees left
+    const remaining = await tasksRepository.getPotentialAssignees(id);
+    if (remaining.length === 0) {
+      await tasksRepository.updateTask(id, { assignment_type: 'single' });
+    }
+
+    res.status(204).send();
+  } catch (error) {
+    console.error("[Tasks] Error removing potential assignee:", error);
+    res.status(500).json({ error: "Failed to remove potential assignee" });
+  }
+});
+
+// POST /api/tasks/:id/take - take task from pool
+router.post("/api/tasks/:id/take", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.body.userId || req.headers['x-user-id'] as string;
+
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const task = await tasksRepository.takeTask(id, userId);
+
+    // Log activity
+    if (task && task.project_id) {
+      try {
+        await activityLogsRepository.logActivity({
+          entity_type: "project",
+          entity_id: task.project_id,
+          action_type: "task_taken",
+          user_id: userId,
+          description: `Задача "${task.title}" взята из пула`,
+        });
+      } catch (logError) {
+        console.error("[Tasks] Error logging task take activity:", logError);
+      }
+    }
+
+    res.json(task);
+  } catch (error: any) {
+    console.error("[Tasks] Error taking task:", error);
+    if (error.message === 'User is not in the potential assignees list') {
+      res.status(403).json({ error: "You are not in the list of potential assignees for this task" });
+    } else {
+      res.status(500).json({ error: "Failed to take task" });
+    }
+  }
+});
+
+// GET /api/tasks/pool/available - get pool tasks available to current user
+router.get("/api/tasks/pool/available", async (req, res) => {
+  try {
+    const userId = req.query.userId as string || req.headers['x-user-id'] as string;
+
+    if (!userId) {
+      res.status(400).json({ error: "User ID is required" });
+      return;
+    }
+
+    const tasks = await tasksRepository.getPoolTasksForUser(userId);
+    res.json(tasks);
+  } catch (error) {
+    console.error("[Tasks] Error fetching available pool tasks:", error);
+    res.status(500).json({ error: "Failed to fetch available pool tasks" });
   }
 });

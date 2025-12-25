@@ -17,6 +17,7 @@ import {
   Building2,
   Users,
   Kanban,
+  Phone,
 } from "lucide-react";
 import {
   Sidebar,
@@ -45,6 +46,7 @@ const modules = [
 const tools = [
   { title: "Задачи", url: "/tasks", icon: CheckSquare },
   { title: "Доска", url: "/board", icon: Kanban },
+  { title: "AI Телефония", url: "/telephony", icon: Phone },
 ];
 
 interface AppSidebarProps {

@@ -84,14 +84,14 @@ export function WarehouseItemDetailSheet({ item, open, onOpenChange, currentUser
     defaultValues: {
       name: item?.name || "",
       sku: item?.sku || "",
-      quantity: item?.quantity ? parseFloat(item.quantity) : 0,
+      quantity: item?.quantity ?? 0,
       unit: item?.unit || "шт",
-      price: item?.price ? parseFloat(item.price) : 0,
+      price: item?.price ?? 0,
       location: item?.location || "",
       category: item?.category || "materials",
       supplier: item?.supplier || "",
       description: item?.description || "",
-      min_stock: item?.min_stock ? parseFloat(item.min_stock) : 0,
+      min_stock: item?.min_stock ?? 0,
       track_min_stock: item?.track_min_stock || false,
       status: item?.status || "normal",
       project_id: item?.project_id || null,
@@ -103,14 +103,14 @@ export function WarehouseItemDetailSheet({ item, open, onOpenChange, currentUser
       form.reset({
         name: item.name || "",
         sku: item.sku || "",
-        quantity: item.quantity ? parseFloat(item.quantity) : 0,
+        quantity: item.quantity ?? 0,
         unit: item.unit || "шт",
-        price: item.price ? parseFloat(item.price) : 0,
+        price: item.price ?? 0,
         location: item.location || "",
         category: item.category || "materials",
         supplier: item.supplier || "",
         description: item.description || "",
-        min_stock: item.min_stock ? parseFloat(item.min_stock) : 0,
+        min_stock: item.min_stock ?? 0,
         track_min_stock: item.track_min_stock || false,
         status: item.status || "normal",
         project_id: item.project_id || null,
@@ -292,7 +292,7 @@ export function WarehouseItemDetailSheet({ item, open, onOpenChange, currentUser
   const activeReservations = reservations.filter(r => r.status === 'pending' || r.status === 'confirmed');
   const totalReserved = activeReservations.reduce((sum, r) => sum + Number(r.quantity), 0);
 
-  const statusConfig = item ? getStatusBadge(item.status) : null;
+  const statusConfig = item ? getStatusBadge(item.status as "normal" | "low" | "critical") : null;
 
   return (
     <>
@@ -674,7 +674,7 @@ export function WarehouseItemDetailSheet({ item, open, onOpenChange, currentUser
                           <SelectItem value="none">Без проекта</SelectItem>
                           {projects.map((project) => (
                             <SelectItem key={project.id} value={project.id}>
-                              {project.name} {project.client ? `(${project.client})` : ""}
+                              {project.name} {project.client_name ? `(${project.client_name})` : ""}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -695,7 +695,7 @@ export function WarehouseItemDetailSheet({ item, open, onOpenChange, currentUser
                   <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
                     <FormControl>
                       <Checkbox
-                        checked={field.value}
+                        checked={Boolean(field.value)}
                         onCheckedChange={field.onChange}
                         data-testid="checkbox-warehouse-item-track-min-stock"
                       />

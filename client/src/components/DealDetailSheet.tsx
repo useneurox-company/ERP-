@@ -145,15 +145,15 @@ export function DealDetailSheet({ deal, open, onOpenChange }: DealDetailSheetPro
 
   const handleAddTag = () => {
     if (newTag.trim()) {
-      const currentTags = form.getValues("tags") || [];
-      form.setValue("tags", [...currentTags, newTag.trim()]);
+      const currentTags = (form.getValues("tags") as string[]) || [];
+      form.setValue("tags", [...currentTags, newTag.trim()] as any);
       setNewTag("");
     }
   };
 
   const handleRemoveTag = (index: number) => {
-    const currentTags = form.getValues("tags") || [];
-    form.setValue("tags", currentTags.filter((_, i) => i !== index));
+    const currentTags = (form.getValues("tags") as string[]) || [];
+    form.setValue("tags", currentTags.filter((_: string, i: number) => i !== index) as any);
   };
 
   const handleDelete = () => {
@@ -382,7 +382,7 @@ export function DealDetailSheet({ deal, open, onOpenChange }: DealDetailSheetPro
                         </Button>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {field.value?.map((tag, index) => (
+                        {(field.value as string[] | undefined)?.map((tag: string, index: number) => (
                           <Badge 
                             key={index} 
                             variant="secondary"

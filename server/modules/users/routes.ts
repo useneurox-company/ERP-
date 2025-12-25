@@ -45,19 +45,29 @@ router.post("/api/users", checkAdminOnly(), async (req, res) => {
     res.status(201).json(newUser);
   } catch (error: any) {
     console.error("Error creating user:", error);
+
+    // Get the underlying cause (Drizzle wraps PostgreSQL errors)
+    const cause = error.cause || error;
+    const errorMessage = error.message || '';
+    const causeMessage = cause?.message || '';
+    const causeCode = cause?.code || error.code;
+    const causeDetail = cause?.detail || error.detail || '';
+
     // Handle both SQLite and PostgreSQL unique constraint errors
     if (
-      (error.message && error.message.includes("UNIQUE constraint failed")) || // SQLite
-      (error.code === '23505') || // PostgreSQL unique_violation
-      (error.message && error.message.includes("duplicate key value")) // PostgreSQL message
+      errorMessage.includes("UNIQUE constraint failed") || // SQLite
+      causeCode === '23505' || // PostgreSQL unique_violation
+      errorMessage.includes("duplicate key value") ||
+      causeMessage.includes("duplicate key value") ||
+      errorMessage.includes("уникальности") // PostgreSQL in Russian locale
     ) {
       // Determine which field caused the error
-      if (error.message && (error.message.includes("username") || error.detail?.includes("username"))) {
-        res.status(400).json({ error: "Username already exists" });
-      } else if (error.message && (error.message.includes("email") || error.detail?.includes("email"))) {
-        res.status(400).json({ error: "Email already exists" });
+      if (causeDetail.includes("username") || errorMessage.includes("username")) {
+        res.status(400).json({ error: "Пользователь с таким логином уже существует" });
+      } else if (causeDetail.includes("email") || errorMessage.includes("email")) {
+        res.status(400).json({ error: "Пользователь с таким email уже существует" });
       } else {
-        res.status(400).json({ error: "User with this username or email already exists" });
+        res.status(400).json({ error: "Пользователь с таким логином или email уже существует" });
       }
     } else {
       res.status(500).json({ error: "Failed to create user" });

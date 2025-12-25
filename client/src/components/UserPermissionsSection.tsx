@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { getCurrentUserId } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -82,6 +83,9 @@ export function UserPermissionsSection({ userId, roleId }: UserPermissionsSectio
     queryFn: async () => {
       const response = await fetch(`/api/users/${userId}/permissions`, {
         credentials: "include",
+        headers: {
+          "X-User-Id": getCurrentUserId(),
+        },
       });
       if (!response.ok) throw new Error("Failed to fetch permissions");
       return response.json();
@@ -127,7 +131,10 @@ export function UserPermissionsSection({ userId, roleId }: UserPermissionsSectio
     mutationFn: async ({ module, permissions }: { module: string; permissions: ModulePermissions }) => {
       const response = await fetch(`/api/users/${userId}/permissions/${module}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": getCurrentUserId(),
+        },
         body: JSON.stringify(permissions),
         credentials: "include",
       });
@@ -160,6 +167,9 @@ export function UserPermissionsSection({ userId, roleId }: UserPermissionsSectio
       const response = await fetch(`/api/users/${userId}/permissions/${module}`, {
         method: "DELETE",
         credentials: "include",
+        headers: {
+          "X-User-Id": getCurrentUserId(),
+        },
       });
       if (!response.ok && response.status !== 404) {
         const error = await response.json();

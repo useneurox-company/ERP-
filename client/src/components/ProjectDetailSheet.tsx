@@ -604,7 +604,7 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
                               <span data-testid={`item-quantity-${itemIndex}`}>{item.quantity} шт.</span>
                               {item.price && (
                                 <span data-testid={`item-price-${itemIndex}`}>
-                                  {parseFloat(item.price).toLocaleString('ru-RU')} ₽
+                                  {Number(item.price).toLocaleString('ru-RU')} ₽
                                 </span>
                               )}
                             </div>
@@ -767,7 +767,7 @@ export function ProjectDetailSheet({ project, open, onOpenChange }: ProjectDetai
                 stageStatus={selectedStage.status}
                 stageDescription={selectedStage.description || undefined}
                 stageDeadline={selectedStage.planned_end_date ? new Date(selectedStage.planned_end_date).toISOString() : undefined}
-                stageCost={selectedStage.cost || undefined}
+                stageCost={selectedStage.cost !== undefined && selectedStage.cost !== null ? String(selectedStage.cost) : undefined}
                 projectId={project?.id}
                 onStatusChange={() => {
                   queryClient.invalidateQueries({ queryKey: ["/api/projects", project?.id, "stages"] });

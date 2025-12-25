@@ -187,7 +187,7 @@ export function HardwareSpecTable({
 
     try {
       // Найти этап Снабжения
-      const procurementStage = projectStages.find(stage => stage.stage_type === "procurement");
+      const procurementStage = projectStages.find(stage => stage.stage_type_id === "procurement");
 
       if (!procurementStage) {
         toast({

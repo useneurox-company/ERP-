@@ -37,7 +37,7 @@ export function ManageCustomFields() {
   });
 
   const createField = useMutation({
-    mutationFn: async (data: { name: string; field_type: string; options?: string[] }) => {
+    mutationFn: async (data: { name: string; field_type: string; options?: string | null }) => {
       return apiRequest("POST", "/api/custom-field-definitions", data);
     },
     onSuccess: () => {
@@ -111,7 +111,21 @@ export function ManageCustomFields() {
     setEditingField(field);
     setFieldName(field.name);
     setFieldType(field.field_type);
-    setFieldOptions(field.options?.join("\n") || "");
+    // Parse options - can be string (JSON) or array
+    let optionsArr: string[] = [];
+    if (field.options) {
+      if (Array.isArray(field.options)) {
+        optionsArr = field.options;
+      } else if (typeof field.options === 'string') {
+        try {
+          const parsed = JSON.parse(field.options);
+          optionsArr = Array.isArray(parsed) ? parsed : [];
+        } catch {
+          optionsArr = [];
+        }
+      }
+    }
+    setFieldOptions(optionsArr.join("\n"));
     setDialogOpen(true);
   };
 
@@ -125,9 +139,9 @@ export function ManageCustomFields() {
       return;
     }
 
-    const options = fieldType === "select" && fieldOptions.trim()
-      ? fieldOptions.split("\n").map(opt => opt.trim()).filter(Boolean)
-      : undefined;
+    const options: string | null | undefined = fieldType === "select" && fieldOptions.trim()
+      ? JSON.stringify(fieldOptions.split("\n").map(opt => opt.trim()).filter(Boolean))
+      : null;
 
     if (editingField) {
       updateField.mutate({

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import {
   DndContext,
   DragOverlay,
@@ -47,7 +48,10 @@ import {
   LayoutGrid,
   UserPlus,
   UserMinus,
+  Check,
+  Hand,
 } from "lucide-react";
+import { BoardCardChecklistSection } from "@/components/BoardCardChecklistSection";
 
 // Types
 interface BoardLabel {
@@ -73,8 +77,16 @@ interface BoardCard {
   assignee?: { id: string; username: string; full_name?: string };
   priority?: string;
   due_date?: string;
+  is_completed?: boolean;
+  assignment_type?: string; // 'single' | 'pool'
+  taken_at?: string;
   labels?: BoardLabel[];
   attachments?: BoardCardAttachment[];
+  potential_assignees?: Array<{
+    id: string;
+    user_id: string;
+    user: { id: string; username: string; full_name?: string } | null;
+  }>;
 }
 
 interface BoardColumn {
@@ -109,7 +121,15 @@ const priorityColors: Record<string, string> = {
 };
 
 // Sortable Card Component
-function SortableCard({ card, onClick }: { card: BoardCard; onClick: () => void }) {
+function SortableCard({
+  card,
+  onClick,
+  onToggleComplete,
+}: {
+  card: BoardCard;
+  onClick: () => void;
+  onToggleComplete: (cardId: string, isCompleted: boolean) => void;
+}) {
   const {
     attributes,
     listeners,
@@ -131,9 +151,27 @@ function SortableCard({ card, onClick }: { card: BoardCard; onClick: () => void 
       style={style}
       {...attributes}
       {...listeners}
-      className="bg-card border rounded-lg p-3 cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow touch-none"
+      className="bg-card border rounded-lg p-3 pl-9 relative cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow touch-none"
       onClick={onClick}
     >
+      {/* Completion checkbox */}
+      <button
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={(e) => {
+          e.stopPropagation();
+          onToggleComplete(card.id, !card.is_completed);
+        }}
+        className={cn(
+          "absolute top-3 left-2 w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all z-10 cursor-pointer",
+          card.is_completed
+            ? "bg-green-500 border-green-500 text-white"
+            : "border-muted-foreground/40 hover:border-green-500 bg-background"
+        )}
+        title={card.is_completed ? "Отметить как невыполненное" : "Отметить как выполненное"}
+      >
+        {card.is_completed && <Check className="w-3 h-3" />}
+      </button>
+
       <div className="flex-1 min-w-0">
           {/* Labels */}
           {card.labels && card.labels.length > 0 && (
@@ -150,7 +188,18 @@ function SortableCard({ card, onClick }: { card: BoardCard; onClick: () => void 
           )}
 
           {/* Title */}
-          <p className="font-medium text-sm">{card.title}</p>
+          <div className="flex items-center gap-2">
+            <p className={cn(
+              "font-medium text-sm",
+              card.is_completed && "line-through text-muted-foreground"
+            )}>{card.title}</p>
+            {card.assignment_type === 'pool' && !card.assigned_to && (
+              <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300 text-[10px] shrink-0">
+                <Users className="w-2 h-2 mr-0.5" />
+                Пул
+              </Badge>
+            )}
+          </div>
 
           {/* Meta info */}
           <div className="flex items-center gap-2 mt-2 flex-wrap">
@@ -195,12 +244,14 @@ function BoardColumnComponent({
   onEditColumn,
   onDeleteColumn,
   onCardClick,
+  onToggleComplete,
 }: {
   column: BoardColumn;
   onAddCard: (columnId: string) => void;
   onEditColumn: (column: BoardColumn) => void;
   onDeleteColumn: (columnId: string) => void;
   onCardClick: (card: BoardCard) => void;
+  onToggleComplete: (cardId: string, isCompleted: boolean) => void;
 }) {
   const cardIds = column.cards.map((c) => c.id);
   const { setNodeRef, isOver } = useDroppable({ id: column.id, data: { type: "column", column } });
@@ -249,6 +300,7 @@ function BoardColumnComponent({
               key={card.id}
               card={card}
               onClick={() => onCardClick(card)}
+              onToggleComplete={onToggleComplete}
             />
           ))}
         </SortableContext>
@@ -303,6 +355,8 @@ export default function Board() {
   const [newLabelColor, setNewLabelColor] = useState("#6366f1");
   const [attachmentFiles, setAttachmentFiles] = useState<File[]>([]);
   const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [cardAssignmentType, setCardAssignmentType] = useState<'single' | 'pool'>('single');
+  const [cardPotentialAssignees, setCardPotentialAssignees] = useState<string[]>([]);
 
   // Get current user
   const userStr = localStorage.getItem("user");
@@ -327,6 +381,17 @@ export default function Board() {
   const { data: boardMembers = [] } = useQuery<BoardMember[]>({
     queryKey: [`/api/boards/${selectedBoardId}/members`],
     enabled: !!selectedBoardId,
+  });
+
+  // Query for card potential assignees (for existing cards in pool mode)
+  const { data: selectedCardPotentialAssignees = [] } = useQuery<Array<{
+    id: string;
+    card_id: string;
+    user_id: string;
+    user: { id: string; username: string; full_name?: string } | null;
+  }>>({
+    queryKey: [`/api/boards/cards/${selectedCard?.id}/potential-assignees`],
+    enabled: !!selectedCard?.id && selectedCard?.assignment_type === 'pool',
   });
 
   // Set first board as selected if none selected
@@ -387,18 +452,37 @@ export default function Board() {
 
   const createCardMutation = useMutation({
     mutationFn: async (data: any) => {
+      const payload = {
+        ...data,
+        created_by: currentUser?.id,
+        assignment_type: cardAssignmentType,
+        assigned_to: cardAssignmentType === 'pool' ? null : data.assigned_to,
+      };
       const response = await fetch(
         `/api/boards/${selectedBoardId}/columns/${selectedColumnId}/cards`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...data, created_by: currentUser?.id }),
+          body: JSON.stringify(payload),
         }
       );
       if (!response.ok) throw new Error("Failed to create card");
       return response.json();
     },
     onSuccess: async (card) => {
+      // Add potential assignees if pool mode
+      if (cardAssignmentType === 'pool' && cardPotentialAssignees.length > 0) {
+        try {
+          await fetch(`/api/boards/cards/${card.id}/potential-assignees`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ user_ids: cardPotentialAssignees }),
+          });
+        } catch (error) {
+          console.error("Failed to add potential assignees:", error);
+        }
+      }
+
       // Upload attachments if any
       if (attachmentFiles.length > 0) {
         for (const file of attachmentFiles) {
@@ -472,6 +556,51 @@ export default function Board() {
     },
     onError: () => {
       toast({ title: "Ошибка", description: "Не удалось удалить карточку", variant: "destructive" });
+    },
+  });
+
+  const toggleCompleteMutation = useMutation({
+    mutationFn: async ({ cardId, isCompleted }: { cardId: string; isCompleted: boolean }) => {
+      const response = await fetch(`/api/boards/cards/${cardId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ is_completed: isCompleted }),
+      });
+      if (!response.ok) throw new Error("Failed to toggle completion");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${selectedBoardId}`] });
+    },
+    onError: () => {
+      toast({ title: "Ошибка", description: "Не удалось обновить статус", variant: "destructive" });
+    },
+  });
+
+  const takeCardMutation = useMutation({
+    mutationFn: async (cardId: string) => {
+      const response = await fetch(`/api/boards/cards/${cardId}/take`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-User-Id": currentUser?.id || "",
+        },
+        body: JSON.stringify({ userId: currentUser?.id }),
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to take card");
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/boards/${selectedBoardId}`] });
+      setEditCardDialogOpen(false);
+      setSelectedCard(null);
+      toast({ title: "Карточка взята", description: "Вы стали исполнителем этой карточки" });
+    },
+    onError: (error: Error) => {
+      toast({ title: "Ошибка", description: error.message, variant: "destructive" });
     },
   });
 
@@ -615,6 +744,8 @@ export default function Board() {
     setNewCardPriority("normal");
     setNewCardDueDate("");
     setAttachmentFiles([]);
+    setCardAssignmentType('single');
+    setCardPotentialAssignees([]);
   };
 
   const handleAddCard = (columnId: string) => {
@@ -632,6 +763,10 @@ export default function Board() {
     setNewCardDueDate(card.due_date ? card.due_date.split("T")[0] : "");
     setAttachmentFiles([]); // Reset new files
     setEditCardDialogOpen(true);
+  };
+
+  const handleToggleComplete = (cardId: string, isCompleted: boolean) => {
+    toggleCompleteMutation.mutate({ cardId, isCompleted });
   };
 
   const handleEditColumn = (column: BoardColumn) => {
@@ -823,6 +958,7 @@ export default function Board() {
                     onEditColumn={handleEditColumn}
                     onDeleteColumn={(id) => deleteColumnMutation.mutate(id)}
                     onCardClick={handleCardClick}
+                    onToggleComplete={handleToggleComplete}
                   />
                 ))}
               </SortableContext>
@@ -934,22 +1070,90 @@ export default function Board() {
                 rows={3}
               />
             </div>
+            {/* Assignment Type */}
+            <div className="space-y-3">
+              <Label>Тип назначения</Label>
+              <div className="flex gap-4">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="cardAssignmentType"
+                    checked={cardAssignmentType === 'single'}
+                    onChange={() => {
+                      setCardAssignmentType('single');
+                      setCardPotentialAssignees([]);
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <User className="w-4 h-4" />
+                  <span className="text-sm">Один исполнитель</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="cardAssignmentType"
+                    checked={cardAssignmentType === 'pool'}
+                    onChange={() => {
+                      setCardAssignmentType('pool');
+                      setNewCardAssignee('');
+                    }}
+                    className="w-4 h-4"
+                  />
+                  <Users className="w-4 h-4" />
+                  <span className="text-sm">Пул</span>
+                </label>
+              </div>
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Исполнитель</Label>
-                <Select value={newCardAssignee || "none"} onValueChange={(val) => setNewCardAssignee(val === "none" ? "" : val)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Не назначен" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Не назначен</SelectItem>
+                {cardAssignmentType === 'single' ? (
+                  <Select value={newCardAssignee || "none"} onValueChange={(val) => setNewCardAssignee(val === "none" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Не назначен" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Не назначен</SelectItem>
+                      {users.filter(u => u.id).map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.full_name || user.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <div className="border rounded-lg p-2 max-h-[120px] overflow-y-auto space-y-1">
                     {users.filter(u => u.id).map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
+                      <label
+                        key={user.id}
+                        className="flex items-center gap-2 p-1 rounded hover:bg-muted cursor-pointer text-sm"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={cardPotentialAssignees.includes(user.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setCardPotentialAssignees([...cardPotentialAssignees, user.id]);
+                            } else {
+                              setCardPotentialAssignees(cardPotentialAssignees.filter(id => id !== user.id));
+                            }
+                          }}
+                          className="w-3 h-3"
+                        />
+                        <Avatar className="h-5 w-5">
+                          <AvatarFallback className="text-[10px]">
+                            {(user.full_name || user.username)?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
                         {user.full_name || user.username}
-                      </SelectItem>
+                      </label>
                     ))}
-                  </SelectContent>
-                </Select>
+                  </div>
+                )}
+                {cardAssignmentType === 'pool' && cardPotentialAssignees.length < 2 && (
+                  <p className="text-xs text-amber-600">Выберите минимум 2</p>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Приоритет</Label>
@@ -1031,7 +1235,7 @@ export default function Board() {
               <Button type="button" variant="outline" onClick={() => setCreateCardDialogOpen(false)}>
                 Отмена
               </Button>
-              <Button type="submit" disabled={!newCardTitle.trim()}>
+              <Button type="submit" disabled={!newCardTitle.trim() || (cardAssignmentType === 'pool' && cardPotentialAssignees.length < 2)}>
                 Создать
               </Button>
             </div>
@@ -1082,19 +1286,59 @@ export default function Board() {
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Исполнитель</Label>
-                <Select value={newCardAssignee || "none"} onValueChange={(val) => setNewCardAssignee(val === "none" ? "" : val)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Не назначен" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">Не назначен</SelectItem>
-                    {users.filter(u => u.id).map((user) => (
-                      <SelectItem key={user.id} value={user.id}>
-                        {user.full_name || user.username}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                {selectedCard?.assignment_type === 'pool' && !selectedCard?.assigned_to ? (
+                  // Pool mode
+                  <div className="space-y-2">
+                    <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                      <Users className="w-3 h-3 mr-1" />
+                      Пул исполнителей ({selectedCardPotentialAssignees.length})
+                    </Badge>
+                    <div className="space-y-1 max-h-[100px] overflow-y-auto">
+                      {selectedCardPotentialAssignees.map((pa) => (
+                        <div key={pa.id} className="flex items-center gap-2 text-sm">
+                          <Avatar className="h-5 w-5">
+                            <AvatarFallback className="text-xs">
+                              {pa.user?.full_name?.[0] || pa.user?.username?.[0] || "?"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{pa.user?.full_name || pa.user?.username}</span>
+                        </div>
+                      ))}
+                    </div>
+                    {selectedCardPotentialAssignees.some(pa => pa.user_id === currentUser?.id) && (
+                      <Button
+                        type="button"
+                        size="sm"
+                        className="w-full bg-green-600 hover:bg-green-700"
+                        onClick={() => selectedCard && takeCardMutation.mutate(selectedCard.id)}
+                        disabled={takeCardMutation.isPending}
+                      >
+                        <Hand className="w-4 h-4 mr-2" />
+                        {takeCardMutation.isPending ? "Беру..." : "Взять карточку"}
+                      </Button>
+                    )}
+                  </div>
+                ) : (
+                  // Normal mode
+                  <Select value={newCardAssignee || "none"} onValueChange={(val) => setNewCardAssignee(val === "none" ? "" : val)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Не назначен" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Не назначен</SelectItem>
+                      {users.filter(u => u.id).map((user) => (
+                        <SelectItem key={user.id} value={user.id}>
+                          {user.full_name || user.username}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+                {selectedCard?.taken_at && (
+                  <div className="text-xs text-muted-foreground">
+                    Взята: {new Date(selectedCard.taken_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </div>
+                )}
               </div>
               <div className="space-y-2">
                 <Label>Приоритет</Label>
@@ -1120,6 +1364,11 @@ export default function Board() {
               />
             </div>
 
+            {/* Checklists */}
+            {selectedCard && (
+              <BoardCardChecklistSection cardId={selectedCard.id} users={users} />
+            )}
+
             {/* Existing Attachments */}
             {selectedCard?.attachments && selectedCard.attachments.length > 0 && (
               <div className="space-y-2">
@@ -1138,6 +1387,11 @@ export default function Board() {
                               src={`/api/boards/attachments/${attachment.id}/download`}
                               alt={attachment.file_name}
                               className="w-full h-full object-cover hover:scale-105 transition-transform"
+                              onError={(e) => {
+                                const target = e.target as HTMLImageElement;
+                                target.style.display = 'none';
+                                target.parentElement!.innerHTML = `<div class="flex items-center justify-center h-full text-muted-foreground text-sm">${attachment.file_name}</div>`;
+                              }}
                             />
                             <div className="absolute inset-0 bg-black/0 hover:bg-black/20 transition-colors flex items-center justify-center">
                               <Search className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />

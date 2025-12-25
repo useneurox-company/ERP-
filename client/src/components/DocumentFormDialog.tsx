@@ -192,7 +192,7 @@ export function DocumentFormDialog({
           description: pos.description || undefined,
           isService: pos.isService || false,
         })),
-        is_signed: editingDocument.is_signed || false,
+        is_signed: Boolean(editingDocument.is_signed),
         contract_number: editingDocument.contract_number || "",
         contract_date: editingDocument.contract_date || new Date().toISOString().split('T')[0],
         customer_name: editingDocument.customer_name || (deal as any)?.client_name || "",
@@ -736,7 +736,6 @@ export function DocumentFormDialog({
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <Textarea
-                                          ref={textareaRef}
                                           {...field}
                                           placeholder="Описание"
                                           className="min-h-[36px] resize-none w-full"
@@ -920,7 +919,6 @@ export function DocumentFormDialog({
                                     <Tooltip>
                                       <TooltipTrigger asChild>
                                         <Textarea
-                                          ref={textareaRef}
                                           {...field}
                                           placeholder="Описание услуги"
                                           className="min-h-[36px] resize-none w-full"

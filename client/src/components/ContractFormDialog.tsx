@@ -74,7 +74,7 @@ export function ContractFormDialog({
     if (editingContract && open) {
       form.reset({
         name: editingContract.name,
-        is_signed: editingContract.is_signed || false,
+        is_signed: Boolean(editingContract.is_signed),
       });
       setExistingFileUrl(editingContract.file_url);
       setUploadedFiles([]);

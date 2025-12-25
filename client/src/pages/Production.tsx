@@ -77,14 +77,14 @@ export default function Production() {
     projectName: getProjectName(task.project_id),
     stages: task.stages.map(stage => ({
       name: stage.name,
-      status: stage.status,
+      status: stage.status as "pending" | "in_progress" | "completed",
     })),
     progress: task.progress || 0,
     worker: getUserName(task.worker_id),
-    payment: parseFloat(task.payment || "0"),
+    payment: parseFloat(String(task.payment || "0")),
     deadline: formatDate(task.deadline),
     qrCode: !!task.qr_code,
-    status: task.status,
+    status: task.status as "pending" | "in_progress" | "completed",
   }));
 
   const pendingTasks = transformedTasks.filter((t) => t.status === "pending");

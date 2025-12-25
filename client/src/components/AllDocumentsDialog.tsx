@@ -200,7 +200,7 @@ export function AllDocumentsDialog({ open, onOpenChange, documents, attachments 
               >
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    {getDocumentIcon(doc.document_type)}
+                    {getDocumentIcon(doc.document_type || 'other')}
                     <h4 className="font-medium truncate" data-testid={`document-name-${doc.id}`}>
                       {doc.name}
                     </h4>
@@ -209,15 +209,15 @@ export function AllDocumentsDialog({ open, onOpenChange, documents, attachments 
                     )}
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Badge variant="secondary" className={`text-xs ${getDocumentBadgeColor(doc.document_type)}`}>
-                      {documentTypeLabels[doc.document_type]}
+                    <Badge variant="secondary" className={`text-xs ${getDocumentBadgeColor(doc.document_type || 'other')}`}>
+                      {documentTypeLabels[(doc.document_type || 'other') as keyof typeof documentTypeLabels]}
                     </Badge>
                     {doc.version && (
                       <span className="text-xs">Версия {doc.version}</span>
                     )}
                     {doc.total_amount && (
                       <span className="text-xs">
-                        • {parseFloat(doc.total_amount).toLocaleString('ru-RU')} ₽
+                        • {Number(doc.total_amount).toLocaleString('ru-RU')} ₽
                       </span>
                     )}
                   </div>

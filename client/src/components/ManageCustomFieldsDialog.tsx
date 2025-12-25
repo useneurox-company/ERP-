@@ -154,7 +154,7 @@ export function ManageCustomFieldsDialog({
     } else {
       setFieldOptions("");
     }
-    setIsRequired(field.is_required || false);
+    setIsRequired(Boolean(field.is_required));
     setFieldDialogOpen(true);
   };
 

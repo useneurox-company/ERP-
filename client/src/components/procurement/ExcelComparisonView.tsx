@@ -798,8 +798,8 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
                                     <span className="truncate max-w-[120px]" title={item.warehouse_item.name}>
                                       {item.warehouse_item.name}
                                     </span>
-                                    <Check className="w-3 h-3 text-green-500 shrink-0" title="Подтверждено" />
-                                    <Lock className="w-3 h-3 text-amber-500 shrink-0" title="Зарезервировано" />
+                                    <Check className="w-3 h-3 text-green-500 shrink-0" />
+                                    <Lock className="w-3 h-3 text-amber-500 shrink-0" />
                                   </div>
                                 ) : item.status === 'alternative_selected' && item.alternative_item ? (
                                   // Выбрана альтернатива
@@ -809,7 +809,7 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
                                       {item.alternative_item.name}
                                     </span>
                                     <Check className="w-3 h-3 text-blue-500 shrink-0" />
-                                    <Lock className="w-3 h-3 text-amber-500 shrink-0" title="Зарезервировано" />
+                                    <Lock className="w-3 h-3 text-amber-500 shrink-0" />
                                   </div>
                                 ) : (item.warehouse_item || (item.ai_suggestions_parsed && item.ai_suggestions_parsed.length > 0)) ? (
                                   // Неточное совпадение ИЛИ есть альтернативы - предлагаем выбрать
@@ -952,7 +952,7 @@ export function ExcelComparisonView({ stageId, projectId }: ExcelComparisonViewP
                                             <p className="font-medium text-xs">{alt.name}</p>
                                             <p className="text-xs text-muted-foreground">
                                               {alt.sku && `Артикул: ${alt.sku} | `}
-                                              Доступно: {alt.available_quantity ?? alt.quantity}
+                                              Доступно: {alt.quantity}
                                             </p>
                                           </div>
                                           <Button

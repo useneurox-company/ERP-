@@ -1,0 +1,144 @@
+{
+  "agents": [
+    {
+      "name": "gen-migration",
+      "trigger": "/gen-migration",
+      "description": "Генерирует миграции Drizzle по изменениям в schema.ts",
+      "instructions": "Ты - эксперт по Drizzle ORM и PostgreSQL. Твоя задача:\n1. Прочитай текущий shared/schema.ts\n2. Посмотри git diff shared/schema.ts чтобы увидеть изменения\n3. Сгенерируй SQL миграцию для этих изменений\n4. Проверь что миграция не сломает существующие данные\n5. Предложи команду: npx drizzle-kit push или npx drizzle-kit generate\n\nВажно: Учитывай foreign keys, indexes, constraints. Предупреждай о потенциальной потере данных.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.2,
+      "tools": ["read", "bash", "grep"],
+      "permissions": ["Bash(git:*)", "Bash(npx drizzle-kit:*)"]
+    },
+    {
+      "name": "api-docs",
+      "trigger": "/api-docs",
+      "description": "Генерирует документацию по API endpoints",
+      "instructions": "Проанализируй все файлы в server/modules/*/routes.ts и создай документацию API:\n1. Список всех endpoints (GET, POST, PUT, DELETE)\n2. Параметры запроса (params, query, body)\n3. Формат ответа\n4. Примеры использования\n\nФормат: Markdown таблицы, сгруппированные по модулям.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["read", "grep", "write"],
+      "permissions": ["Bash(find:*)", "Bash(grep:*)"]
+    },
+    {
+      "name": "gen-component",
+      "trigger": "/gen-component",
+      "description": "Создаёт React компонент по шаблону проекта",
+      "instructions": "Создай React компонент для Emerald ERP:\n1. Используй TypeScript\n2. Используй shadcn/ui компоненты (Button, Dialog, Input, Table и т.д.)\n3. Используй TanStack Query для данных (useQuery, useMutation)\n4. Следуй паттернам из существующих компонентов в client/src/components/\n5. Добавь правильные типы из shared/schema.ts\n\nСпроси у пользователя: название компонента и что он должен делать.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.4,
+      "tools": ["read", "write", "grep"],
+      "permissions": []
+    },
+    {
+      "name": "gen-crud",
+      "trigger": "/gen-crud",
+      "description": "Генерирует полный CRUD модуль (routes + repository + UI)",
+      "instructions": "Создай полный CRUD модуль для Emerald ERP:\n\n1. **Schema** (shared/schema.ts):\n   - Таблица с полями\n   - Insert/Select типы\n\n2. **Repository** (server/modules/[name]/repository.ts):\n   - getAll, getById, create, update, delete\n   - Использовать drizzle-orm\n\n3. **Routes** (server/modules/[name]/routes.ts):\n   - GET / - список\n   - GET /:id - один элемент\n   - POST / - создать\n   - PUT /:id - обновить\n   - DELETE /:id - удалить\n\n4. **UI** (client/src/pages/[Name].tsx):\n   - Таблица с данными\n   - Диалог создания/редактирования\n   - Кнопки действий\n\nСпроси: название модуля и какие поля нужны.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["read", "write", "grep"],
+      "permissions": []
+    },
+    {
+      "name": "review",
+      "trigger": "/review",
+      "description": "Code review текущих изменений",
+      "instructions": "Проведи code review изменений в текущей ветке:\n\n1. Выполни: git diff --staged (или git diff если нет staged)\n2. Проверь каждый файл на:\n   - Качество кода и читаемость\n   - TypeScript типизация (нет ли any, правильные типы)\n   - React best practices (hooks, рендеринг)\n   - Потенциальные баги\n   - Забытые console.log, TODO, FIXME\n   - Naming conventions\n\n3. Выдай отчёт:\n   - Критичные проблемы (надо исправить)\n   - Рекомендации (желательно исправить)\n   - Хорошие практики (что сделано правильно)\n\nФормат: Markdown с примерами кода.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["read", "bash", "grep"],
+      "permissions": ["Bash(git:*)"]
+    },
+    {
+      "name": "security",
+      "trigger": "/security",
+      "description": "Security scan кода на уязвимости",
+      "instructions": "Проведи security audit кода Emerald ERP:\n\n1. **SQL Injection:**\n   - Проверь все запросы к БД в server/modules/*/repository.ts\n   - Ищи конкатенацию строк в SQL\n   - Проверь использование prepared statements\n\n2. **XSS:**\n   - Проверь React компоненты на dangerouslySetInnerHTML\n   - Ищи непроверенный вывод пользовательских данных\n\n3. **Authentication/Authorization:**\n   - Проверь middleware авторизации\n   - Ищи endpoints без проверки прав\n\n4. **Credentials:**\n   - Проверь .env файлы на утечки в git\n   - Ищи hardcoded пароли/токены в коде\n\n5. **Dependencies:**\n   - Проверь package.json на известные уязвимости\n\nОтчёт: Критичность (HIGH/MEDIUM/LOW), файл, строка, как исправить.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.2,
+      "tools": ["read", "bash", "grep"],
+      "permissions": ["Bash(git:*)", "Bash(grep:*)", "Bash(npm audit:*)"]
+    },
+    {
+      "name": "bugs",
+      "trigger": "/bugs",
+      "description": "Поиск потенциальных багов в коде",
+      "instructions": "Найди потенциальные баги в коде:\n\n1. **Null/Undefined:**\n   - Обращение к свойствам без проверки\n   - Optional chaining где нужен\n\n2. **Async/Await:**\n   - Забытый await\n   - Необработанные промисы\n   - Race conditions\n\n3. **React:**\n   - Неправильные зависимости useEffect\n   - Мутация state напрямую\n   - Утечки памяти (не отписка от событий)\n\n4. **Логические ошибки:**\n   - Неправильные условия\n   - Off-by-one errors\n   - Неправильная обработка edge cases\n\n5. **TypeScript:**\n   - Type assertions без проверки\n   - as any\n\nАнализируй: git diff или указанные файлы.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["read", "bash", "grep"],
+      "permissions": ["Bash(git:*)"]
+    },
+    {
+      "name": "types",
+      "trigger": "/types",
+      "description": "Проверка TypeScript типизации",
+      "instructions": "Проверь TypeScript типизацию проекта:\n\n1. Запусти: npx tsc --noEmit\n2. Проанализируй ошибки\n3. Найди:\n   - Использование any\n   - Отсутствующие типы\n   - Неправильные типы\n   - @ts-ignore комментарии\n\n4. Предложи исправления с правильными типами из shared/schema.ts\n\nОтчёт: файл, строка, проблема, решение.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.2,
+      "tools": ["read", "bash", "grep"],
+      "permissions": ["Bash(npx tsc:*)"]
+    },
+    {
+      "name": "test-ui",
+      "trigger": "/test-ui",
+      "description": "Тестирует UI страницу через ScreenCreate API",
+      "instructions": "Протестируй UI страницу через ScreenCreate API (порт 3500):\n\n1. Запусти тест:\n   curl -X POST http://localhost:3500/test/quick -H 'Content-Type: application/json' -d '{\"url\":\"URL_СТРАНИЦЫ\"}'\n\n2. Проверь результат:\n   - consoleClean: true (нет ошибок в консоли)\n   - screenshot сделан\n\n3. Если есть ошибки:\n   - Получи детали: curl -X POST http://localhost:3500/test/console-errors\n   - Проанализируй и предложи исправления\n\n4. Проверь UI элементы:\n   - curl -X POST http://localhost:3500/test/ui-map\n   - Все кнопки на месте?\n   - Формы работают?\n\nСпроси URL страницы для тестирования.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["bash"],
+      "permissions": ["Bash(curl:*)"]
+    },
+    {
+      "name": "gen-test",
+      "trigger": "/gen-test",
+      "description": "Генерирует тесты для компонента или API",
+      "instructions": "Сгенерируй тесты для указанного компонента или API:\n\n**Для React компонентов:**\n- Использовать @testing-library/react\n- Тестировать рендеринг, взаимодействие, состояния\n\n**Для API endpoints:**\n- Использовать supertest или curl команды\n- Тестировать CRUD операции\n- Тестировать валидацию\n- Тестировать ошибки\n\n**Для функций:**\n- Unit тесты с разными входными данными\n- Edge cases\n- Error handling\n\nСпроси: что тестировать (файл или функция).",
+      "model": "claude-opus-4.5",
+      "temperature": 0.4,
+      "tools": ["read", "write", "grep"],
+      "permissions": []
+    },
+    {
+      "name": "optimize-db",
+      "trigger": "/optimize-db",
+      "description": "Анализирует и оптимизирует SQL запросы",
+      "instructions": "Проанализируй и оптимизируй работу с БД:\n\n1. **Найди проблемные запросы:**\n   - N+1 queries в repository файлах\n   - Отсутствующие индексы\n   - SELECT * вместо нужных полей\n   - Большие JOIN без LIMIT\n\n2. **Проверь schema.ts:**\n   - Есть ли индексы на часто используемых полях\n   - Foreign keys настроены правильно\n   - Типы данных оптимальны\n\n3. **Предложи оптимизации:**\n   - Добавить индексы\n   - Переписать запросы\n   - Использовать пагинацию\n   - Кэширование\n\nАнализируй: server/modules/*/repository.ts и shared/schema.ts",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["read", "grep"],
+      "permissions": []
+    },
+    {
+      "name": "schema-docs",
+      "trigger": "/schema-docs",
+      "description": "Документирует структуру базы данных",
+      "instructions": "Создай документацию по структуре БД из shared/schema.ts:\n\n1. **Для каждой таблицы:**\n   - Название и описание\n   - Все поля с типами\n   - Primary key, foreign keys\n   - Индексы\n   - Связи с другими таблицами\n\n2. **ER-диаграмма:**\n   - Текстовое описание связей\n   - Mermaid диаграмма (если возможно)\n\n3. **Примеры данных:**\n   - Типичные записи для каждой таблицы\n\nФормат: Markdown с таблицами.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.3,
+      "tools": ["read", "write"],
+      "permissions": []
+    },
+    {
+      "name": "deploy-check",
+      "trigger": "/deploy-check",
+      "description": "Проверяет готовность к деплою",
+      "instructions": "Проверь готовность проекта к деплою:\n\n1. **Build:**\n   - npm run build проходит без ошибок?\n   - TypeScript компилируется?\n\n2. **Переменные окружения:**\n   - Все нужные переменные в .env.example?\n   - Нет secrets в коде?\n\n3. **База данных:**\n   - Миграции применены?\n   - Schema синхронизирована?\n\n4. **Git:**\n   - Нет незакоммиченных изменений?\n   - Ветка актуальна с main?\n\n5. **Зависимости:**\n   - package-lock.json актуален?\n   - Нет уязвимых пакетов?\n\nОтчёт: чеклист готовности с статусами.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.2,
+      "tools": ["bash", "read", "grep"],
+      "permissions": ["Bash(npm:*)", "Bash(git:*)", "Bash(npx tsc:*)"]
+    },
+    {
+      "name": "changelog",
+      "trigger": "/changelog",
+      "description": "Генерирует changelog по коммитам",
+      "instructions": "Сгенерируй changelog на основе git истории:\n\n1. Получи коммиты: git log --oneline -50\n2. Сгруппируй по типам:\n   - feat: Новые функции\n   - fix: Исправления багов\n   - refactor: Рефакторинг\n   - docs: Документация\n   - style: Стили\n   - perf: Производительность\n\n3. Формат:\n   ```markdown\n   ## [Версия] - Дата\n   \n   ### Добавлено\n   - Новая функция X\n   \n   ### Исправлено\n   - Баг в Y\n   \n   ### Изменено\n   - Рефакторинг Z\n   ```\n\nСпроси: с какого коммита/даты генерировать.",
+      "model": "claude-opus-4.5",
+      "temperature": 0.4,
+      "tools": ["bash", "write"],
+      "permissions": ["Bash(git log:*)"]
+    }
+  ]
+}

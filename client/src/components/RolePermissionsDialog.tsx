@@ -46,7 +46,7 @@ export function RolePermissionsDialog({ open, onOpenChange, role }: RolePermissi
   const queryClient = useQueryClient();
   const [permissions, setPermissions] = useState<Map<string, any>>(new Map());
 
-  const { data: roleData, isLoading } = useQuery({
+  const { data: roleData, isLoading } = useQuery<{ permissions: RolePermission[] }>({
     queryKey: [`/api/roles/${role?.id}/permissions`],
     enabled: !!role?.id && open,
   });

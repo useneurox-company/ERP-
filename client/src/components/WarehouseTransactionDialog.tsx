@@ -61,7 +61,7 @@ export function WarehouseTransactionDialog({
     resolver: zodResolver(transactionFormSchema),
     defaultValues: {
       item_id: itemId,
-      type: "in" as const,
+      type: "in" as "in" | "out",
       quantity: 0,
       user_id: currentUserId,
       project_id: "",

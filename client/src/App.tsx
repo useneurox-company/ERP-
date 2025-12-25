@@ -29,6 +29,7 @@ import Tasks from "@/pages/Tasks";
 import Board from "@/pages/Board";
 import Settings from "@/pages/Settings";
 import ProcessTemplates from "@/pages/ProcessTemplates";
+import Telephony from "@/pages/Telephony";
 import Login from "@/pages/Login";
 import NotFound from "@/pages/not-found";
 import { useEffect, useState } from "react";
@@ -56,6 +57,7 @@ function Router() {
       <Route path="/tasks" component={Tasks} />
       <Route path="/board" component={Board} />
       <Route path="/process-templates" component={ProcessTemplates} />
+      <Route path="/telephony" component={Telephony} />
       <Route path="/settings" component={Settings} />
       <Route component={NotFound} />
     </Switch>

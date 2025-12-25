@@ -172,12 +172,15 @@ export function ManageStagesDialog({ open, onOpenChange }: ManageStagesDialogPro
   };
 
   const handleAddStage = () => {
+    // Get pipeline_id from existing stages, or use default
+    const pipelineId = stages.length > 0 ? stages[0].pipeline_id : "default";
     const newStage: StageEdit = {
       id: `temp-${Date.now()}`,
       key: `stage-${Date.now()}`,
       name: "Новый этап",
       color: "#6366f1",
       order: stages.length + 1,
+      pipeline_id: pipelineId,
       created_at: new Date(),
       isNew: true,
     };

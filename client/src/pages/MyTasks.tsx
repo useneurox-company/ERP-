@@ -77,8 +77,8 @@ export default function MyTasks() {
         case 'project':
           return (a.project?.name || '').localeCompare(b.project?.name || '');
         case 'status': {
-          const statusOrder = { 'in_progress': 0, 'pending': 1, 'completed': 2 };
-          return statusOrder[a.status] - statusOrder[b.status];
+          const statusOrder: Record<string, number> = { 'in_progress': 0, 'pending': 1, 'completed': 2 };
+          return (statusOrder[a.status] ?? 3) - (statusOrder[b.status] ?? 3);
         }
         default:
           return 0;

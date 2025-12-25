@@ -67,7 +67,7 @@ export function DealContactDialog({
         position: contact.position || "",
         phone: contact.phone || "",
         email: contact.email || "",
-        is_primary: contact.is_primary,
+        is_primary: Boolean(contact.is_primary),
       });
     } else {
       reset({

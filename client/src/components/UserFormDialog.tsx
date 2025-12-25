@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import {
   Dialog,
   DialogContent,
@@ -95,38 +96,33 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
 
   const createUserMutation = useMutation({
     mutationFn: async (data: UserFormData) => {
-      const response = await fetch("/api/users", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to create user");
-      }
-
-      return response.json();
+      return await apiRequest("POST", "/api/users", data);
     },
     onSuccess: async (newUser) => {
-      // If role is selected, assign it
-      if (selectedRoleId) {
-        await fetch(`/api/users/${newUser.id}/role`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ roleId: selectedRoleId }),
-          credentials: "include",
-        });
-      }
+      try {
+        // If role is selected, assign it
+        if (selectedRoleId) {
+          await apiRequest("PUT", `/api/users/${newUser.id}/role`, { roleId: selectedRoleId });
+        }
 
-      queryClient.invalidateQueries({ queryKey: ["/api/users"] });
-      toast({
-        title: "Пользователь создан",
-        description: "Новый пользователь успешно добавлен в систему",
-      });
-      onOpenChange(false);
-      reset();
+        queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+        toast({
+          title: "Пользователь создан",
+          description: "Новый пользователь успешно добавлен в систему",
+        });
+        onOpenChange(false);
+        reset();
+      } catch (error) {
+        // User created but role assignment failed
+        queryClient.invalidateQueries({ queryKey: ["/api/users"] });
+        toast({
+          title: "Пользователь создан",
+          description: "Но не удалось назначить роль. Назначьте роль вручную.",
+          variant: "destructive",
+        });
+        onOpenChange(false);
+        reset();
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -139,10 +135,12 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
 
   const updateUserMutation = useMutation({
     mutationFn: async (data: UserFormData) => {
-      if (!user) return;
+      if (!user) {
+        throw new Error("User not found");
+      }
 
       // Update user info
-      const updateData: any = {
+      const updateData: Partial<UserFormData> & { password?: string } = {
         email: data.email,
         full_name: data.full_name,
         phone: data.phone,
@@ -154,39 +152,19 @@ export function UserFormDialog({ open, onOpenChange, user, mode }: UserFormDialo
         updateData.password = data.password;
       }
 
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updateData),
-        credentials: "include",
-      });
-
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || "Failed to update user");
-      }
+      const result = await apiRequest("PUT", `/api/users/${user.id}`, updateData);
 
       // Update role if changed
       if (selectedRoleId !== user.role_id) {
-        await fetch(`/api/users/${user.id}/role`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ roleId: selectedRoleId || null }),
-          credentials: "include",
-        });
+        await apiRequest("PUT", `/api/users/${user.id}/role`, { roleId: selectedRoleId || null });
       }
 
       // Update active status if changed
       if (data.is_active !== user.is_active) {
-        await fetch(`/api/users/${user.id}/status`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ isActive: data.is_active }),
-          credentials: "include",
-        });
+        await apiRequest("PUT", `/api/users/${user.id}/status`, { isActive: data.is_active });
       }
 
-      return response.json();
+      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/users"] });

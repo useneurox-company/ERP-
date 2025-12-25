@@ -107,7 +107,7 @@ function SortableStageCard({
     opacity: isDragging ? 0.5 : 1,
   };
 
-  const stageDeps = dependencies.filter((d: LocalStageDependency) => d.stage_id === stage.id).map(d => d.depends_on_stage_id);
+  const stageDeps = dependencies.filter((d: LocalStageDependency) => d.stage_id === stage.id).map((d: LocalStageDependency) => d.depends_on_stage_id);
   const assigneeName = users?.find((u: any) => u.id === stage.assignee_id)?.full_name ||
                       users?.find((u: any) => u.id === stage.assignee_id)?.username ||
                       'Не назначен';
@@ -154,7 +154,7 @@ function SortableStageCard({
           };
           const strokeColor = chainInfo ? colorMap[chainInfo.color] || '#3b82f6' : '#666';
           const depNames = stageDeps
-            .map(depId => stages.find(s => s.id === depId)?.name)
+            .map((depId: string) => stages.find((s: LocalStage) => s.id === depId)?.name)
             .filter(Boolean)
             .join('\n');
 
@@ -302,7 +302,7 @@ function SortableStageCard({
             <div className="mt-2 space-y-2 p-2 border rounded bg-background/50">
               {stage.attachments && stage.attachments.length > 0 ? (
                 <div className="space-y-2">
-                  {stage.attachments.map((att, idx) => (
+                  {stage.attachments.map((att: any, idx: number) => (
                     <div key={att.id || idx} className="flex items-center gap-2 p-2 bg-muted/50 rounded text-xs">
                       <FileText className="w-4 h-4 flex-shrink-0" />
                       <div className="flex-1 min-w-0 truncate">
@@ -381,11 +381,11 @@ function SortableStageCard({
                   <SelectContent>
                     {getAvailableDependencies(
                       stage.id,
-                      stages.map(s => s.id),
+                      stages.map((s: LocalStage) => s.id),
                       dependencies,
                       getDirectDependencies(stage.id, dependencies)
                     )
-                      .map(depId => stages.find(s => s.id === depId))
+                      .map((depId: string) => stages.find((s: LocalStage) => s.id === depId))
                       .filter((s): s is LocalStage => !!s)
                       .map((s: LocalStage) => (
                         <SelectItem key={s.id} value={s.id} data-testid={`option-dependency-${s.id}`}>
@@ -467,7 +467,9 @@ export function LocalStageEditor({
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      distance: 8,
+      activationConstraint: {
+        distance: 8,
+      },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,

@@ -530,6 +530,7 @@ export const warehouse_items = pgTable('warehouse_items', {
   unit: text('unit').notNull(),
   price: real('price').default(0),
   location: text('location'),
+  category: text('category').notNull().default('materials'), // materials | products
   category_id: text('category_id').references(() => warehouseCategories.id),
   supplier: text('supplier'),
   description: text('description'),
@@ -569,6 +570,7 @@ export const insertWarehouseItemSchema = createInsertSchema(warehouse_items)
     supplier: z.string().optional().nullable(),
     description: z.string().optional().nullable(),
     location: z.string().optional().nullable(),
+    category: z.enum(['materials', 'products']).optional().default('materials'),
     project_id: z.string().optional().nullable(),
     project_name: z.string().optional().nullable(),
     package_details: z.string().optional().nullable(),
@@ -730,6 +732,8 @@ export const tasks = pgTable('tasks', {
   deadline: text('deadline'), // ISO 8601 string
   start_date: text('start_date'), // ISO 8601 string
   completed_at: text('completed_at'), // ISO 8601 string
+  taken_at: text('taken_at'), // ISO 8601 string - когда задачу взяли из пула
+  assignment_type: text('assignment_type').default('single'), // 'single' | 'pool'
   status: text('status').notNull().default('new'), // new, in_progress, pending_review, completed, rejected, cancelled, on_hold
   related_entity_type: text('related_entity_type'), // deal, project, client, contact, etc.
   related_entity_id: text('related_entity_id'),
@@ -749,6 +753,7 @@ export const tasks = pgTable('tasks', {
   tags: text('tags'), // JSON array
   attachments_count: integer('attachments_count').default(0),
   comments_count: integer('comments_count').default(0),
+  is_archived: boolean('is_archived').default(false).notNull(),
   created_at: text('created_at').$defaultFn(() => new Date().toISOString()).notNull(),
   updated_at: text('updated_at').$defaultFn(() => new Date().toISOString()).notNull(),
 });
@@ -795,6 +800,18 @@ export const task_attachments = pgTable('task_attachments', {
 export const insertTaskAttachmentSchema = createInsertSchema(task_attachments).omit({ id: true, created_at: true });
 export type InsertTaskAttachment = z.infer<typeof insertTaskAttachmentSchema>;
 export type TaskAttachment = typeof task_attachments.$inferSelect;
+
+// Task Potential Assignees (пул исполнителей)
+export const task_potential_assignees = pgTable('task_potential_assignees', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  task_id: text('task_id').references(() => tasks.id, { onDelete: 'cascade' }).notNull(),
+  user_id: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  added_at: timestamp('added_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertTaskPotentialAssigneeSchema = createInsertSchema(task_potential_assignees).omit({ id: true, added_at: true });
+export type InsertTaskPotentialAssignee = z.infer<typeof insertTaskPotentialAssigneeSchema>;
+export type TaskPotentialAssignee = typeof task_potential_assignees.$inferSelect;
 
 // Documents
 export const documents = pgTable('documents', {
@@ -1020,13 +1037,31 @@ export const insertTaskCommentSchema = createInsertSchema(task_comments).omit({ 
 export type InsertTaskComment = z.infer<typeof insertTaskCommentSchema>;
 export type TaskComment = typeof task_comments.$inferSelect;
 
+// Task Checklists (Именованные чеклисты для задач)
+export const task_checklists = pgTable('task_checklists', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  task_id: text('task_id').references(() => tasks.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  order: integer('order').notNull().default(0),
+  hide_completed: boolean('hide_completed').default(false).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertTaskChecklistSchema = createInsertSchema(task_checklists).omit({ id: true, created_at: true, updated_at: true });
+export type InsertTaskChecklist = z.infer<typeof insertTaskChecklistSchema>;
+export type TaskChecklist = typeof task_checklists.$inferSelect;
+
 // Task Checklist Items
 export const task_checklist_items = pgTable('task_checklist_items', {
   id: text('id').$defaultFn(() => genId()).primaryKey(),
+  checklist_id: text('checklist_id').references(() => task_checklists.id, { onDelete: 'cascade' }),
   task_id: text('task_id').references(() => tasks.id, { onDelete: 'cascade' }).notNull(),
   item_text: text('item_text').notNull(),
   is_completed: integer('is_completed', { mode: 'boolean' }).default(0).notNull(),
   order: integer('order').notNull(),
+  deadline: text('deadline'), // ISO 8601 string
+  assignee_id: text('assignee_id').references(() => users.id, { onDelete: 'set null' }),
   created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
 });
 
@@ -1339,6 +1374,9 @@ export const board_cards = pgTable('board_cards', {
   assigned_to: text('assigned_to').references(() => users.id),
   priority: text('priority').default('normal'), // low, normal, high, urgent
   due_date: timestamp('due_date'),
+  is_completed: boolean('is_completed').default(false),
+  taken_at: text('taken_at'), // ISO 8601 string - когда карточку взяли из пула
+  assignment_type: text('assignment_type').default('single'), // 'single' | 'pool'
   created_by: text('created_by').references(() => users.id),
   created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
   updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
@@ -1392,3 +1430,242 @@ export const board_members = pgTable('board_members', {
   role: text('role').default('member'), // owner, admin, member
   added_at: timestamp('added_at').$defaultFn(() => new Date()).notNull(),
 });
+
+export const insertBoardMemberSchema = createInsertSchema(board_members).omit({ id: true, added_at: true });
+export type InsertBoardMember = z.infer<typeof insertBoardMemberSchema>;
+export type BoardMember = typeof board_members.$inferSelect;
+
+// Чеклисты карточек доски
+export const board_card_checklists = pgTable('board_card_checklists', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  card_id: text('card_id').references(() => board_cards.id, { onDelete: 'cascade' }).notNull(),
+  name: text('name').notNull(),
+  order: integer('order').notNull().default(0),
+  hide_completed: boolean('hide_completed').default(false).notNull(),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardCardChecklistSchema = createInsertSchema(board_card_checklists).omit({ id: true, created_at: true, updated_at: true });
+export type InsertBoardCardChecklist = z.infer<typeof insertBoardCardChecklistSchema>;
+export type BoardCardChecklist = typeof board_card_checklists.$inferSelect;
+
+// Элементы чеклистов карточек доски
+export const board_card_checklist_items = pgTable('board_card_checklist_items', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  checklist_id: text('checklist_id').references(() => board_card_checklists.id, { onDelete: 'cascade' }).notNull(),
+  card_id: text('card_id').references(() => board_cards.id, { onDelete: 'cascade' }).notNull(),
+  item_text: text('item_text').notNull(),
+  is_completed: integer('is_completed', { mode: 'boolean' }).default(0).notNull(),
+  order: integer('order').notNull(),
+  deadline: text('deadline'), // ISO 8601 string
+  assignee_id: text('assignee_id').references(() => users.id, { onDelete: 'set null' }),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardCardChecklistItemSchema = createInsertSchema(board_card_checklist_items).omit({ id: true, created_at: true });
+export type InsertBoardCardChecklistItem = z.infer<typeof insertBoardCardChecklistItemSchema>;
+export type BoardCardChecklistItem = typeof board_card_checklist_items.$inferSelect;
+
+// Участники карточки (не путать с board_members - это участники карточки для назначения)
+export const board_card_members = pgTable('board_card_members', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  card_id: text('card_id').references(() => board_cards.id, { onDelete: 'cascade' }).notNull(),
+  user_id: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  added_at: timestamp('added_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardCardMemberSchema = createInsertSchema(board_card_members).omit({ id: true, added_at: true });
+export type InsertBoardCardMember = z.infer<typeof insertBoardCardMemberSchema>;
+export type BoardCardMember = typeof board_card_members.$inferSelect;
+
+// Board Card Potential Assignees (пул исполнителей для карточек)
+export const board_card_potential_assignees = pgTable('board_card_potential_assignees', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  card_id: text('card_id').references(() => board_cards.id, { onDelete: 'cascade' }).notNull(),
+  user_id: text('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  added_at: timestamp('added_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertBoardCardPotentialAssigneeSchema = createInsertSchema(board_card_potential_assignees).omit({ id: true, added_at: true });
+export type InsertBoardCardPotentialAssignee = z.infer<typeof insertBoardCardPotentialAssigneeSchema>;
+export type BoardCardPotentialAssignee = typeof board_card_potential_assignees.$inferSelect;
+
+// ============ TELEPHONY (AI Calls with ElevenLabs) ============
+
+// SIP Trunks - SIP соединения для телефонии (Exolve и др.)
+export const sip_trunks = pgTable('sip_trunks', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  name: text('name').notNull(),
+  provider: text('provider').default('exolve').notNull(), // exolve, twilio, custom
+
+  // SIP Connection
+  termination_uri: text('termination_uri').notNull(), // sip.exolve.ru
+  username: text('username'), // SIP username (883140XXX)
+  password: text('password'), // SIP password (encrypted)
+  transport: text('transport').default('udp'), // udp, tcp, tls
+
+  // ElevenLabs Integration
+  elevenlabs_trunk_id: text('elevenlabs_trunk_id'), // ID trunk в ElevenLabs
+
+  // Caller ID
+  from_number: text('from_number'), // Номер для CallerID
+
+  // Status
+  is_active: boolean('is_active').default(true).notNull(),
+  last_connected_at: timestamp('last_connected_at'),
+  connection_status: text('connection_status').default('unknown'), // connected, disconnected, error, unknown
+
+  // Metadata
+  config: text('config'), // JSON с дополнительными настройками
+  created_by: text('created_by').references(() => users.id),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertSipTrunkSchema = createInsertSchema(sip_trunks).omit({ id: true, created_at: true, updated_at: true });
+export type InsertSipTrunk = z.infer<typeof insertSipTrunkSchema>;
+export type SipTrunk = typeof sip_trunks.$inferSelect;
+
+// Call Scripts - сценарии для AI звонков
+export const call_scripts = pgTable('call_scripts', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  system_prompt: text('system_prompt').notNull(), // Промпт для AI агента
+  first_message: text('first_message'), // Первое сообщение агента при ответе
+  voice_id: text('voice_id'), // ID голоса ElevenLabs
+  language: text('language').default('ru').notNull(),
+  llm_model: text('llm_model').default('claude-3-5-sonnet'), // claude, gpt-4o, gemini
+  max_duration_seconds: integer('max_duration_seconds').default(300), // Макс. длительность звонка
+  is_active: boolean('is_active').default(true).notNull(),
+  created_by: text('created_by').references(() => users.id),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertCallScriptSchema = createInsertSchema(call_scripts).omit({ id: true, created_at: true, updated_at: true });
+export type InsertCallScript = z.infer<typeof insertCallScriptSchema>;
+export type CallScript = typeof call_scripts.$inferSelect;
+
+// ElevenLabs Agents - конфигурация агентов
+export const elevenlabs_agents = pgTable('elevenlabs_agents', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  name: text('name').notNull(),
+  elevenlabs_agent_id: text('elevenlabs_agent_id').notNull(), // ID агента в ElevenLabs
+  script_id: text('script_id').references(() => call_scripts.id, { onDelete: 'set null' }),
+  phone_number_id: text('phone_number_id'), // ID номера телефона в ElevenLabs
+  phone_number: text('phone_number'), // Номер телефона для отображения
+  is_active: boolean('is_active').default(true).notNull(),
+  config: text('config'), // JSON с дополнительными настройками
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertElevenLabsAgentSchema = createInsertSchema(elevenlabs_agents).omit({ id: true, created_at: true, updated_at: true });
+export type InsertElevenLabsAgent = z.infer<typeof insertElevenLabsAgentSchema>;
+export type ElevenLabsAgent = typeof elevenlabs_agents.$inferSelect;
+
+// Call Campaigns - кампании обзвона
+export const call_campaigns = pgTable('call_campaigns', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  name: text('name').notNull(),
+  description: text('description'),
+  script_id: text('script_id').references(() => call_scripts.id, { onDelete: 'set null' }),
+  agent_id: text('agent_id').references(() => elevenlabs_agents.id, { onDelete: 'set null' }),
+  status: text('status').default('draft').notNull(), // draft, scheduled, running, paused, completed
+  scheduled_start: timestamp('scheduled_start'),
+  scheduled_end: timestamp('scheduled_end'),
+  call_hours_start: text('call_hours_start').default('09:00'), // Время начала звонков
+  call_hours_end: text('call_hours_end').default('18:00'), // Время окончания звонков
+  max_concurrent_calls: integer('max_concurrent_calls').default(1),
+  total_contacts: integer('total_contacts').default(0),
+  completed_calls: integer('completed_calls').default(0),
+  successful_calls: integer('successful_calls').default(0),
+  failed_calls: integer('failed_calls').default(0),
+  created_by: text('created_by').references(() => users.id),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertCallCampaignSchema = createInsertSchema(call_campaigns).omit({ id: true, created_at: true, updated_at: true });
+export type InsertCallCampaign = z.infer<typeof insertCallCampaignSchema>;
+export type CallCampaign = typeof call_campaigns.$inferSelect;
+
+// Campaign Contacts - контакты для кампании
+export const campaign_contacts = pgTable('campaign_contacts', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  campaign_id: text('campaign_id').references(() => call_campaigns.id, { onDelete: 'cascade' }).notNull(),
+  deal_id: text('deal_id').references(() => deals.id, { onDelete: 'set null' }),
+  client_id: text('client_id').references(() => clients.id, { onDelete: 'set null' }),
+  phone_number: text('phone_number').notNull(),
+  client_name: text('client_name'),
+  company: text('company'),
+  custom_data: text('custom_data'), // JSON с кастомными данными для промпта
+  status: text('status').default('pending').notNull(), // pending, in_progress, completed, failed, skipped
+  call_attempts: integer('call_attempts').default(0),
+  last_call_id: text('last_call_id'),
+  scheduled_at: timestamp('scheduled_at'),
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertCampaignContactSchema = createInsertSchema(campaign_contacts).omit({ id: true, created_at: true, updated_at: true });
+export type InsertCampaignContact = z.infer<typeof insertCampaignContactSchema>;
+export type CampaignContact = typeof campaign_contacts.$inferSelect;
+
+// Call Logs - история звонков
+export const call_logs = pgTable('call_logs', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  campaign_id: text('campaign_id').references(() => call_campaigns.id, { onDelete: 'set null' }),
+  campaign_contact_id: text('campaign_contact_id').references(() => campaign_contacts.id, { onDelete: 'set null' }),
+  agent_id: text('agent_id').references(() => elevenlabs_agents.id, { onDelete: 'set null' }),
+  script_id: text('script_id').references(() => call_scripts.id, { onDelete: 'set null' }),
+  deal_id: text('deal_id').references(() => deals.id, { onDelete: 'set null' }),
+  client_id: text('client_id').references(() => clients.id, { onDelete: 'set null' }),
+
+  // Call details
+  elevenlabs_conversation_id: text('elevenlabs_conversation_id'), // ID разговора в ElevenLabs
+  phone_number: text('phone_number').notNull(),
+  direction: text('direction').default('outbound').notNull(), // inbound, outbound
+  status: text('status').notNull(), // initiated, ringing, answered, completed, failed, no_answer, busy
+
+  // Timing
+  started_at: timestamp('started_at'),
+  answered_at: timestamp('answered_at'),
+  ended_at: timestamp('ended_at'),
+  duration_seconds: integer('duration_seconds'),
+
+  // Results
+  outcome: text('outcome'), // success, callback_requested, not_interested, wrong_number, etc.
+  sentiment: text('sentiment'), // positive, neutral, negative
+  summary: text('summary'), // AI-generated summary of the call
+  transcript: text('transcript'), // Полная транскрипция разговора
+  recording_url: text('recording_url'), // URL записи
+
+  // Metadata
+  cost: real('cost'), // Стоимость звонка
+  error_message: text('error_message'),
+  metadata: text('metadata'), // JSON с дополнительными данными
+
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+  updated_at: timestamp('updated_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertCallLogSchema = createInsertSchema(call_logs).omit({ id: true, created_at: true, updated_at: true });
+export type InsertCallLog = z.infer<typeof insertCallLogSchema>;
+export type CallLog = typeof call_logs.$inferSelect;
+
+// Call Actions - действия записанные во время звонка
+export const call_actions = pgTable('call_actions', {
+  id: text('id').$defaultFn(() => genId()).primaryKey(),
+  call_id: text('call_id').references(() => call_logs.id, { onDelete: 'cascade' }).notNull(),
+  action_type: text('action_type').notNull(), // tool_call, user_response, agent_message, etc.
+  action_data: text('action_data'), // JSON с данными действия
+  timestamp_seconds: real('timestamp_seconds'), // Время в секундах от начала звонка
+  created_at: timestamp('created_at').$defaultFn(() => new Date()).notNull(),
+});
+
+export const insertCallActionSchema = createInsertSchema(call_actions).omit({ id: true, created_at: true });
+export type InsertCallAction = z.infer<typeof insertCallActionSchema>;
+export type CallAction = typeof call_actions.$inferSelect;

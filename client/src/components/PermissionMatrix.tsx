@@ -141,8 +141,8 @@ export function PermissionMatrix({ className }: PermissionMatrixProps) {
           can_delete: permissionKey === 'can_delete',
           can_start: permissionKey === 'can_start',
           can_complete: permissionKey === 'can_complete',
-          created_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
+          created_at: new Date(),
+          updated_at: new Date(),
         };
 
     setEditedPermissions((prev) => ({
