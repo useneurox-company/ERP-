@@ -62,6 +62,38 @@ ALTER TABLE call_logs ADD COLUMN IF NOT EXISTS metadata JSONB;
 ALTER TABLE project_items ADD COLUMN IF NOT EXISTS source_document_id TEXT;
 
 -- =====================
+-- board_card_checklists
+-- =====================
+ALTER TABLE board_card_checklists ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- =====================
+-- board_card_checklist_items
+-- =====================
+ALTER TABLE board_card_checklist_items ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- =====================
+-- task_checklists (recreate if wrong types)
+-- =====================
+-- Note: If task_checklists has INTEGER id instead of TEXT, drop and recreate:
+-- DROP TABLE IF EXISTS task_checklist_items;
+-- DROP TABLE IF EXISTS task_checklists;
+-- Then run create_missing_tables.sql with correct TEXT types
+
+ALTER TABLE task_checklists ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP;
+
+-- =====================
+-- task_checklist_items
+-- =====================
+ALTER TABLE task_checklist_items ADD COLUMN IF NOT EXISTS checklist_id TEXT;
+ALTER TABLE task_checklist_items ADD COLUMN IF NOT EXISTS deadline TEXT;
+ALTER TABLE task_checklist_items ADD COLUMN IF NOT EXISTS assignee_id TEXT;
+
+-- =====================
+-- tasks (is_archived)
+-- =====================
+ALTER TABLE tasks ADD COLUMN IF NOT EXISTS is_archived BOOLEAN DEFAULT false;
+
+-- =====================
 -- Verify changes
 -- =====================
 SELECT 'board_cards columns:' as info;

@@ -17,14 +17,28 @@ CREATE TABLE IF NOT EXISTS task_potential_assignees (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- task_checklists
+-- task_checklists (TEXT id to match Drizzle schema)
 CREATE TABLE IF NOT EXISTS task_checklists (
-    id SERIAL PRIMARY KEY,
-    task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE,
-    name VARCHAR(255) NOT NULL,
-    "order" INTEGER DEFAULT 0,
-    hide_completed BOOLEAN DEFAULT false,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    id TEXT PRIMARY KEY,
+    task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+    name TEXT NOT NULL,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    hide_completed BOOLEAN NOT NULL DEFAULT false,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+-- task_checklist_items (TEXT id to match Drizzle schema)
+CREATE TABLE IF NOT EXISTS task_checklist_items (
+    id TEXT PRIMARY KEY,
+    checklist_id TEXT REFERENCES task_checklists(id) ON DELETE CASCADE,
+    task_id TEXT REFERENCES tasks(id) ON DELETE CASCADE NOT NULL,
+    item_text TEXT NOT NULL,
+    is_completed INTEGER NOT NULL DEFAULT 0,
+    "order" INTEGER NOT NULL,
+    deadline TEXT,
+    assignee_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 -- stage_deadline_history
